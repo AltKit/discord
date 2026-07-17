@@ -8,8 +8,13 @@ const { Error, RangeError, TypeError } = require('../errors');
  */
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
-exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9210 Chrome/134.0.6998.205 Electron/35.3.0 Safari/537.36';
+// Chromium version used by the default HTTP browser profile.
+exports.ChromiumVersion = '150.0.7871.124';
+
+// Chromium major version used by User-Agent Client Hints.
+exports.ChromiumMajorVersion = exports.ChromiumVersion.split('.')[0];
+
+exports.UserAgent = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${exports.ChromiumMajorVersion}.0.0.0 Safari/537.36`;
 
 /**
  * Chrome TLS ciphers
@@ -1883,6 +1888,8 @@ function createEnum(keys) {
  * @property {Object<AutoModerationRuleTriggerType, number>} AutoModerationRuleTriggerTypes Characterizes the type
  * of content which can trigger the rule.
  * @property {Object<ChannelType, number>} ChannelTypes All available channel types.
+ * @property {string} ChromiumMajorVersion Chromium major version used by User-Agent Client Hints.
+ * @property {string} ChromiumVersion Chromium version used by the default HTTP browser profile.
  * @property {ClientApplicationAssetTypes} ClientApplicationAssetTypes The types of an {@link ApplicationAsset} object.
  * @property {Object<Color, number>} Colors An object with regularly used colors.
  * @property {Object<DefaultMessageNotificationLevel, number>} DefaultMessageNotificationLevels

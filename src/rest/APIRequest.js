@@ -3,6 +3,7 @@
 const Buffer = require('node:buffer').Buffer;
 const { setTimeout } = require('node:timers');
 const { FormData } = require('undici');
+const { ChromiumMajorVersion } = require('../util/Constants');
 
 class APIRequest {
   constructor(rest, method, path, options) {
@@ -37,10 +38,10 @@ class APIRequest {
 
     let headers = {
       accept: '*/*',
-      'accept-language': 'en-US',
+      'accept-language': 'en-US,en;q=0.9',
       priority: 'u=1, i',
       referer: 'https://discord.com/channels/@me',
-      'sec-ch-ua': '"Not:A-Brand";v="24", "Chromium";v="134"',
+      'sec-ch-ua': `"Not_A Brand";v="99", "Chromium";v="${ChromiumMajorVersion}", "Google Chrome";v="${ChromiumMajorVersion}"`,
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'empty',

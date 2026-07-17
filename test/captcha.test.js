@@ -13,7 +13,7 @@ const HTTPError = require('../src/rest/HTTPError');
 const RESTManager = require('../src/rest/RESTManager');
 const RequestHandler = require('../src/rest/RequestHandler');
 const Options = require('../src/util/Options');
-const { VoiceStatus } = require('../src/util/Constants');
+const { ChromiumMajorVersion, ChromiumVersion, UserAgent, VoiceStatus } = require('../src/util/Constants');
 const handleVoiceServerUpdate = require('../src/client/websocket/handlers/VOICE_SERVER_UPDATE');
 
 const challenge = {
@@ -275,10 +275,39 @@ test('defaults REST and gateway traffic to Discord API v10 and generates TOTP co
   const options = Options.createDefault();
   assert.equal(options.http.version, 10);
   assert.equal(options.ws.version, 10);
+  assert.equal(ChromiumVersion, '150.0.7871.124');
+  assert.match(UserAgent, new RegExp(`Chrome/${ChromiumMajorVersion}\\.0\\.0\\.0`));
+  assert.equal(options.http.headers['User-Agent'], UserAgent);
+  assert.equal(options.ws.properties.browser_user_agent, UserAgent);
 
   const client = new Client();
   assert.match(client.authenticator.generate('JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP'), /^\d{6}$/);
   client.destroy();
+});
+
+test('sends a coherent stable Chromium HTTP profile', async () => {
+  const client = { options: Options.createDefault() };
+  let sentHeaders;
+  const rest = {
+    client,
+    fetch: async (_url, options) => {
+      sentHeaders = options.headers;
+      return jsonResponse({ ok: true }, 200);
+    },
+    getAuth: () => 'token',
+    getDispatcher: () => ({}),
+  };
+
+  await new APIRequest(rest, 'get', '/profile', { auth: false, route: '/profile' }).make();
+
+  assert.equal(sentHeaders['User-Agent'], UserAgent);
+  assert.equal(sentHeaders['accept-language'], 'en-US,en;q=0.9');
+  assert.equal(
+    sentHeaders['sec-ch-ua'],
+    `"Not_A Brand";v="99", "Chromium";v="${ChromiumMajorVersion}", "Google Chrome";v="${ChromiumMajorVersion}"`,
+  );
+  assert.equal(sentHeaders['sec-ch-ua-mobile'], '?0');
+  assert.equal(sentHeaders['sec-ch-ua-platform'], '"Windows"');
 });
 
 test('redacts authentication and voice credentials from debug output', async () => {

@@ -4347,6 +4347,8 @@ export const Constants: {
     types: string;
     version: string;
   };
+  ChromiumMajorVersion: string;
+  ChromiumVersion: string;
   PartialTypes: {
     [K in PartialTypes]: K;
   };

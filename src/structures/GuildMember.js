@@ -9,7 +9,7 @@ const GuildMemberRoleManager = require('../managers/GuildMemberRoleManager');
 const GuildMemberFlags = require('../util/GuildMemberFlags');
 const Permissions = require('../util/Permissions');
 
-/**
+/*
  * @type {WeakSet<GuildMember>}
  * @private
  * @internal

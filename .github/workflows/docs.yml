@@ -2,7 +2,7 @@ name: Documentation
 
 on:
   push:
-    branches: [main]
+    branches: [selfbotjs]
   workflow_dispatch:
 
 permissions:

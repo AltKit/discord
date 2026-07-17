@@ -117,8 +117,8 @@ See [client configuration](./client-configuration#rest-proxy) and [security](./s
 
 ## Useful API pages
 
-- [`RESTManager` source](https://github.com/altkit/discord/blob/main/src/rest/RESTManager.js)
-- [`RequestHandler` source](https://github.com/altkit/discord/blob/main/src/rest/RequestHandler.js)
+- [`RESTManager` source](https://github.com/altkit/discord/blob/selfbotjs/src/rest/RESTManager.js)
+- [`RequestHandler` source](https://github.com/altkit/discord/blob/selfbotjs/src/rest/RequestHandler.js)
 - [DiscordAPIError](/api/classes/discordapierror)
 - [HTTPError](/api/classes/httperror)
 - [RateLimitError](/api/classes/ratelimiterror)

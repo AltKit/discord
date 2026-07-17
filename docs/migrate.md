@@ -8,7 +8,7 @@
 | ----------------------- | ---------------- |
 | Altkit Discord               | `4.0.0`          |
 | Discord.js API target   | `14.27.0`        |
-| Minimum Node.js version | `20.18.0`        |
+| Minimum Node.js version | `20.19.0`        |
 | Tested Node.js versions | `20`, `22`, `24` |
 | Package/import name     | `@altkit/discord`      |
 
@@ -31,7 +31,7 @@
 
 Use this checklist when moving an existing v3 project to v4:
 
-- [ ] Upgrade Node.js to 20.18 or newer.
+- [ ] Upgrade Node.js to 20.19 or newer.
 - [ ] Replace package imports with `@altkit/discord`.
 - [ ] Install dependencies again so the 14.27 companion packages are resolved.
 - [ ] Prefer `Events` and `Partials` for new code.
@@ -193,7 +193,7 @@ This order makes package/runtime problems easier to distinguish from API migrati
 
 ### 1. Upgrade the runtime and package
 
-Altkit Discord v4 requires Node.js 20.18 or newer:
+Altkit Discord v4 requires Node.js 20.19 or newer:
 
 ```sh
 node --version
@@ -411,7 +411,7 @@ cp .env.example .env
 node --env-file=.env index.js
 ```
 
-See [`.env.example`](https://github.com/altkit/discord/blob/main/.env.example) for every example variable and credential-handling guidance.
+See [`.env.example`](https://github.com/altkit/discord/blob/selfbotjs/.env.example) for every example variable and credential-handling guidance.
 
 ### 10. Verify the migrated application
 
@@ -483,7 +483,7 @@ For runnable feature demonstrations, see the [example gallery](/examples/).
 ## Upstream reference
 
 - [Discord.js 14.27.0 release notes](https://github.com/discordjs/discord.js/releases/tag/14.27.0)
-- [Altkit Discord README](https://github.com/altkit/discord/blob/main/README.md)
+- [Altkit Discord README](https://github.com/altkit/discord/blob/selfbotjs/README.md)
 - [Altkit Discord examples](/examples/)
 
 Altkit Discord implements the parts of Discord.js 14.27 applicable to this fork. Bot-only guide changes and webhook-only typing

@@ -208,8 +208,8 @@ class Application extends Base {
     this.owner = data.team
       ? new Team(this.client, data.team)
       : data.owner
-      ? this.client.users._add(data.owner)
-      : this.owner ?? null;
+        ? this.client.users._add(data.owner)
+        : (this.owner ?? null);
 
     if ('splash' in data) {
       /**

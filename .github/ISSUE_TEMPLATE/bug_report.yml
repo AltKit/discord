@@ -100,7 +100,7 @@ body:
     id: node-version
     attributes:
       label: Node.js version
-      description: Run `node --version`. Altkit Discord v4 requires Node.js 20.18 or newer.
+      description: Run `node --version`. Altkit Discord v4 requires Node.js 20.19 or newer.
       placeholder: "v22.17.0"
     validations:
       required: true

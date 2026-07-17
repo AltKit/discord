@@ -203,7 +203,7 @@ class PacketHandler extends EventEmitter {
     streamInfo.feed(packet);
   }
 
-  /**
+  /*
    * Test
    * @param {number} ssrc ssrc
    * @param {Object} userStat { userId, hasVideo }

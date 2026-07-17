@@ -44,9 +44,7 @@ class ClientVoiceManager {
     const { guild_id, channel_id, token, endpoint } = payload;
     this.client.emit(
       'debug',
-      `[VOICE] voiceServer ${channel_id ? 'channel' : 'guild'}: ${
-        channel_id || guild_id
-      } token: ${token} endpoint: ${endpoint}`,
+      `[VOICE] voice server update received for ${channel_id ? 'channel' : 'guild'} ${channel_id || guild_id}`,
     );
     const connection = this.connection;
     if (connection) connection.setTokenAndEndpoint(token, endpoint);
@@ -68,7 +66,7 @@ class ClientVoiceManager {
     }
     // Main lib
     const connection = this.connection;
-    this.client.emit('debug', `[VOICE] connection? ${!!connection}, ${guild_id} ${session_id} ${channel_id}`);
+    this.client.emit('debug', `[VOICE] connection? ${!!connection}, guild ${guild_id}, channel ${channel_id}`);
     if (!connection) return;
     if (!channel_id) {
       connection._disconnect();

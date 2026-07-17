@@ -4,12 +4,13 @@ const { setInterval } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const makeFetchCookie = require('fetch-cookie');
 const { CookieJar } = require('tough-cookie');
-const { fetch: fetchOriginal } = require('undici');
+const { Agent, buildConnector, fetch: fetchOriginal, ProxyAgent } = require('undici');
 const APIRequest = require('./APIRequest');
 const routeBuilder = require('./APIRouter');
 const RequestHandler = require('./RequestHandler');
 const { Error } = require('../errors');
-const { Endpoints } = require('../util/Constants');
+const { ciphers, Endpoints } = require('../util/Constants');
+const Util = require('../util/Util');
 
 class RESTManager {
   constructor(client) {
@@ -22,7 +23,9 @@ class RESTManager {
     this.globalDelay = null;
     this.cookieJar = new CookieJar();
     this.fetch = makeFetchCookie.default(fetchOriginal, this.cookieJar);
-    if (client.options.restSweepInterval > 0) {
+    this.dispatcher = null;
+    this.destroyed = false;
+    if (Number.isFinite(client.options.restSweepInterval) && client.options.restSweepInterval > 0) {
       this.sweepInterval = setInterval(() => {
         this.handlers.sweep(handler => handler._inactive);
       }, client.options.restSweepInterval * 1_000).unref();
@@ -41,6 +44,36 @@ class RESTManager {
 
   get cdn() {
     return Endpoints.CDN(this.client.options.http.cdn);
+  }
+
+  getDispatcher() {
+    if (this.destroyed) throw new Error('CLIENT_DESTROYED');
+    if (this.dispatcher) return this.dispatcher;
+
+    const proxyOptions = Util.checkUndiciProxyAgent(this.client.options.http.agent);
+    this.dispatcher = proxyOptions
+      ? new ProxyAgent({ ...proxyOptions, ciphers: ciphers.join(':') })
+      : new Agent({ connect: buildConnector({ ciphers: ciphers.join(':') }) });
+    return this.dispatcher;
+  }
+
+  destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    if (this.sweepInterval) {
+      clearInterval(this.sweepInterval);
+      this.sweepInterval = null;
+    }
+    this.handlers.clear();
+    this.cookieJar.removeAllCookiesSync();
+    if (this.dispatcher) {
+      try {
+        this.dispatcher.destroy().catch(() => {});
+      } catch {
+        this.dispatcher.close().catch(() => {});
+      }
+      this.dispatcher = null;
+    }
   }
 
   request(method, url, options = {}) {

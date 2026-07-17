@@ -49,7 +49,7 @@ class ContainerComponent extends BaseMessageComponent {
   get hexAccentColor() {
     return typeof this.accentColor === 'number'
       ? `#${this.accentColor.toString(16).padStart(6, '0')}`
-      : this.accentColor ?? null;
+      : (this.accentColor ?? null);
   }
 
   /**

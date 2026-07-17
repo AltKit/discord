@@ -249,7 +249,7 @@ class BaseDispatcher extends Writable {
    * @returns {Buffer} <Buffer be de 00 01>
    */
   createHeaderExtension() {
-    /**
+    /*
       *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       |      defined by profile       |           length              |
@@ -273,7 +273,7 @@ class BaseDispatcher extends Writable {
   createPayloadExtension() {
     const extensionsData = [];
     for (let ext of extensions) {
-      /**
+      /*
        * EXTENSION DATA - each extension payload is 32 bits
        */
       const data = Buffer.alloc(4);

@@ -4,7 +4,7 @@ const process = require('node:process');
 const Base = require('./Base');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 
-/**
+/*
  * @type {WeakSet<Emoji>}
  * @private
  * @internal

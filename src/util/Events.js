@@ -1,6 +1,6 @@
 'use strict';
 
-/**
+/*
  * Discord.js v14-compatible event names. The legacy uppercase event map remains
  * available as `Constants.Events` for existing selfbot applications.
  * @type {Object<string, string>}

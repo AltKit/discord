@@ -333,8 +333,6 @@ export enum NameplatePalette {
   White = 'white',
 }
 
-
-
 export const enum OverwriteTypes {
   role = 0,
   member = 1,

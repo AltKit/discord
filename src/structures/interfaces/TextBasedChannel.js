@@ -1,6 +1,5 @@
 'use strict';
 
-/* eslint-disable import/order */
 const MessageCollector = require('../MessageCollector');
 const MessagePayload = require('../MessagePayload');
 const { InteractionTypes, ApplicationCommandOptionTypes, Events } = require('../../util/Constants');

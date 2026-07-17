@@ -1,6 +1,6 @@
 'use strict';
 
-/**
+/*
  * Discord.js v14-compatible partial identifiers.
  * @type {Object<string, number>}
  */

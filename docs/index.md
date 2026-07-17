@@ -48,7 +48,7 @@ features:
 
 ## Install
 
-Altkit Discord v4 requires Node.js 20.18 or newer.
+Altkit Discord v4 requires Node.js 20.19 or newer.
 
 ```sh
 npm install @altkit/discord

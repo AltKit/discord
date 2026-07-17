@@ -42,7 +42,6 @@ class WebEmbed {
      * @property {string} [redirect] Redirect URL
      */
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * @param {WebEmbed|WebEmbedOptions|APIEmbed} [data={}] WebEmbed to clone or raw embed data
      */

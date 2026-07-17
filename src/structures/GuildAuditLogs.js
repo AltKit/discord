@@ -449,7 +449,7 @@ class GuildAuditLogsEntry {
     this.executor = data.user_id
       ? guild.client.options.partials.includes(PartialTypes.USER)
         ? guild.client.users._add({ id: data.user_id })
-        : guild.client.users.cache.get(data.user_id) ?? null
+        : (guild.client.users.cache.get(data.user_id) ?? null)
       : null;
 
     /**
@@ -582,7 +582,7 @@ class GuildAuditLogsEntry {
     } else if (targetType === Targets.USER && data.target_id) {
       this.target = guild.client.options.partials.includes(PartialTypes.USER)
         ? guild.client.users._add({ id: data.target_id })
-        : guild.client.users.cache.get(data.target_id) ?? null;
+        : (guild.client.users.cache.get(data.target_id) ?? null);
     } else if (targetType === Targets.GUILD) {
       this.target = guild.client.guilds.cache.get(data.target_id);
     } else if (targetType === Targets.WEBHOOK) {
@@ -621,8 +621,8 @@ class GuildAuditLogsEntry {
       // Discord sends a channel id for the MESSAGE_BULK_DELETE action type.
       this.target =
         data.action_type === Actions.MESSAGE_BULK_DELETE
-          ? guild.channels.cache.get(data.target_id) ?? { id: data.target_id }
-          : guild.client.users.cache.get(data.target_id) ?? null;
+          ? (guild.channels.cache.get(data.target_id) ?? { id: data.target_id })
+          : (guild.client.users.cache.get(data.target_id) ?? null);
     } else if (targetType === Targets.INTEGRATION) {
       this.target =
         logs?.integrations.get(data.target_id) ??

@@ -39,7 +39,7 @@ class UnixStream {
     try {
       fs.statSync(this.socketPath);
       fs.unlinkSync(this.socketPath);
-    } catch (err) {
+    } catch {
       // Null
     }
 

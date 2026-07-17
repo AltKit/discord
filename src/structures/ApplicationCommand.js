@@ -568,9 +568,9 @@ class ApplicationCommand extends Base {
       options: option.options?.map(o => this.transformOption(o, received)),
       [channelTypesKey]: received
         ? option.channel_types?.map(type => ChannelTypes[type])
-        : option.channelTypes?.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)) ??
+        : (option.channelTypes?.map(type => (typeof type === 'string' ? ChannelTypes[type] : type)) ??
           // When transforming to API data, accept API data
-          option.channel_types,
+          option.channel_types),
       [minValueKey]: option.minValue ?? option.min_value,
       [maxValueKey]: option.maxValue ?? option.max_value,
       [minLengthKey]: option.minLength ?? option.min_length,

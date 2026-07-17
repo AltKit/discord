@@ -74,7 +74,7 @@ class RoleManager extends CachedManager {
     const data = await this.client.api.guilds(this.guild.id).roles.get();
     const roles = new Collection();
     for (const role of data) roles.set(role.id, this._add(role, cache));
-    return id ? roles.get(id) ?? null : roles;
+    return id ? (roles.get(id) ?? null) : roles;
   }
 
   /**

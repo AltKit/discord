@@ -432,7 +432,7 @@ class RequestHandler {
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    mfaCode : ${otp}`,
+    MFA code : [REDACTED]`,
           );
           // Get ticket
           const mfaData = data.mfa;

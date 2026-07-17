@@ -326,7 +326,7 @@ class VoiceConnection extends EventEmitter {
    * @private
    */
   setTokenAndEndpoint(token, endpoint) {
-    this.emit('debug', `Token "${token}" and endpoint "${endpoint}"`);
+    this.emit('debug', 'Voice authentication token and endpoint received.');
     if (!endpoint) {
       // Signifies awaiting endpoint stage
       return;
@@ -338,7 +338,7 @@ class VoiceConnection extends EventEmitter {
     }
 
     endpoint = endpoint.match(/([^:]*)/)[0];
-    this.emit('debug', `Endpoint resolved as ${endpoint}`);
+    this.emit('debug', 'Voice endpoint resolved.');
 
     if (!endpoint) {
       this.authenticateFailed('VOICE_INVALID_ENDPOINT');
@@ -360,7 +360,7 @@ class VoiceConnection extends EventEmitter {
    * @private
    */
   setSessionId(sessionId) {
-    this.emit('debug', `Setting sessionId ${sessionId} (stored as "${this.authentication.sessionId}")`);
+    this.emit('debug', 'Voice session ID received.');
     if (!sessionId) {
       this.authenticateFailed('VOICE_SESSION_ABSENT');
       return;

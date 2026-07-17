@@ -1345,8 +1345,9 @@ export abstract class Collector<K, V, F extends unknown[] = []> extends EventEmi
   ): this;
 }
 
-export interface ApplicationCommandInteractionOptionResolver<Cached extends CacheType = CacheType>
-  extends CommandInteractionOptionResolver<Cached> {
+export interface ApplicationCommandInteractionOptionResolver<
+  Cached extends CacheType = CacheType,
+> extends CommandInteractionOptionResolver<Cached> {
   getSubcommand(required?: true): string;
   getSubcommand(required: boolean): string | null;
   getSubcommandGroup(required?: true): string;
@@ -1705,8 +1706,8 @@ export class GuildAuditLogsEntry<
   TAction = TActionRaw extends keyof GuildAuditLogsIds
     ? GuildAuditLogsIds[TActionRaw]
     : TActionRaw extends null
-    ? 'ALL'
-    : TActionRaw,
+      ? 'ALL'
+      : TActionRaw,
   TActionType extends GuildAuditLogsActionType = TAction extends keyof GuildAuditLogsTypes
     ? GuildAuditLogsTypes[TAction][1]
     : 'ALL',
@@ -2056,10 +2057,10 @@ export type CacheTypeReducer<
 > = [State] extends ['cached']
   ? CachedType
   : [State] extends ['raw']
-  ? RawType
-  : [State] extends ['raw' | 'cached']
-  ? PresentType
-  : Fallback;
+    ? RawType
+    : [State] extends ['raw' | 'cached']
+      ? PresentType
+      : Fallback;
 
 export class Interaction<Cached extends CacheType = CacheType> extends Base {
   // This a technique used to brand different cached types. Or else we'll get `never` errors on typeguard checks.
@@ -2931,8 +2932,9 @@ export class ModalSubmitFieldsResolver {
   public getCheckboxValue(customId: string): boolean;
 }
 
-export interface ModalMessageModalSubmitInteraction<Cached extends CacheType = CacheType>
-  extends ModalSubmitInteraction<Cached> {
+export interface ModalMessageModalSubmitInteraction<
+  Cached extends CacheType = CacheType,
+> extends ModalSubmitInteraction<Cached> {
   message: GuildCacheMessage<Cached>;
   channelId: Snowflake;
   update(options: InteractionUpdateOptions & { fetchReply: true }): Promise<GuildCacheMessage<Cached>>;
@@ -4441,10 +4443,7 @@ export abstract class CachedManager<K, Holds, R> extends DataManager<K, Holds, R
 }
 
 export type ApplicationCommandDataResolvable =
-  | ApplicationCommandData
-  | RESTPostAPIApplicationCommandsJSONBody
-  | SlashCommandBuilder
-  | ContextMenuCommandBuilder;
+  ApplicationCommandData | RESTPostAPIApplicationCommandsJSONBody | SlashCommandBuilder | ContextMenuCommandBuilder;
 
 export class ApplicationCommandManager<
   ApplicationCommandScope = ApplicationCommand<{ guild: GuildResolvable }>,
@@ -5216,13 +5215,7 @@ export type AllowedImageFormat = 'webp' | 'png' | 'jpg' | 'jpeg';
 export type AllowedImageSize = 16 | 32 | 56 | 64 | 96 | 128 | 256 | 300 | 512 | 600 | 1024 | 2048 | 4096;
 
 export type AllowedPartial =
-  | User
-  | Channel
-  | GuildMember
-  | Message
-  | MessageReaction
-  | GuildScheduledEvent
-  | ThreadMember;
+  User | Channel | GuildMember | Message | MessageReaction | GuildScheduledEvent | ThreadMember;
 
 export type AllowedThreadTypeForNewsChannel = 'GUILD_NEWS_THREAD' | 10;
 
@@ -5416,15 +5409,10 @@ export type CommandOptionDataTypeResolvable = ApplicationCommandOptionType | App
 export type CommandOptionChannelResolvableType = ApplicationCommandOptionTypes.CHANNEL | 'CHANNEL';
 
 export type CommandOptionChoiceResolvableType =
-  | ApplicationCommandOptionTypes.STRING
-  | 'STRING'
-  | CommandOptionNumericResolvableType;
+  ApplicationCommandOptionTypes.STRING | 'STRING' | CommandOptionNumericResolvableType;
 
 export type CommandOptionNumericResolvableType =
-  | ApplicationCommandOptionTypes.NUMBER
-  | 'NUMBER'
-  | ApplicationCommandOptionTypes.INTEGER
-  | 'INTEGER';
+  ApplicationCommandOptionTypes.NUMBER | 'NUMBER' | ApplicationCommandOptionTypes.INTEGER | 'INTEGER';
 
 export type CommandOptionSubOptionResolvableType =
   | ApplicationCommandOptionTypes.SUB_COMMAND
@@ -5462,9 +5450,7 @@ export interface ChatInputApplicationCommandData extends BaseApplicationCommandD
 }
 
 export type ApplicationCommandData =
-  | UserApplicationCommandData
-  | MessageApplicationCommandData
-  | ChatInputApplicationCommandData;
+  UserApplicationCommandData | MessageApplicationCommandData | ChatInputApplicationCommandData;
 
 export interface ApplicationCommandChannelOptionData extends BaseApplicationCommandOptionsData {
   type: CommandOptionChannelResolvableType;
@@ -6539,10 +6525,7 @@ export interface EmbedFooterData {
 }
 
 export type EmojiIdentifierResolvable =
-  | EmojiResolvable
-  | `${'' | 'a:'}${string}:${Snowflake}`
-  | `<${'' | 'a'}:${string}:${Snowflake}>`
-  | string;
+  EmojiResolvable | `${'' | 'a:'}${string}:${Snowflake}` | `<${'' | 'a'}:${string}:${Snowflake}>` | string;
 
 export type EmojiResolvable = Snowflake | GuildEmoji | ReactionEmoji;
 
@@ -6685,8 +6668,7 @@ export interface FetchThreadMembersWithoutGuildMemberDataOptions {
 }
 
 export type FetchThreadMembersOptions =
-  | FetchThreadMembersWithGuildMemberDataOptions
-  | FetchThreadMembersWithoutGuildMemberDataOptions;
+  FetchThreadMembersWithGuildMemberDataOptions | FetchThreadMembersWithoutGuildMemberDataOptions;
 
 export interface FetchThreadsOptions {
   archived?: FetchArchivedThreadOptions;
@@ -7041,10 +7023,7 @@ export interface GuildMemberEditData {
 }
 
 export type GuildMemberFlagsString =
-  | 'DID_REJOIN'
-  | 'COMPLETED_ONBOARDING'
-  | 'BYPASSES_VERIFICATION'
-  | 'STARTED_ONBOARDING';
+  'DID_REJOIN' | 'COMPLETED_ONBOARDING' | 'BYPASSES_VERIFICATION' | 'STARTED_ONBOARDING';
 
 export type GuildMemberFlagsResolvable = BitFieldResolvable<GuildMemberFlagsString, number>;
 
@@ -7153,8 +7132,8 @@ export type GuildScheduledEventResolvable = Snowflake | GuildScheduledEvent;
 export type GuildScheduledEventSetStatusArg<T extends GuildScheduledEventStatus> = T extends 'SCHEDULED'
   ? 'ACTIVE' | 'CANCELED'
   : T extends 'ACTIVE'
-  ? 'COMPLETED'
-  : never;
+    ? 'COMPLETED'
+    : never;
 
 export type GuildScheduledEventStatus = keyof typeof GuildScheduledEventStatuses;
 
@@ -7212,8 +7191,10 @@ export interface ImageURLOptions extends Omit<StaticImageURLOptions, 'format'> {
 
 export type IntegrationType = 'twitch' | 'youtube' | 'discord' | 'guild_subscription';
 
-export interface InteractionCollectorOptions<T extends Interaction, Cached extends CacheType = CacheType>
-  extends CollectorOptions<[T]> {
+export interface InteractionCollectorOptions<
+  T extends Interaction,
+  Cached extends CacheType = CacheType,
+> extends CollectorOptions<[T]> {
   channel?: TextBasedChannelResolvable;
   componentType?: MessageComponentType | MessageComponentTypes;
   guild?: GuildResolvable;
@@ -7267,12 +7248,7 @@ export type IntentsString =
   | 'AUTO_MODERATION_EXECUTION';
 
 export type GuildInvitableChannelResolvable =
-  | TextChannel
-  | VoiceChannel
-  | NewsChannel
-  | StoreChannel
-  | StageChannel
-  | Snowflake;
+  TextChannel | VoiceChannel | NewsChannel | StoreChannel | StageChannel | Snowflake;
 
 export interface CreateInviteOptions {
   temporary?: boolean;
@@ -7327,23 +7303,18 @@ export type MessageActionRowComponentOptions =
   | (Required<BaseMessageComponentOptions> & MessageSelectMenuOptions);
 
 export type MessageActionRowComponentResolvable =
-  | MessageActionRowComponent
-  | MessageActionRowComponentOptions
-  | APIMessageActionRowComponent;
+  MessageActionRowComponent | MessageActionRowComponentOptions | APIMessageActionRowComponent;
 
 export type ModalActionRowComponent = TextInputComponent;
 
 export type ModalActionRowComponentOptions = TextInputComponentOptions;
 
 export type ModalActionRowComponentResolvable =
-  | ModalActionRowComponent
-  | ModalActionRowComponentOptions
-  | APIModalActionRowComponent;
+  ModalActionRowComponent | ModalActionRowComponentOptions | APIModalActionRowComponent;
 
 export interface MessageActionRowOptions<
-  T extends
-    | MessageActionRowComponentResolvable
-    | ModalActionRowComponentResolvable = MessageActionRowComponentResolvable,
+  T extends MessageActionRowComponentResolvable | ModalActionRowComponentResolvable =
+    MessageActionRowComponentResolvable,
 > extends BaseMessageComponentOptions {
   components: T[];
 }
@@ -7392,10 +7363,7 @@ export type MessageChannelComponentCollectorOptions<T extends MessageComponentIn
   Omit<InteractionCollectorOptions<T>, 'channel' | 'guild' | 'interactionType'>;
 
 export type MessageComponentOptions =
-  | BaseMessageComponentOptions
-  | MessageActionRowOptions
-  | MessageButtonOptions
-  | MessageSelectMenuOptions;
+  BaseMessageComponentOptions | MessageActionRowOptions | MessageButtonOptions | MessageSelectMenuOptions;
 
 export type MessageComponentType = keyof typeof MessageComponentTypes;
 
@@ -7526,25 +7494,24 @@ export interface MessageMentionOptions {
 
 export type MessageMentionTypes = 'roles' | 'users' | 'everyone';
 
-export interface MessageSnapshot
-  extends Partialize<
-    Message,
-    null,
-    Exclude<
-      keyof Message,
-      | 'attachments'
-      | 'client'
-      | 'components'
-      | 'content'
-      | 'createdTimestamp'
-      | 'editedTimestamp'
-      | 'embeds'
-      | 'flags'
-      | 'mentions'
-      | 'stickers'
-      | 'type'
-    >
-  > {}
+export interface MessageSnapshot extends Partialize<
+  Message,
+  null,
+  Exclude<
+    keyof Message,
+    | 'attachments'
+    | 'client'
+    | 'components'
+    | 'content'
+    | 'createdTimestamp'
+    | 'editedTimestamp'
+    | 'embeds'
+    | 'flags'
+    | 'mentions'
+    | 'stickers'
+    | 'type'
+  >
+> {}
 
 export interface MessageOptions {
   activity?: MessageActivity;
@@ -7606,9 +7573,7 @@ export interface OtherMessageSelectMenuOptions extends BaseMessageSelectMenuOpti
 }
 
 export type MessageSelectMenuOptions =
-  | StringMessageSelectMenuOptions
-  | ChannelMessageSelectMenuOptions
-  | OtherMessageSelectMenuOptions;
+  StringMessageSelectMenuOptions | ChannelMessageSelectMenuOptions | OtherMessageSelectMenuOptions;
 
 export interface MessageSelectOption {
   default: boolean;
@@ -7643,8 +7608,7 @@ export type MFALevel = keyof typeof MFALevels;
 
 export interface ModalOptions {
   components:
-    | MessageActionRow<ModalActionRowComponent>[]
-    | MessageActionRowOptions<ModalActionRowComponentResolvable>[];
+    MessageActionRow<ModalActionRowComponent>[] | MessageActionRowOptions<ModalActionRowComponentResolvable>[];
   customId: string;
   title: string;
 }
@@ -7822,13 +7786,19 @@ export interface PartialDMChannel extends Partialize<DMChannel, null, null, 'las
 
 export interface PartialGuildMember extends Partialize<GuildMember, 'joinedAt' | 'joinedTimestamp'> {}
 
-export interface PartialMessage
-  extends Partialize<Message, 'type' | 'system' | 'pinned' | 'tts', 'content' | 'cleanContent' | 'author'> {}
+export interface PartialMessage extends Partialize<
+  Message,
+  'type' | 'system' | 'pinned' | 'tts',
+  'content' | 'cleanContent' | 'author'
+> {}
 
 export interface PartialMessageReaction extends Partialize<MessageReaction, 'count'> {}
 
-export interface PartialGuildScheduledEvent
-  extends Partialize<GuildScheduledEvent, 'userCount', 'status' | 'privacyLevel' | 'name' | 'entityType'> {}
+export interface PartialGuildScheduledEvent extends Partialize<
+  GuildScheduledEvent,
+  'userCount',
+  'status' | 'privacyLevel' | 'name' | 'entityType'
+> {}
 
 export interface PartialOverwriteData {
   id: Snowflake | number;
@@ -8339,14 +8309,14 @@ export type WSEventType =
 export type Serialized<T> = T extends symbol | bigint | (() => any)
   ? never
   : T extends number | string | boolean | undefined
-  ? T
-  : T extends { toJSON(): infer R }
-  ? R
-  : T extends ReadonlyArray<infer V>
-  ? Serialized<V>[]
-  : T extends ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>
-  ? {}
-  : { [K in keyof T]: Serialized<T[K]> };
+    ? T
+    : T extends { toJSON(): infer R }
+      ? R
+      : T extends ReadonlyArray<infer V>
+        ? Serialized<V>[]
+        : T extends ReadonlyMap<unknown, unknown> | ReadonlySet<unknown>
+          ? {}
+          : { [K in keyof T]: Serialized<T[K]> };
 
 //#endregion
 

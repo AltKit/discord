@@ -8,7 +8,7 @@ Automating a normal Discord user account violates Discord's Terms of Service and
 
 ## Requirements
 
-- Node.js 20.18 or newer
+- Node.js 20.19 or newer
 - npm or another Node-compatible package manager
 - A Discord user token supplied at runtime
 - CommonJS or a TypeScript setup that can import CommonJS packages

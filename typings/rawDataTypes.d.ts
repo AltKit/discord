@@ -110,20 +110,14 @@ export type RawIntegrationApplicationData = APIGuildIntegrationApplication | Par
 export type RawApplicationCommandData = APIApplicationCommand;
 
 export type RawChannelData =
-  | RawGuildChannelData
-  | RawThreadChannelData
-  | RawDMChannelData
-  | RawPartialGroupDMChannelData;
+  RawGuildChannelData | RawThreadChannelData | RawDMChannelData | RawPartialGroupDMChannelData;
 export type RawDMChannelData = APIChannel | APIInteractionDataResolvedChannel;
 export type RawGuildChannelData = APIChannel | APIInteractionDataResolvedChannel | Required<APIPartialChannel>;
 export type RawPartialGroupDMChannelData = APIChannel | Required<APIPartialChannel>;
 export type RawThreadChannelData = APIChannel | APIInteractionDataResolvedChannel;
 
 export type RawEmojiData =
-  | RawGuildEmojiData
-  | RawReactionEmojiData
-  | GatewayActivityEmoji
-  | Omit<Partial<APIPartialEmoji>, 'animated'>;
+  RawGuildEmojiData | RawReactionEmojiData | GatewayActivityEmoji | Omit<Partial<APIPartialEmoji>, 'animated'>;
 export type RawGuildEmojiData = APIEmoji;
 export type RawReactionEmojiData = APIEmoji | APIPartialEmoji;
 
@@ -213,8 +207,7 @@ export type RawRoleData = APIRole;
 export type RawRichPresenceAssets = GatewayActivityAssets;
 
 export type RawStageInstanceData =
-  | APIStageInstance
-  | (Partial<APIStageInstance> & Pick<APIStageInstance, 'id' | 'channel_id' | 'guild_id'>);
+  APIStageInstance | (Partial<APIStageInstance> & Pick<APIStageInstance, 'id' | 'channel_id' | 'guild_id'>);
 
 export type RawStickerData = APISticker | APIStickerItem;
 
@@ -227,17 +220,14 @@ export type RawTeamMemberData = APITeamMember;
 export type RawTypingData = GatewayTypingStartDispatchData;
 
 export type RawUserData =
-  | (APIUser & { member?: Omit<APIGuildMember, 'user'> })
-  | (GatewayPresenceUpdate['user'] & Pick<APIUser, 'username'>);
+  (APIUser & { member?: Omit<APIGuildMember, 'user'> }) | (GatewayPresenceUpdate['user'] & Pick<APIUser, 'username'>);
 
 export type RawVoiceRegionData = APIVoiceRegion;
 
 export type RawVoiceStateData = GatewayVoiceState | Omit<GatewayVoiceState, 'guild_id'>;
 
 export type RawWebhookData =
-  | APIWebhook
-  | RESTGetAPIWebhookWithTokenResult
-  | (Partial<APIWebhook> & Required<Pick<APIWebhook, 'id' | 'guild_id'>>);
+  APIWebhook | RESTGetAPIWebhookWithTokenResult | (Partial<APIWebhook> & Required<Pick<APIWebhook, 'id' | 'guild_id'>>);
 
 export type RawWelcomeChannelData = APIGuildWelcomeScreenChannel;
 

@@ -39,6 +39,27 @@ const Intents = require('../util/Intents');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
 
+function validateNonNegativeFiniteOption(options, name) {
+  if (typeof options[name] !== 'number' || !Number.isFinite(options[name]) || options[name] < 0) {
+    throw new TypeError('CLIENT_INVALID_OPTION', name, 'a non-negative finite number');
+  }
+}
+
+function validateRetryLimit(options, name, allowInfinity = false) {
+  const value = options[name];
+  const valid =
+    typeof value === 'number' &&
+    value >= 0 &&
+    ((allowInfinity && value === Infinity) || (Number.isFinite(value) && Number.isInteger(value)));
+  if (!valid) {
+    throw new TypeError(
+      'CLIENT_INVALID_OPTION',
+      name,
+      allowInfinity ? 'a non-negative integer or Infinity' : 'a non-negative integer',
+    );
+  }
+}
+
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
  * @extends {BaseClient}
@@ -269,13 +290,7 @@ class Client extends BaseClient {
       and doing so might potentially get your account banned.
       Use this at your own risk.`,
     );
-    this.emit(
-      Events.DEBUG,
-      `Provided token: ${token
-        .split('.')
-        .map((val, i) => (i > 1 ? val.replace(/./g, '*') : val))
-        .join('.')}`,
-    );
+    this.emit(Events.DEBUG, 'Authentication token received.');
 
     if (this.options.presence) {
       this.options.ws.presence = this.presence._parse(this.options.presence);
@@ -864,42 +879,25 @@ class Client extends BaseClient {
     if (typeof options.makeCache !== 'function') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'makeCache', 'a function');
     }
-    if (typeof options.messageCacheLifetime !== 'number' || isNaN(options.messageCacheLifetime)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'The messageCacheLifetime', 'a number');
-    }
-    if (typeof options.messageSweepInterval !== 'number' || isNaN(options.messageSweepInterval)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'messageSweepInterval', 'a number');
-    }
+    validateNonNegativeFiniteOption(options, 'messageCacheLifetime');
+    validateNonNegativeFiniteOption(options, 'messageSweepInterval');
     if (typeof options.sweepers !== 'object' || options.sweepers === null) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'sweepers', 'an object');
     }
-    if (typeof options.invalidRequestWarningInterval !== 'number' || isNaN(options.invalidRequestWarningInterval)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'invalidRequestWarningInterval', 'a number');
-    }
+    validateRetryLimit(options, 'invalidRequestWarningInterval');
     if (!Array.isArray(options.partials)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'partials', 'an Array');
     }
-    if (typeof options.DMChannelVoiceStatusSync !== 'number' || isNaN(options.DMChannelVoiceStatusSync)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'DMChannelVoiceStatusSync', 'a number');
-    }
-    if (typeof options.waitGuildTimeout !== 'number' || isNaN(options.waitGuildTimeout)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'waitGuildTimeout', 'a number');
-    }
-    if (typeof options.restWsBridgeTimeout !== 'number' || isNaN(options.restWsBridgeTimeout)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'restWsBridgeTimeout', 'a number');
-    }
-    if (typeof options.restRequestTimeout !== 'number' || isNaN(options.restRequestTimeout)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'restRequestTimeout', 'a number');
-    }
-    if (typeof options.restGlobalRateLimit !== 'number' || isNaN(options.restGlobalRateLimit)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'restGlobalRateLimit', 'a number');
-    }
-    if (typeof options.restSweepInterval !== 'number' || isNaN(options.restSweepInterval)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'restSweepInterval', 'a number');
-    }
-    if (typeof options.retryLimit !== 'number' || isNaN(options.retryLimit)) {
-      throw new TypeError('CLIENT_INVALID_OPTION', 'retryLimit', 'a number');
-    }
+    validateNonNegativeFiniteOption(options, 'DMChannelVoiceStatusSync');
+    validateNonNegativeFiniteOption(options, 'waitGuildTimeout');
+    validateNonNegativeFiniteOption(options, 'restWsBridgeTimeout');
+    validateNonNegativeFiniteOption(options, 'restRequestTimeout');
+    validateNonNegativeFiniteOption(options, 'restGlobalRateLimit');
+    validateNonNegativeFiniteOption(options, 'restSweepInterval');
+    validateNonNegativeFiniteOption(options, 'restTimeOffset');
+    validateNonNegativeFiniteOption(options, 'closeTimeout');
+    validateRetryLimit(options, 'captchaRetryLimit');
+    validateRetryLimit(options, 'retryLimit', true);
     if (typeof options.failIfNotExists !== 'boolean') {
       throw new TypeError('CLIENT_INVALID_OPTION', 'failIfNotExists', 'a boolean');
     }
@@ -908,6 +906,18 @@ class Client extends BaseClient {
       !(typeof options.rejectOnRateLimit === 'function' || Array.isArray(options.rejectOnRateLimit))
     ) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'rejectOnRateLimit', 'an array or a function');
+    }
+    if (
+      Array.isArray(options.rejectOnRateLimit) &&
+      options.rejectOnRateLimit.some(route => typeof route !== 'string')
+    ) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'rejectOnRateLimit', 'an array of strings or a function');
+    }
+    if (typeof options.captchaSolver !== 'function' && options.captchaSolver !== null) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'captchaSolver', 'a function or null');
+    }
+    if (typeof options.TOTPKey !== 'string' && options.TOTPKey !== null) {
+      throw new TypeError('CLIENT_INVALID_OPTION', 'TOTPKey', 'a string or null');
     }
     if (typeof options.TOTPKey === 'string') {
       // Convert to base32 if not already

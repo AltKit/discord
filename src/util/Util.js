@@ -731,7 +731,7 @@ class Util extends null {
       name: tag.name,
       moderated: tag.moderated,
       emoji:
-        tag.emoji_id ?? tag.emoji_name
+        (tag.emoji_id ?? tag.emoji_name)
           ? {
               id: tag.emoji_id,
               name: tag.emoji_name,

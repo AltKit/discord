@@ -9,7 +9,7 @@ const SnowflakeUtil = require('../util/SnowflakeUtil');
 
 let deprecationEmittedForComparePositions = false;
 
-/**
+/*
  * @type {WeakSet<Role>}
  * @private
  * @internal

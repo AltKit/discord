@@ -1,6 +1,6 @@
 # Example gallery
 
-The repository examples target Altkit Discord v4 and Node.js 20.18 or newer. Run them from the repository root after installing dependencies, or adapt one into an application that depends on `@altkit/discord`.
+The repository examples target Altkit Discord v4 and Node.js 20.19 or newer. Run them from the repository root after installing dependencies, or adapt one into an application that depends on `@altkit/discord`.
 
 ::: danger Use a non-critical account
 Selfbot use violates Discord's Terms of Service and can result in account termination. Never put a real token in an example file, commit, issue, screenshot, or log.
@@ -45,7 +45,7 @@ client.on(Events.MessageCreate, async message => {
 client.login(process.env.DISCORD_TOKEN);
 ```
 
-Repository file: [`examples/Basic.js`](https://github.com/altkit/discord/blob/main/examples/Basic.js)
+Repository file: [`examples/Basic.js`](https://github.com/altkit/discord/blob/selfbotjs/examples/Basic.js)
 
 ### Use an HTTP proxy
 
@@ -57,7 +57,7 @@ const client = new Client({
 });
 ```
 
-Repository file: [`examples/Proxy.js`](https://github.com/altkit/discord/blob/main/examples/Proxy.js)
+Repository file: [`examples/Proxy.js`](https://github.com/altkit/discord/blob/selfbotjs/examples/Proxy.js)
 
 ## Messages
 

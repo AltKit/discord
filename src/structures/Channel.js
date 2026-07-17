@@ -17,7 +17,7 @@ const ChannelFlags = require('../util/ChannelFlags');
 const { ChannelTypes, ThreadChannelTypes, VoiceBasedChannelTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 
-/**
+/*
  * @type {WeakSet<Channel>}
  * @private
  * @internal

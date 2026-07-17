@@ -70,7 +70,7 @@ function sourceLink(meta, repositoryUrl) {
   if (!meta?.path || !meta?.file) return '';
   const file = `${meta.path}/${meta.file}`;
   const line = meta.line ? `#L${meta.line}` : '';
-  return `[Source](${repositoryUrl}/blob/main/${file}${line})`;
+  return `[Source](${repositoryUrl}/blob/selfbotjs/${file}${line})`;
 }
 
 function flagsFor(entry) {

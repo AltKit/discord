@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
@@ -45,6 +45,16 @@ jobs:
 
       - name: Run checks
         run: npm test
+
+      - name: Verify generated documentation is current
+        run: |
+          docs_date=$(node -p "require('./docs/main.json').meta.date")
+          npm run docs
+          DOCS_DATE="$docs_date" node -e "const fs=require('node:fs'); const docs=require('./docs/main.json'); docs.meta.date=Number(process.env.DOCS_DATE); fs.writeFileSync('docs/main.json', JSON.stringify(docs));"
+          git diff --exit-code -- docs/main.json
+
+      - name: Inspect publish archive
+        run: npm pack --dry-run
 
       - name: Publish package
         run: npm publish --access public --provenance

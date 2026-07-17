@@ -7,6 +7,7 @@ const Messages = {
   CLIENT_INVALID_PROVIDED_SHARDS: 'None of the provided shards were valid.',
   CLIENT_MISSING_INTENTS: 'Valid intents must be provided for the Client.',
   CLIENT_NOT_READY: action => `The client needs to be logged in to ${action}.`,
+  CLIENT_DESTROYED: 'The client has been destroyed.',
 
   TOKEN_INVALID: 'An invalid token was provided.',
   TOKEN_MISSING: 'Request to use token, but token was unavailable to the client.',

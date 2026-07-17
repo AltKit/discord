@@ -2,14 +2,7 @@
 
 const Buffer = require('node:buffer').Buffer;
 const { setTimeout } = require('node:timers');
-const { FormData, buildConnector, Client, ProxyAgent } = require('undici');
-const { ciphers } = require('../util/Constants');
-const Util = require('../util/Util');
-
-// Dispatchers must be scoped to a REST manager. A module-wide dispatcher would
-// silently reuse the first client's proxy and TLS configuration for every
-// client created later in the same process.
-const agents = new WeakMap();
+const { FormData } = require('undici');
 
 class APIRequest {
   constructor(rest, method, path, options) {
@@ -36,22 +29,6 @@ class APIRequest {
   }
 
   make(captchaKey, captchaRqToken) {
-    let agent = agents.get(this.rest);
-    if (!agent) {
-      const r_ = Util.checkUndiciProxyAgent(this.client.options.http.agent);
-      if (!r_) {
-        agent = new Client('https://discord.com', {
-          connect: buildConnector({ ciphers: ciphers.join(':') }),
-        });
-      } else {
-        agent = new ProxyAgent({
-          ...r_,
-          ciphers: ciphers.join(':'),
-        });
-      }
-      agents.set(this.rest, agent);
-    }
-
     const API =
       this.options.versioned === false
         ? this.client.options.http.api
@@ -150,7 +127,7 @@ class APIRequest {
         body,
         signal: controller.signal,
         redirect: 'follow',
-        dispatcher: agent,
+        dispatcher: this.rest.getDispatcher(),
         credentials: 'include',
       })
       .finally(() => clearTimeout(timeout));

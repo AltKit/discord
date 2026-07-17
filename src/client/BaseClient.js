@@ -47,7 +47,7 @@ class BaseClient extends EventEmitter {
    * @returns {void}
    */
   destroy() {
-    if (this.rest.sweepInterval) clearInterval(this.rest.sweepInterval);
+    this.rest.destroy();
   }
 
   /**

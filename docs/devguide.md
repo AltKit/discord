@@ -10,7 +10,7 @@ preservation, and GPLv3 redistribution for Altkit Discord.
 
 > [!NOTE]
 > The licensing sections are practical project guidance, not legal advice. The
-> complete and controlling license text is in [`LICENSE`](https://github.com/altkit/discord/blob/main/LICENSE).
+> complete and controlling license text is in [`LICENSE`](https://github.com/altkit/discord/blob/selfbotjs/LICENSE).
 
 ## Contents
 
@@ -31,11 +31,11 @@ preservation, and GPLv3 redistribution for Altkit Discord.
 
 | Tool | Requirement | Purpose |
 | --- | --- | --- |
-| Node.js | 20.18 or newer | Runtime and test environment |
+| Node.js | 20.19 or newer | Runtime and test environment |
 | npm | Included with Node.js | Dependency and package management |
 | Git | Current supported version | Source control and release tags |
 
-CI tests the project on Node.js 20.18, 22, and 24. Node.js 22 is the release
+CI tests the project on Node.js 20.19, 22, and 24. Node.js 22 is the release
 runtime, so maintainers should test with it before publishing.
 
 ### Clone and install
@@ -176,17 +176,17 @@ or local test data.
 
 ## GitHub Actions
 
-The workflows live in [`.github/workflows/`](https://github.com/altkit/discord/tree/main/.github/workflows).
+The workflows live in [`.github/workflows/`](https://github.com/altkit/discord/tree/selfbotjs/.github/workflows).
 
 ### CI workflow
 
-[`ci.yml`](https://github.com/altkit/discord/blob/main/.github/workflows/ci.yml) runs:
+[`ci.yml`](https://github.com/altkit/discord/blob/selfbotjs/.github/workflows/ci.yml) runs:
 
 - on every branch push;
 - on every pull request; and
 - when manually started with **Actions → CI → Run workflow**.
 
-The test job runs `npm ci` and `npm test` on Node.js 20.18, 22, and 24. The
+The test job runs `npm ci` and `npm test` on Node.js 20.19, 22, and 24. The
 Node.js 22 job also regenerates `docs/main.json` and fails if the committed API
 documentation is stale. A separate package job runs `npm pack --dry-run`.
 
@@ -223,7 +223,7 @@ the diff rather than committing a timestamp-only update.
 
 ### Release workflow
 
-[`release.yml`](https://github.com/altkit/discord/blob/main/.github/workflows/release.yml) publishes when a tag matching
+[`release.yml`](https://github.com/altkit/discord/blob/selfbotjs/.github/workflows/release.yml) publishes when a tag matching
 `v4.*.*` or `4.*.*` is pushed. It:
 
 1. checks out the tagged commit;
@@ -502,8 +502,8 @@ packaging, hardware, proprietary components, or commercial distribution terms.
 ### Credits and downstream communication
 
 Altkit Discord is based on Discord.js and continues the original
-discord.js-selfbot-v13 work. Preserve the credits in [`README.md`](https://github.com/altkit/discord/blob/main/README.md),
-the notices in [`LICENSE`](https://github.com/altkit/discord/blob/main/LICENSE), and notices embedded in individual files
+discord.js-selfbot-v13 work. Preserve the credits in [`README.md`](https://github.com/altkit/discord/blob/selfbotjs/README.md),
+the notices in [`LICENSE`](https://github.com/altkit/discord/blob/selfbotjs/LICENSE), and notices embedded in individual files
 or dependencies.
 
 Downstream docs should repeat the project's safety warning: automating a normal

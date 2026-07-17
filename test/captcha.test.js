@@ -3,10 +3,16 @@
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
 const { test } = require('node:test');
+const { MockAgent } = require('undici');
+const Client = require('../src/client/Client');
+const ClientVoiceManager = require('../src/client/voice/ClientVoiceManager');
+const VoiceConnection = require('../src/client/voice/VoiceConnection');
 const APIRequest = require('../src/rest/APIRequest');
 const DiscordAPIError = require('../src/rest/DiscordAPIError');
 const HTTPError = require('../src/rest/HTTPError');
+const RESTManager = require('../src/rest/RESTManager');
 const RequestHandler = require('../src/rest/RequestHandler');
+const { VoiceStatus } = require('../src/util/Constants');
 
 const challenge = {
   captcha_key: ['captcha-required'],
@@ -117,6 +123,25 @@ test('rejects an invalid callback result', async () => {
   });
 });
 
+test('redacts generated MFA codes from debug output', async () => {
+  const debug = [];
+  const mfaChallenge = {
+    code: 60003,
+    message: 'Two factor is required for this operation',
+    mfa: { ticket: 'ticket', methods: [{ type: 'totp' }] },
+  };
+  const { client, handler, request } = createHarness({
+    responses: [jsonResponse(mfaChallenge), jsonResponse({ ok: true }, 200)],
+  });
+  client.options.TOTPKey = 'TOTP_SECRET';
+  client.authenticator = { generate: () => 'ONE_TIME_SECRET' };
+  client.api = { mfa: { finish: { post: async () => ({ token: 'mfa-token' }) } } };
+  client.on('debug', message => debug.push(message));
+
+  assert.deepEqual(await handler.execute(request), { ok: true });
+  assert.equal(debug.join('\n').includes('ONE_TIME_SECRET'), false);
+});
+
 test('does not replay after an ambiguous transport failure', async () => {
   const transportError = new Error('connection reset');
   const { calls, handler, request } = createHarness({
@@ -136,6 +161,7 @@ test('does not replay after an ambiguous transport failure', async () => {
 test('uses separate HTTP dispatchers for separate REST managers', async t => {
   function createRest() {
     const dispatchers = [];
+    const dispatcher = {};
     const client = {
       options: {
         http: {
@@ -155,6 +181,7 @@ test('uses separate HTTP dispatchers for separate REST managers', async t => {
         return jsonResponse({ ok: true }, 200);
       },
       getAuth: () => 'token',
+      getDispatcher: () => dispatcher,
     };
     return { dispatchers, rest };
   }
@@ -169,8 +196,116 @@ test('uses separate HTTP dispatchers for separate REST managers', async t => {
   assert.equal(first.dispatchers[0], first.dispatchers[1]);
   assert.notEqual(first.dispatchers[0], second.dispatchers[0]);
 
-  t.after(async () => {
-    await first.dispatchers[0].close();
-    await second.dispatchers[0].close();
+  t.after(() => {});
+});
+
+test('uses custom REST origins and releases manager-owned resources', async () => {
+  const origin = 'https://api.example.test';
+  const mockAgent = new MockAgent();
+  mockAgent.disableNetConnect();
+  mockAgent
+    .get(origin)
+    .intercept({ path: '/health', method: 'GET' })
+    .reply(200, { ok: true }, { headers: { 'content-type': 'application/json' } });
+  const client = new EventEmitter();
+  client.token = 'token';
+  client.options = {
+    http: {
+      agent: {},
+      api: origin,
+      headers: { 'User-Agent': 'test-agent' },
+      version: 9,
+    },
+    restGlobalRateLimit: 0,
+    restRequestTimeout: 1_000,
+    restSweepInterval: 0,
+    ws: { properties: {} },
+  };
+  const rest = new RESTManager(client);
+  rest.dispatcher = mockAgent;
+  const result = await new APIRequest(rest, 'get', '/health', {
+    auth: false,
+    route: '/health',
+    versioned: false,
+  }).make();
+  assert.deepEqual(await result.json(), { ok: true });
+
+  rest.cookieJar.setCookieSync('session=secret', origin);
+  rest.destroy();
+  rest.destroy();
+  assert.equal(rest.cookieJar.getCookiesSync(origin).length, 0);
+
+  const directRest = new RESTManager(client);
+  const dispatcher = directRest.getDispatcher();
+  directRest.destroy();
+  assert.equal(dispatcher.destroyed, true);
+
+  const proxiedClient = {
+    ...client,
+    options: {
+      ...client.options,
+      http: { ...client.options.http, agent: 'http://127.0.0.1:65535' },
+    },
+  };
+  const proxiedRest = new RESTManager(proxiedClient);
+  assert.equal(proxiedRest.getDispatcher().constructor.name, 'ProxyAgent');
+  proxiedRest.destroy();
+});
+
+test('validates retry and rate-limit options before use', () => {
+  for (const options of [
+    { retryLimit: -1 },
+    { retryLimit: 1.5 },
+    { retryLimit: NaN },
+    { captchaRetryLimit: -1 },
+    { captchaRetryLimit: 1.5 },
+    { restRequestTimeout: Infinity },
+    { rejectOnRateLimit: ['/channels', 1] },
+  ]) {
+    assert.throws(() => new Client(options), /CLIENT_INVALID_OPTION/);
+  }
+
+  const client = new Client({ retryLimit: Infinity, captchaRetryLimit: 0 });
+  client.destroy();
+});
+
+test('redacts authentication and voice credentials from debug output', async () => {
+  const loginToken = 'login-secret-token';
+  const debug = [];
+  const client = new Client();
+  client.ws.connect = async () => {};
+  client.on('debug', message => debug.push(message));
+  await client.login(loginToken);
+  client.destroy();
+
+  const voiceClient = new EventEmitter();
+  voiceClient.guilds = { cache: new Map() };
+  voiceClient.channels = { cache: new Map() };
+  voiceClient.user = { id: 'user' };
+  const voiceDebug = [];
+  voiceClient.on('debug', message => voiceDebug.push(message));
+  const manager = new ClientVoiceManager(voiceClient);
+  manager.onVoiceServer({ guild_id: 'guild', token: 'voice-secret', endpoint: 'voice.example.test' });
+  manager.onVoiceStateUpdate({
+    guild_id: 'guild',
+    session_id: 'session-secret',
+    channel_id: 'channel',
+    user_id: 'user',
   });
+
+  const connectionDebug = [];
+  const connection = {
+    authentication: { token: null, endpoint: null, sessionId: null },
+    status: VoiceStatus.AUTHENTICATING,
+    emit: (_event, message) => connectionDebug.push(message),
+    checkAuthenticated: () => {},
+    authenticateFailed: () => {},
+  };
+  VoiceConnection.prototype.setTokenAndEndpoint.call(connection, 'voice-secret', 'voice.example.test:443');
+  VoiceConnection.prototype.setSessionId.call(connection, 'session-secret');
+
+  const output = [...debug, ...voiceDebug, ...connectionDebug].join('\n');
+  for (const secret of [loginToken, 'voice-secret', 'voice.example.test', 'session-secret']) {
+    assert.equal(output.includes(secret), false, secret);
+  }
 });

@@ -6,7 +6,7 @@ const { Error } = require('../errors');
 const { StickerFormatTypes, StickerTypes } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 
-/**
+/*
  * @type {WeakSet<StageInstance>}
  * @private
  * @internal

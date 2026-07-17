@@ -5,7 +5,7 @@ const Base = require('./Base');
 const { PrivacyLevels } = require('../util/Constants');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 
-/**
+/*
  * @type {WeakSet<StageInstance>}
  * @private
  * @internal

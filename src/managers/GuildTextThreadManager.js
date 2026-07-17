@@ -75,7 +75,7 @@ class GuildTextThreadManager extends ThreadManager {
       if (!startMessageId) throw new TypeError('INVALID_TYPE', 'startMessage', 'MessageResolvable');
       path = path.messages(startMessageId);
     } else if (this.channel.type !== 'GUILD_NEWS') {
-      resolvedType = typeof type === 'string' ? ChannelTypes[type] : type ?? resolvedType;
+      resolvedType = typeof type === 'string' ? ChannelTypes[type] : (type ?? resolvedType);
     }
 
     if (autoArchiveDuration === 'MAX') autoArchiveDuration = resolveAutoArchiveMaxLimit(this.channel.guild);

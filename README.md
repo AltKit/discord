@@ -21,7 +21,7 @@ Read [the complete v4 migration guide](docs/migrate.md) before upgrading from v3
 
 ## Requirements
 
-- Node.js 20.18 or newer
+- Node.js 20.19 or newer
 - A Discord user token supplied at runtime (never committed to source control)
 
 ## Installation
@@ -67,7 +67,7 @@ DISCORD_TOKEN='your-token' node index.js
 
 ## Documentation and examples
 
-- [Documentation website](https://magiquedeveloper.github.io/selfbotjs/)
+- [Documentation website](https://altkit.github.io/discord/)
 - [Migrate to v4 / Discord.js 14.27 changes](docs/migrate.md)
 - [Developer preservation and redistribution guide](docs/devguide.md)
 - [API documentation data](docs/main.json)

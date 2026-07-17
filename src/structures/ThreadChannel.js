@@ -87,7 +87,7 @@ class ThreadChannel extends Channel {
        * <info>Always `null` in public threads</info>
        * @type {?boolean}
        */
-      this.invitable = this.type === 'GUILD_PRIVATE_THREAD' ? data.thread_metadata.invitable ?? false : null;
+      this.invitable = this.type === 'GUILD_PRIVATE_THREAD' ? (data.thread_metadata.invitable ?? false) : null;
 
       /**
        * Whether the thread is archived

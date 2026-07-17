@@ -67,7 +67,7 @@ class InteractionCollector extends Collector {
     this.interactionType =
       typeof options.interactionType === 'number'
         ? InteractionTypes[options.interactionType]
-        : options.interactionType ?? null;
+        : (options.interactionType ?? null);
 
     /**
      * The type of component to collect
@@ -76,7 +76,7 @@ class InteractionCollector extends Collector {
     this.componentType =
       typeof options.componentType === 'number'
         ? MessageComponentTypes[options.componentType]
-        : options.componentType ?? null;
+        : (options.componentType ?? null);
 
     /**
      * The users that have interacted with this collector

@@ -42,11 +42,7 @@ jobs:
 
       - name: Verify generated documentation is current
         if: matrix.node-version == '22'
-        run: |
-          docs_date=$(node -p "require('./docs/main.json').meta.date")
-          npm run docs
-          DOCS_DATE="$docs_date" node -e "const fs=require('node:fs'); const docs=require('./docs/main.json'); docs.meta.date=Number(process.env.DOCS_DATE); fs.writeFileSync('docs/main.json', JSON.stringify(docs));"
-          git diff --exit-code -- docs/main.json
+        run: npm run docs:verify
 
       - name: Build documentation website
         if: matrix.node-version == '22'

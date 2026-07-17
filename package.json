@@ -14,6 +14,7 @@
     "format": "prettier --write \"src/**/*.js\" \"test/**/*.js\" \"typings/**/*.ts\" \"docs/**/*.md\" \"docs/.vitepress/**/*.mjs\"",
     "format:check": "prettier --check \"src/**/*.js\" \"test/**/*.js\" \"typings/**/*.ts\" \"docs/**/*.md\" \"docs/.vitepress/**/*.mjs\"",
     "docs": "docgen --input 'src/**/*.js' --custom docs/index.json --output docs/main.json",
+    "docs:verify": "node scripts/verify-docs.js",
     "docs:test": "docgen --input 'src/**/*.js' --custom docs/index.json",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",

@@ -38,11 +38,7 @@ class ModalSubmitInteraction extends Interaction {
      * The inputs within the modal
      * @type {PartialModalActionRow[]}
      */
-    this.components =
-      data.data.components?.map(c => ({
-        type: MessageComponentTypes[c.type],
-        components: ModalSubmitInteraction.transformComponent(c),
-      })) ?? [];
+    this.components = data.data.components?.map(c => ModalSubmitInteraction.transformComponent(c)) ?? [];
 
     /**
      * The message associated with this interaction
@@ -87,11 +83,22 @@ class ModalSubmitInteraction extends Interaction {
    * @returns {PartialTextInputData[]}
    */
   static transformComponent(rawComponent) {
-    return rawComponent.components.map(c => ({
-      value: c.value,
-      type: MessageComponentTypes[c.type],
-      customId: c.custom_id,
-    }));
+    const component = {
+      id: rawComponent.id,
+      type: MessageComponentTypes[rawComponent.type],
+    };
+
+    if (Array.isArray(rawComponent.components)) {
+      component.components = rawComponent.components.map(c => this.transformComponent(c));
+    } else if (rawComponent.component) {
+      component.component = this.transformComponent(rawComponent.component);
+    } else {
+      component.customId = rawComponent.custom_id;
+      if ('value' in rawComponent) component.value = rawComponent.value;
+      if ('values' in rawComponent) component.values = rawComponent.values;
+    }
+
+    return component;
   }
 
   /**

@@ -13,7 +13,10 @@ class WebhooksUpdate extends Action {
      * @param {TextChannel|NewsChannel|VoiceChannel|StageChannel|ForumChannel|MediaChannel} channel
      * The channel that had a webhook update
      */
-    if (channel) client.emit(Events.WEBHOOKS_UPDATE, channel);
+    if (channel) {
+      client.emit(Events.WEBHOOKS_UPDATE, channel);
+      client.emit('webhooksUpdate', channel);
+    }
   }
 }
 

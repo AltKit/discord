@@ -248,6 +248,19 @@ class MessagePayload {
       };
     }
 
+    let sharedClientTheme;
+    if (this.options.sharedClientTheme) {
+      sharedClientTheme =
+        typeof this.options.sharedClientTheme.toJSON === 'function'
+          ? this.options.sharedClientTheme.toJSON()
+          : {
+              colors: this.options.sharedClientTheme.colors,
+              gradient_angle: this.options.sharedClientTheme.gradientAngle,
+              base_mix: this.options.sharedClientTheme.baseMix,
+              base_theme: this.options.sharedClientTheme.baseTheme,
+            };
+    }
+
     this.data = {
       activity,
       content,
@@ -268,6 +281,7 @@ class MessagePayload {
       thread_name: threadName,
       applied_tags: appliedTags,
       poll,
+      shared_client_theme: sharedClientTheme,
     };
     return this;
   }

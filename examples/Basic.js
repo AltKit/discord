@@ -1,14 +1,17 @@
-const { Client } = require('../src/index');
+'use strict';
+
+const { Client, Events } = require('selfbotjs');
+
 const client = new Client();
 
-client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
+client.once(Events.ClientReady, readyClient => {
+  console.log(`${readyClient.user.tag} is ready`);
 });
 
-client.on("messageCreate", message => {
-    if (message.content == 'ping') {
-        message.reply('pong');
-    }
+client.on(Events.MessageCreate, async message => {
+  if (message.author.id === client.user.id && message.content === '!ping') {
+    await message.reply('Pong!');
+  }
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

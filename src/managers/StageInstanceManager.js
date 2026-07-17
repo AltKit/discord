@@ -64,7 +64,7 @@ class StageInstanceManager extends CachedManager {
     let { guildScheduledEvent, topic, privacyLevel, sendStartNotification } = options;
 
     privacyLevel &&= typeof privacyLevel === 'number' ? privacyLevel : PrivacyLevels[privacyLevel];
-    const guildScheduledEventId = guildScheduledEvent && this.resolveId(guildScheduledEvent);
+    const guildScheduledEventId = guildScheduledEvent && this.guild.scheduledEvents.resolveId(guildScheduledEvent);
 
     const data = await this.client.api['stage-instances'].post({
       data: {

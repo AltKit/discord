@@ -100,7 +100,10 @@ class GuildMember extends Base {
       this.banner ??= null;
     }
 
-    if ('joined_at' in data) this.joinedTimestamp = new Date(data.joined_at).getTime();
+    if ('joined_at' in data) {
+      const joinedTimestamp = data.joined_at ? Date.parse(data.joined_at) : NaN;
+      this.joinedTimestamp = Number.isNaN(joinedTimestamp) ? null : joinedTimestamp;
+    }
     if ('premium_since' in data) {
       this.premiumSinceTimestamp = data.premium_since ? new Date(data.premium_since).getTime() : null;
     }

@@ -1,21 +1,20 @@
-const { Client, MessageAttachment } = require('../src/index');
+'use strict';
+
+const { AttachmentBuilder, Client, Events, MessageFlags } = require('selfbotjs');
+
 const client = new Client();
 
-client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
-  const channel = client.channels.cache.get('channel_id');
-  const attachment = new MessageAttachment(
-    './test.mp3', // path file
-    'random_file_name.ogg', // must be .ogg
-    {
-      waveform: 'AAAAAAAAAAAA',
-      duration_secs: 1, // any number you want
-    },
-  );
-  channel.send({
+client.once(Events.ClientReady, async readyClient => {
+  const channel = await readyClient.channels.fetch(process.env.CHANNEL_ID);
+  const attachment = new AttachmentBuilder('./voice-message.ogg', 'voice-message.ogg', {
+    waveform: 'AAAAAAAAAAAA',
+    duration_secs: 1,
+  });
+
+  await channel.send({
     files: [attachment],
-    flags: 'IS_VOICE_MESSAGE',
+    flags: MessageFlags.FLAGS.IS_VOICE_MESSAGE,
   });
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

@@ -28,6 +28,8 @@ class TeamMember extends Base {
        * @deprecated Use {@link TeamMember#role} instead.
        */
       this.permissions = data.permissions;
+    } else {
+      this.permissions ??= [];
     }
 
     if ('role' in data) {

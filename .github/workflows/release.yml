@@ -3,47 +3,50 @@ name: Release
 on:
   push:
     tags:
-      - '3*' # Trigger on version 3.x.x tags
-  workflow_dispatch:
+      - 'v4.*.*'
+      - '4.*.*'
 
 permissions:
-  id-token: write
   contents: read
+  id-token: write
+
+concurrency:
+  group: npm-release-${{ github.ref }}
 
 jobs:
-  release:
+  publish:
+    name: Publish selfbotjs
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm
 
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Install Node.js v22
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Configure npm for publishing
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Get current published version (if any)
-        id: current_version
-        run: |
-          version=$(npm view discord.js-selfbot-v13 version || echo "none")
-          echo "version=$version" >> $GITHUB_OUTPUT
-
-      - name: Deprecate previous version
-        if: steps.current_version.outputs.version != 'none'
-        run: |
-          echo "Deprecating version ${{ steps.current_version.outputs.version }}"
-          npm deprecate discord.js-selfbot-v13@${{ steps.current_version.outputs.version }} "Deprecated: Please use the latest version."
+      - name: Verify tag and package versions match
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          package_version=$(node -p "require('./package.json').version")
+          tag_version=${RELEASE_TAG#v}
+          test "$package_version" = "$tag_version"
 
-      - name: Publish to NPM
-        run: npm publish --provenance --access public
+      - name: Run checks
+        run: npm test
+
+      - name: Publish package
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

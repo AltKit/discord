@@ -142,6 +142,19 @@ class BaseMessageComponent {
         component = data instanceof ContainerComponent ? data : new ContainerComponent(data);
         break;
       }
+      case MessageComponentTypes.LABEL: {
+        const LabelComponent = require('./LabelComponent');
+        component = data instanceof LabelComponent ? data : new LabelComponent(data, client);
+        break;
+      }
+      case MessageComponentTypes.FILE_UPLOAD:
+      case MessageComponentTypes.RADIO_GROUP:
+      case MessageComponentTypes.CHECKBOX_GROUP:
+      case MessageComponentTypes.CHECKBOX: {
+        const ModalInputComponent = require('./ModalInputComponent');
+        component = data instanceof ModalInputComponent ? data : new ModalInputComponent(data);
+        break;
+      }
       default:
         if (client) {
           client.emit(Events.DEBUG, `[BaseMessageComponent] Received component with unknown type: ${data.type}`);
@@ -172,6 +185,8 @@ class BaseMessageComponent {
         return [...component.components, component.accessory];
       case MessageComponentTypes.CONTAINER:
         return component.components.flatMap(BaseMessageComponent.extractInteractiveComponents);
+      case MessageComponentTypes.LABEL:
+        return BaseMessageComponent.extractInteractiveComponents(component.component);
       default:
         return [component];
     }

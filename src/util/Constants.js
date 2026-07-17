@@ -513,7 +513,18 @@ exports.ShardEvents = {
  * [guide](https://discordjs.guide/popular-topics/partials.html) for more information.</warn>
  * @typedef {string} PartialType
  */
-exports.PartialTypes = keyMirror(['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION', 'GUILD_SCHEDULED_EVENT']);
+exports.PartialTypes = keyMirror([
+  'USER',
+  'CHANNEL',
+  'GUILD_MEMBER',
+  'MESSAGE',
+  'REACTION',
+  'GUILD_SCHEDULED_EVENT',
+  'THREAD_MEMBER',
+  'SOUNDBOARD_SOUND',
+  'POLL',
+  'POLL_ANSWER',
+]);
 
 /**
  * The type of a WebSocket message event, e.g. `MESSAGE_CREATE`. Here are the available events:
@@ -1057,6 +1068,12 @@ exports.HolographicStyles = {
   PRIMARY: 11_127_295,
   SECONDARY: 16_759_788,
   TERTIARY: 16_761_760,
+};
+
+exports.HolographicStyle = {
+  Primary: exports.HolographicStyles.PRIMARY,
+  Secondary: exports.HolographicStyles.SECONDARY,
+  Tertiary: exports.HolographicStyles.TERTIARY,
 };
 
 /**
@@ -1638,6 +1655,12 @@ exports.MessageComponentTypes = createEnum([
   null,
   null,
   'CONTAINER',
+  'LABEL',
+  'FILE_UPLOAD',
+  null,
+  'RADIO_GROUP',
+  'CHECKBOX_GROUP',
+  'CHECKBOX',
 ]);
 
 /**

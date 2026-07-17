@@ -5,6 +5,7 @@ const ApplicationFlags = require('../../util/ApplicationFlags');
 const { ClientApplicationAssetTypes, Endpoints } = require('../../util/Constants');
 const Permissions = require('../../util/Permissions');
 const SnowflakeUtil = require('../../util/SnowflakeUtil');
+const ActivityInstance = require('../ActivityInstance');
 const { ApplicationRoleConnectionMetadata } = require('../ApplicationRoleConnectionMetadata');
 const Base = require('../Base');
 const Team = require('../Team');
@@ -752,6 +753,16 @@ class Application extends Base {
   async fetchRoleConnectionMetadataRecords() {
     const metadata = await this.client.api.applications(this.id)('role-connections').metadata.get();
     return metadata.map(data => new ApplicationRoleConnectionMetadata(data));
+  }
+
+  /**
+   * Fetches an activity instance for this application.
+   * @param {string} instanceId The activity instance id
+   * @returns {Promise<ActivityInstance>}
+   */
+  async fetchActivityInstance(instanceId) {
+    const data = await this.client.api.applications(this.id)('activity-instances', instanceId).get();
+    return new ActivityInstance(this.client, data);
   }
 
   /**

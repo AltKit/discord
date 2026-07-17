@@ -1,15 +1,18 @@
-const { Client } = require('../src/index');
+'use strict';
+
+const { Client, Events, MessageActivityType } = require('selfbotjs');
+
 const client = new Client();
 
-client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
-  const channel = client.channels.cache.get('id');
-  channel.send({
+client.once(Events.ClientReady, async readyClient => {
+  const channel = await readyClient.channels.fetch(process.env.CHANNEL_ID);
+
+  await channel.send({
     activity: {
-      type: 3, // MessageActivityType.Listen
-      partyId: `spotify:${client.user.id}`,
+      type: MessageActivityType.Listen,
+      partyId: `spotify:${readyClient.user.id}`,
     },
   });
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

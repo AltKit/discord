@@ -306,6 +306,23 @@ export class Activity {
   public toString(): string;
 }
 
+export class ActivityLocation extends Base {
+  public id: string;
+  public kind: number;
+  public channelId: Snowflake;
+  public guildId: Snowflake | null;
+  public readonly channel: Channel | null;
+  public readonly guild: Guild | null;
+}
+
+export class ActivityInstance extends Base {
+  public applicationId: Snowflake;
+  public instanceId: string;
+  public launchId: Snowflake;
+  public location: ActivityLocation;
+  public users: Snowflake[];
+}
+
 export class ActivityFlags extends BitField<ActivityFlagsString> {
   public static FLAGS: Record<ActivityFlagsString, number>;
   public static resolve(bit?: BitFieldResolvable<ActivityFlagsString, number>): number;
@@ -418,6 +435,7 @@ export abstract class Application extends Base {
   public maxParticipants: number | null;
   public fetch(): Promise<Application>;
   public fetchRoleConnectionMetadataRecords(): Promise<ApplicationRoleConnectionMetadata[]>;
+  public fetchActivityInstance(instanceId: string): Promise<ActivityInstance>;
   public coverURL(options?: StaticImageURLOptions): string | null;
   /** @deprecated This method is deprecated as it is unsupported and will be removed in the next major version. */
   public fetchAssets(): Promise<ApplicationAsset[]>;
@@ -1599,6 +1617,7 @@ export class Guild extends AnonymousGuild {
   public widgetChannelId: Snowflake | null;
   public widgetEnabled: boolean | null;
   public readonly maximumBitrate: number;
+  public readonly maximumStageBitrate: number;
   public createTemplate(name: string, description?: string): Promise<GuildTemplate>;
   public delete(): Promise<Guild>;
   public discoverySplashURL(options?: StaticImageURLOptions): string | null;
@@ -2069,6 +2088,7 @@ export class Interaction<Cached extends CacheType = CacheType> extends Base {
   public memberPermissions: CacheTypeReducer<Cached, Readonly<Permissions>>;
   public locale: string;
   public guildLocale: CacheTypeReducer<Cached, string, string, string>;
+  public authorizingIntegrationOwners: AuthorizingIntegrationOwners;
   public inGuild(): this is Interaction<'raw' | 'cached'>;
   public inCachedGuild(): this is Interaction<'cached'>;
   public inRawGuild(): this is Interaction<'raw'>;
@@ -2276,6 +2296,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public readonly url: string;
   public webhookId: Snowflake | null;
   public poll: Poll | null;
+  public sharedClientTheme: SharedClientTheme | null;
   public call: MessageCall | null;
   public flags: Readonly<MessageFlags>;
   public reference: MessageReference | null;
@@ -2368,12 +2389,14 @@ export class MessageAttachment {
   public toJSON(): unknown;
 }
 
+export { MessageAttachment as AttachmentBuilder };
+
 export class AttachmentFlags extends BitField<AttachmentFlagsString> {
   public static FLAGS: Record<AttachmentFlagsString, number>;
   public static resolve(bit?: BitFieldResolvable<AttachmentFlagsString, number>): number;
 }
 
-export type AttachmentFlagsString = 'IS_REMIX';
+export type AttachmentFlagsString = 'IS_CLIP' | 'IS_THUMBNAIL' | 'IS_REMIX' | 'IS_SPOILER' | 'IS_ANIMATED';
 
 export class MessageButton extends BaseMessageComponent {
   public constructor(data?: MessageButton | MessageButtonOptions | APIButtonComponent);
@@ -2465,6 +2488,35 @@ export class ContainerComponent extends BaseMessageComponent {
   public readonly hexAccentColor: HexColorString | null;
   public spoiler: boolean;
   public toJSON(): APIContainerComponent;
+}
+
+export class ModalInputComponent extends BaseMessageComponent {
+  public customId: string | null;
+  public options: unknown[];
+  public required: boolean;
+  public minValues: number | null;
+  public maxValues: number | null;
+  public value: string | boolean | null;
+  public values: string[] | null;
+  public setValue(value: string | boolean): this;
+  public setValues(...values: string[] | string[][]): this;
+  public toJSON(): APIMessageComponent;
+}
+
+export class LabelComponent extends BaseMessageComponent {
+  public label: string | null;
+  public description: string | null;
+  public component: BaseMessageComponent | null;
+  public toJSON(): APIMessageComponent;
+}
+
+export class AuthorizingIntegrationOwners extends Base {
+  public readonly data: Record<number, Snowflake>;
+  public guildId: Snowflake | null;
+  public userId: Snowflake | null;
+  public readonly guild: Guild | null;
+  public readonly user: User | null;
+  public toJSON(): Record<number, Snowflake>;
 }
 
 export class MessageCollector extends Collector<Snowflake, Message> {
@@ -2807,11 +2859,16 @@ export class Poll extends Base {
   public readonly message: Message;
   public question: PollQuestionMedia;
   public answers: Collection<number, PollAnswer>;
-  public expiresTimestamp: number;
-  public get expiresAt(): Date;
-  public allowMultiselect: boolean;
-  public layoutType: PollLayoutTypes;
+  public channelId: Snowflake;
+  public messageId: Snowflake;
+  public readonly channel: TextBasedChannel;
+  public expiresTimestamp: number | null;
+  public get expiresAt(): Date | null;
+  public allowMultiselect: boolean | null;
+  public layoutType: PollLayoutTypes | null;
   public resultsFinalized: boolean;
+  public readonly partial: boolean;
+  public fetch(): Promise<Poll>;
   public end(): Promise<Message>;
 }
 
@@ -2822,8 +2879,15 @@ export class PollAnswer extends Base {
   public id: number;
   public text: string | null;
   public voteCount: number;
+  public voters: PollAnswerVoterManager;
   public get emoji(): GuildEmoji | Emoji | null;
+  public readonly partial: boolean;
   public fetchVoters(options?: BaseFetchPollAnswerVotersOptions): Promise<Collection<Snowflake, User>>;
+}
+
+export class PollAnswerVoterManager extends CachedManager<Snowflake, User, UserResolvable> {
+  public answer: PollAnswer;
+  public fetch(options?: BaseFetchPollAnswerVotersOptions): Promise<Collection<Snowflake, User>>;
 }
 
 export interface PollData {
@@ -2860,6 +2924,11 @@ export class ModalSubmitFieldsResolver {
   private readonly _fields: PartialTextInputData[];
   public getField(customId: string): PartialTextInputData;
   public getTextInputValue(customId: string): string;
+  public getStringSelectValues(customId: string): string[];
+  public getFileUploadValues(customId: string): Snowflake[];
+  public getRadioGroupValue(customId: string): string | null;
+  public getCheckboxGroupValues(customId: string): string[];
+  public getCheckboxValue(customId: string): boolean;
 }
 
 export interface ModalMessageModalSubmitInteraction<Cached extends CacheType = CacheType>
@@ -4303,6 +4372,47 @@ export const Constants: {
 };
 
 export const version: string;
+export const discordJsVersion: '14.27.0';
+
+export const Partials: {
+  readonly User: 0;
+  readonly Channel: 1;
+  readonly GuildMember: 2;
+  readonly Message: 3;
+  readonly Reaction: 4;
+  readonly GuildScheduledEvent: 5;
+  readonly ThreadMember: 6;
+  readonly SoundboardSound: 7;
+  readonly Poll: 8;
+  readonly PollAnswer: 9;
+};
+
+export const Events: {
+  readonly ClientReady: 'clientReady';
+  readonly WebhooksUpdate: 'webhooksUpdate';
+  readonly VoiceServerUpdate: 'voiceServerUpdate';
+  readonly [key: string]: string;
+};
+
+export { Channel as BaseChannel };
+export { ActivityFlags as ActivityFlagsBitField };
+export { ApplicationFlags as ApplicationFlagsBitField };
+export { AttachmentFlags as AttachmentFlagsBitField };
+export { GuildMemberFlags as GuildMemberFlagsBitField };
+export { Intents as IntentsBitField };
+export { MessageFlags as MessageFlagsBitField };
+export { Permissions as PermissionsBitField };
+export { RoleFlags as RoleFlagsBitField };
+export { SystemChannelFlags as SystemChannelFlagsBitField };
+export { ThreadMemberFlags as ThreadMemberFlagsBitField };
+export { UserFlags as UserFlagsBitField };
+
+export * from '@discordjs/builders';
+export * from '@discordjs/formatters';
+export * from '@discordjs/rest';
+export * from '@discordjs/util';
+export * from '@discordjs/ws';
+export * from 'discord-api-types/v10';
 
 //#endregion
 
@@ -5930,6 +6040,7 @@ export interface ClientEvents extends BaseClientEvents {
   messageUpdate: [oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage];
   presenceUpdate: [oldPresence: Presence | null, newPresence: Presence];
   ready: [client: Client<true>];
+  clientReady: [client: Client<true>];
   invalidated: [];
   roleCreate: [role: Role];
   roleDelete: [role: Role];
@@ -5946,8 +6057,10 @@ export interface ClientEvents extends BaseClientEvents {
   typingStart: [typing: Typing];
   userUpdate: [oldUser: User | PartialUser, newUser: User];
   voiceChannelEffectSend: [voiceChannelEffect: VoiceChannelEffect];
+  voiceServerUpdate: [data: GatewayVoiceServerUpdateDispatchData];
   voiceStateUpdate: [oldState: VoiceState, newState: VoiceState];
   webhookUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel | MediaChannel | StageChannel];
+  webhooksUpdate: [channel: TextChannel | NewsChannel | VoiceChannel | ForumChannel | MediaChannel | StageChannel];
   shardDisconnect: [closeEvent: CloseEvent, shardId: number];
   shardError: [error: Error, shardId: number];
   shardReady: [shardId: number, unavailableGuilds: Set<Snowflake> | undefined];
@@ -6013,7 +6126,7 @@ export interface ClientOptions {
   messageSweepInterval?: number;
   allowedMentions?: MessageMentionOptions;
   invalidRequestWarningInterval?: number;
-  partials?: PartialTypes[];
+  partials?: (PartialTypes | (typeof Partials)[keyof typeof Partials])[];
   restWsBridgeTimeout?: number;
   restTimeOffset?: number;
   restRequestTimeout?: number;
@@ -7448,6 +7561,14 @@ export interface MessageOptions {
   attachments?: MessageAttachment[];
   flags?: BitFieldResolvable<'SUPPRESS_EMBEDS' | 'SUPPRESS_NOTIFICATIONS' | 'IS_VOICE_MESSAGE', number>;
   poll?: Poll;
+  sharedClientTheme?: SharedClientTheme | { toJSON(): unknown };
+}
+
+export interface SharedClientTheme {
+  colors: number[];
+  gradientAngle: number;
+  baseMix: number;
+  baseTheme?: number | null;
 }
 
 export type MessageReactionResolvable = MessageReaction | Snowflake | string;
@@ -7596,6 +7717,7 @@ export type PermissionString =
   | 'EMBED_LINKS'
   | 'ATTACH_FILES'
   | 'READ_MESSAGE_HISTORY'
+  | 'PIN_MESSAGES'
   | 'MENTION_EVERYONE'
   | 'USE_EXTERNAL_EMOJIS'
   | 'VIEW_GUILD_INSIGHTS'
@@ -7719,7 +7841,17 @@ export interface PartialRoleData extends RoleData {
   id?: Snowflake | number;
 }
 
-export type PartialTypes = 'USER' | 'CHANNEL' | 'GUILD_MEMBER' | 'MESSAGE' | 'REACTION' | 'GUILD_SCHEDULED_EVENT';
+export type PartialTypes =
+  | 'USER'
+  | 'CHANNEL'
+  | 'GUILD_MEMBER'
+  | 'MESSAGE'
+  | 'REACTION'
+  | 'GUILD_SCHEDULED_EVENT'
+  | 'THREAD_MEMBER'
+  | 'SOUNDBOARD_SOUND'
+  | 'POLL'
+  | 'POLL_ANSWER';
 
 export interface PartialUser extends Partialize<User, 'username' | 'tag' | 'discriminator'> {}
 

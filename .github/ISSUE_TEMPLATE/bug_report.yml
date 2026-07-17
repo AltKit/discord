@@ -1,15 +1,15 @@
 name: Bug report
-description: Report incorrect or unexpected behavior of a package
+description: Report incorrect or unexpected SelfbotJS v4 behavior
 labels: [bug, need repro]
 body:
   - type: dropdown
     id: package
     attributes:
-      label: Which package has the bugs?
+      label: Which part of SelfbotJS has the bug?
       options:
         - The core library
         - The documentation
-        - WebEmbed x Shorten API
+        - An example
     validations:
       required: true
   - type: textarea
@@ -42,9 +42,9 @@ body:
   - type: input
     id: djs-version
     attributes:
-      label: Package version
-      description: Which version of are you using? Run `npm list <package>` in your project directory and paste the output.
-      placeholder: Older versions are not supported.
+      label: SelfbotJS version
+      description: Run `npm list selfbotjs` in your project directory and paste the output.
+      placeholder: selfbotjs@4.x.x
     validations:
       required: true
   - type: input
@@ -54,7 +54,7 @@ body:
       description: |
         Which version of Node.js are you using? Run `node --version` in your project directory and paste the output.
         If you are using TypeScript, please include its version (`npm list typescript`) as well.
-      placeholder: Node.js version 16.9+ is required for version 14.0.0+
+      placeholder: Node.js 20.18 or newer is required for SelfbotJS v4.
     validations:
       required: true
   - type: input
@@ -83,7 +83,7 @@ body:
           required: true
         - label: I have shared the entire traceback.
           required: true
-        - label: I am using a user token (and it isn't visible in the code).
+        - label: I removed all tokens, TOTP secrets, proxy credentials, and other private data from this report.
           required: true
   - type: textarea
     attributes:

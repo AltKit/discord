@@ -1,12 +1,12 @@
 name: Feature request
-description: Request a new feature
-labels: [Feature]
+description: Request a new SelfbotJS v4 feature
+labels: [feature]
 body:
   - type: markdown
     attributes:
       value: |
-        We can only implement features that Discord publishes, documents and merges into the Discord API documentation.
-        For unreleased API features, you need more documents (Unofficial Discord API) or things you know.
+        Link public Discord API or Discord.js documentation when possible. For undocumented user-account behavior,
+        include sanitized request/response details and explain how the behavior was verified without exposing credentials.
   - type: dropdown
     id: package
     attributes:
@@ -14,7 +14,7 @@ body:
       options:
         - The core library
         - The documentation
-        - WebEmbed x Shorten API
+        - An example
     validations:
       required: true
   - type: textarea

@@ -1,6 +1,9 @@
 'use strict';
 
+const { Poll } = require('../../structures/Poll');
+const { PollAnswer } = require('../../structures/PollAnswer');
 const { PartialTypes } = require('../../util/Constants');
+const Partials = require('../../util/Partials');
 
 /*
 
@@ -65,6 +68,24 @@ class GenericAction {
         cache,
       )
     );
+  }
+
+  hasPartial(legacyPartial, modernPartial) {
+    return this.client.options.partials.includes(legacyPartial) || this.client.options.partials.includes(modernPartial);
+  }
+
+  getPoll(data, message, channel) {
+    const includePollPartial = this.hasPartial(PartialTypes.POLL, Partials.Poll);
+    const includePollAnswerPartial = this.hasPartial(PartialTypes.POLL_ANSWER, Partials.PollAnswer);
+    if (message.partial && (!includePollPartial || !includePollAnswerPartial)) return null;
+
+    if (!message.poll && includePollPartial) message.poll = new Poll(this.client, data, message, channel);
+
+    if (message.poll && !message.poll.answers.has(data.answer_id) && includePollAnswerPartial) {
+      message.poll.answers.set(data.answer_id, new PollAnswer(this.client, data, message.poll));
+    }
+
+    return message.poll;
   }
 
   getReaction(data, message, user) {

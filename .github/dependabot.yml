@@ -1,8 +1,23 @@
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/"
-  schedule:
-    interval: daily
-    time: "12:00"
-  open-pull-requests-limit: 15
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '12:00'
+      timezone: Australia/Perth
+    open-pull-requests-limit: 10
+    groups:
+      discordjs:
+        patterns:
+          - '@discordjs/*'
+          - 'discord-api-types'
+      development:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5

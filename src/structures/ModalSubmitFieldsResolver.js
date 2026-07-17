@@ -21,7 +21,14 @@ class ModalSubmitFieldsResolver {
    * @private
    */
   get _fields() {
-    return this.components.reduce((previous, next) => previous.concat(next.components), []);
+    const fields = [];
+    const visit = component => {
+      if (Array.isArray(component.components)) component.components.forEach(visit);
+      else if (component.component) visit(component.component);
+      else if (component.customId) fields.push(component);
+    };
+    this.components.forEach(visit);
+    return fields;
   }
 
   /**
@@ -42,11 +49,32 @@ class ModalSubmitFieldsResolver {
    */
   getTextInputValue(customId) {
     const field = this.getField(customId);
-    const expectedType = MessageComponentTypes[MessageComponentTypes.TEXT_INPUT];
-    if (field.type !== expectedType) {
+    const expectedType = MessageComponentTypes.TEXT_INPUT;
+    const actualType = typeof field.type === 'string' ? MessageComponentTypes[field.type] : field.type;
+    if (actualType !== expectedType) {
       throw new TypeError('MODAL_SUBMIT_INTERACTION_FIELD_TYPE', customId, field.type, expectedType);
     }
     return field.value;
+  }
+
+  getStringSelectValues(customId) {
+    return this.getField(customId).values ?? [];
+  }
+
+  getFileUploadValues(customId) {
+    return this.getField(customId).values ?? [];
+  }
+
+  getRadioGroupValue(customId) {
+    return this.getField(customId).value ?? null;
+  }
+
+  getCheckboxGroupValues(customId) {
+    return this.getField(customId).values ?? [];
+  }
+
+  getCheckboxValue(customId) {
+    return this.getField(customId).value ?? false;
   }
 }
 

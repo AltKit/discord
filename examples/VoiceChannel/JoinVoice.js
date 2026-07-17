@@ -10,12 +10,12 @@ Install:
 - ffmpeg (install and add to your system environment)
 */
 
-const { Client } = require('../../src/index');
+const { Client, Events } = require('selfbotjs');
 const client = new Client();
 
-client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
-  const channel = client.channels.cache.get('voice_channel');
+client.once(Events.ClientReady, async readyClient => {
+  console.log(`${readyClient.user.tag} is ready`);
+  const channel = await readyClient.channels.fetch(process.env.VOICE_CHANNEL_ID);
   const connection = await client.voice.joinChannel(channel, {
     selfMute: true,
     selfDeaf: true,
@@ -27,4 +27,4 @@ client.on('ready', async () => {
   }, 5_000);
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

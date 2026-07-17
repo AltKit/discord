@@ -1,12 +1,12 @@
 'use strict';
 
-const Discord = require('../src/index');
+const { Client, Events } = require('selfbotjs');
 
-const client = new Discord.Client();
+const client = new Client();
 
-client.on('ready', async () => {
-  console.log('Ready!', client.user.tag);
-  await client.installUserApps('936929561302675456'); // Midjourney
+client.once(Events.ClientReady, async readyClient => {
+  await readyClient.installUserApps(process.env.APPLICATION_ID);
+  console.log(`Installed application ${process.env.APPLICATION_ID} for ${readyClient.user.tag}`);
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

@@ -1,5 +1,16 @@
 'use strict';
 
+const { polyfillDispose } = require('@discordjs/util');
+
+polyfillDispose();
+
+const exportStar = moduleExports => {
+  for (const key of Object.keys(moduleExports)) {
+    if (key === 'default' || Object.prototype.hasOwnProperty.call(exports, key)) continue;
+    Object.defineProperty(exports, key, { enumerable: true, get: () => moduleExports[key] });
+  }
+};
+
 // "Root" classes (starting points)
 exports.BaseClient = require('./client/BaseClient');
 exports.Client = require('./client/Client');
@@ -19,16 +30,21 @@ exports.BaseManager = require('./managers/BaseManager');
 exports.BitField = require('./util/BitField');
 exports.Collection = require('@discordjs/collection').Collection;
 exports.Constants = require('./util/Constants');
+exports.Events = require('./util/Events');
 exports.DataResolver = require('./util/DataResolver');
 exports.DiscordAPIError = require('./rest/DiscordAPIError');
 exports.Formatters = require('./util/Formatters');
 exports.GuildMemberFlags = require('./util/GuildMemberFlags');
 exports.HTTPError = require('./rest/HTTPError');
 exports.Intents = require('./util/Intents');
+exports.IntentsBitField = exports.Intents;
 exports.LimitedCollection = require('./util/LimitedCollection');
 exports.MessageFlags = require('./util/MessageFlags');
+exports.MessageFlagsBitField = exports.MessageFlags;
 exports.Options = require('./util/Options');
+exports.Partials = require('./util/Partials');
 exports.Permissions = require('./util/Permissions');
+exports.PermissionsBitField = exports.Permissions;
 exports.RateLimitError = require('./rest/RateLimitError');
 exports.RoleFlags = require('./util/RoleFlags');
 exports.SnowflakeUtil = require('./util/SnowflakeUtil');
@@ -36,8 +52,10 @@ exports.Sweepers = require('./util/Sweepers');
 exports.SystemChannelFlags = require('./util/SystemChannelFlags');
 exports.ThreadMemberFlags = require('./util/ThreadMemberFlags');
 exports.UserFlags = require('./util/UserFlags');
+exports.UserFlagsBitField = exports.UserFlags;
 exports.Util = require('./util/Util');
 exports.version = require('../package.json').version;
+exports.discordJsVersion = require('../package.json').discordJsVersion;
 
 // Managers
 exports.ApplicationCommandManager = require('./managers/ApplicationCommandManager');
@@ -59,6 +77,7 @@ exports.GuildMemberRoleManager = require('./managers/GuildMemberRoleManager');
 exports.GuildScheduledEventManager = require('./managers/GuildScheduledEventManager');
 exports.GuildStickerManager = require('./managers/GuildStickerManager');
 exports.MessageManager = require('./managers/MessageManager');
+exports.PollAnswerVoterManager = require('./managers/PollAnswerVoterManager');
 exports.PermissionOverwriteManager = require('./managers/PermissionOverwriteManager');
 exports.PresenceManager = require('./managers/PresenceManager');
 exports.ReactionManager = require('./managers/ReactionManager');
@@ -77,11 +96,14 @@ exports.UserNoteManager = require('./managers/UserNoteManager');
 
 // Structures
 exports.Activity = require('./structures/Presence').Activity;
+exports.ActivityInstance = require('./structures/ActivityInstance');
+exports.ActivityLocation = require('./structures/ActivityLocation');
 exports.AnonymousGuild = require('./structures/AnonymousGuild');
 exports.Application = require('./structures/interfaces/Application');
 exports.ApplicationCommand = require('./structures/ApplicationCommand');
 exports.ApplicationRoleConnectionMetadata =
   require('./structures/ApplicationRoleConnectionMetadata').ApplicationRoleConnectionMetadata;
+exports.AuthorizingIntegrationOwners = require('./structures/AuthorizingIntegrationOwners');
 exports.AutoModerationActionExecution = require('./structures/AutoModerationActionExecution');
 exports.AutoModerationRule = require('./structures/AutoModerationRule');
 exports.Base = require('./structures/Base');
@@ -91,6 +113,7 @@ exports.BaseGuildTextChannel = require('./structures/BaseGuildTextChannel');
 exports.BaseGuildVoiceChannel = require('./structures/BaseGuildVoiceChannel');
 exports.CategoryChannel = require('./structures/CategoryChannel');
 exports.Channel = require('./structures/Channel').Channel;
+exports.BaseChannel = exports.Channel;
 exports.ClientPresence = require('./structures/ClientPresence');
 exports.ClientUser = require('./structures/ClientUser');
 exports.Collector = require('./structures/interfaces/Collector');
@@ -118,6 +141,7 @@ exports.MediaChannel = require('./structures/MediaChannel');
 exports.Message = require('./structures/Message').Message;
 exports.MessageActionRow = require('./structures/MessageActionRow');
 exports.MessageAttachment = require('./structures/MessageAttachment');
+exports.AttachmentBuilder = exports.MessageAttachment;
 exports.MessageButton = require('./structures/MessageButton');
 exports.MessageCollector = require('./structures/MessageCollector');
 exports.MessageEmbed = require('./structures/MessageEmbed');
@@ -125,6 +149,8 @@ exports.MessageMentions = require('./structures/MessageMentions');
 exports.MessagePayload = require('./structures/MessagePayload');
 exports.MessageReaction = require('./structures/MessageReaction');
 exports.Modal = require('./structures/Modal');
+exports.LabelComponent = require('./structures/LabelComponent');
+exports.ModalInputComponent = require('./structures/ModalInputComponent');
 exports.NewsChannel = require('./structures/NewsChannel');
 exports.OAuth2Guild = require('./structures/OAuth2Guild');
 exports.GroupDMChannel = require('./structures/GroupDMChannel');
@@ -170,3 +196,12 @@ exports.PurchasedFlags = require('./util/PurchasedFlags');
 exports.Poll = require('./structures/Poll').Poll;
 exports.PollAnswer = require('./structures/PollAnswer').PollAnswer;
 exports.Recorder = require('./client/voice/receiver/Recorder');
+
+// Discord.js v14 public exports. Existing selfbot implementations above take
+// precedence where this fork needs its own REST, websocket, or structure logic.
+exportStar(require('discord-api-types/v10'));
+exportStar(require('@discordjs/builders'));
+exportStar(require('@discordjs/formatters'));
+exportStar(require('@discordjs/rest'));
+exportStar(require('@discordjs/util'));
+exportStar(require('@discordjs/ws'));

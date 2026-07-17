@@ -82,4 +82,3 @@ deploy/deploy_key.pub
 data/
 update.mjs
 yarn.lock
-package-lock.json

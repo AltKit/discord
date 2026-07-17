@@ -271,6 +271,17 @@ class Message extends Base {
       this.poll ??= null;
     }
 
+    if (data.shared_client_theme) {
+      this.sharedClientTheme = {
+        colors: data.shared_client_theme.colors,
+        gradientAngle: data.shared_client_theme.gradient_angle,
+        baseMix: data.shared_client_theme.base_mix,
+        baseTheme: data.shared_client_theme.base_theme ?? null,
+      };
+    } else {
+      this.sharedClientTheme ??= null;
+    }
+
     if ('application' in data) {
       /**
        * Supplemental application information for group activities
@@ -674,13 +685,12 @@ class Message extends Base {
    */
   get pinnable() {
     const { channel } = this;
-    return Boolean(
-      !this.system &&
-        !deletedMessages.has(this) &&
-        (!this.guild ||
-          (channel?.viewable &&
-            channel?.permissionsFor(this.client.user)?.has(Permissions.FLAGS.MANAGE_MESSAGES, false))),
-    );
+    if (this.system || deletedMessages.has(this)) return false;
+    if (!this.guild) return true;
+    if (!channel || channel.isVoice() || !channel.viewable) return false;
+
+    const permissions = channel.permissionsFor(this.client.user);
+    return Boolean(permissions?.has(Permissions.FLAGS.READ_MESSAGE_HISTORY | Permissions.FLAGS.PIN_MESSAGES, false));
   }
 
   /**

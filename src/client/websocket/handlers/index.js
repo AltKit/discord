@@ -3,6 +3,7 @@
 const handlers = Object.fromEntries([
   ['READY', require('./READY')],
   ['RESUMED', require('./RESUMED')],
+  ['RATE_LIMITED', require('./RATE_LIMITED')],
   ['APPLICATION_COMMAND_CREATE', require('./APPLICATION_COMMAND_CREATE')],
   ['APPLICATION_COMMAND_DELETE', require('./APPLICATION_COMMAND_DELETE')],
   ['APPLICATION_COMMAND_UPDATE', require('./APPLICATION_COMMAND_UPDATE')],

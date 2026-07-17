@@ -1,8 +1,8 @@
-const { Client, RichPresence, CustomStatus, SpotifyRPC } = require('discord.js-selfbot-v13');
+const { Client, CustomStatus, Events, RichPresence, SpotifyRPC } = require('selfbotjs');
 const client = new Client();
 
-client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
+client.once(Events.ClientReady, async readyClient => {
+  console.log(`${readyClient.user.tag} is ready`);
   const getExtendURL = await RichPresence.getExternal(
     client,
     '367827983903490050',
@@ -44,4 +44,4 @@ client.on('ready', async () => {
   client.user.setPresence({ activities: [status, custom, spotify] });
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

@@ -1,8 +1,8 @@
-const { Client } = require('../src/index');
+const { Client, Events } = require('selfbotjs');
 
 const client = new Client();
 
-client.on('ready', async () => {
+client.once(Events.ClientReady, () => {
   client.user.setSamsungActivity('com.YostarJP.BlueArchive', 'START');
 
   setTimeout(() => {
@@ -14,4 +14,4 @@ client.on('ready', async () => {
   }, 60_000);
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

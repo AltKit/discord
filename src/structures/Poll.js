@@ -14,6 +14,10 @@ class Poll extends Base {
   constructor(client, data, message) {
     super(client);
 
+    this.channelId = data.channel_id ?? message.channelId;
+    this.messageId = data.message_id ?? message.id;
+    Object.defineProperty(this, 'channel', { value: message.channel });
+
     /**
      * The message that started this poll
      * @name Poll#message
@@ -33,15 +37,13 @@ class Poll extends Base {
      * The media for this poll's question
      * @type {PollQuestionMedia}
      */
-    this.question = {
-      text: data.question.text,
-    };
+    this.question = { text: data.question?.text ?? null };
 
     /**
      * The answers of this poll
      * @type {Collection<number, PollAnswer>}
      */
-    this.answers = data.answers.reduce(
+    this.answers = (data.answers ?? []).reduce(
       (acc, answer) => acc.set(answer.answer_id, new PollAnswer(this.client, answer, this)),
       new Collection(),
     );
@@ -50,19 +52,19 @@ class Poll extends Base {
      * The timestamp when this poll expires
      * @type {number}
      */
-    this.expiresTimestamp = Date.parse(data.expiry);
+    this.expiresTimestamp = data.expiry ? Date.parse(data.expiry) : null;
 
     /**
      * Whether this poll allows multiple answers
      * @type {boolean}
      */
-    this.allowMultiselect = data.allow_multiselect;
+    this.allowMultiselect = data.allow_multiselect ?? null;
 
     /**
      * The layout type of this poll
      * @type {PollLayoutType}
      */
-    this.layoutType = PollLayoutTypes[data.layout_type];
+    this.layoutType = data.layout_type ? PollLayoutTypes[data.layout_type] : null;
 
     this._patch(data);
   }
@@ -90,7 +92,16 @@ class Poll extends Base {
    * @readonly
    */
   get expiresAt() {
-    return new Date(this.expiresTimestamp);
+    return this.expiresTimestamp && new Date(this.expiresTimestamp);
+  }
+
+  get partial() {
+    return this.allowMultiselect === null;
+  }
+
+  async fetch() {
+    await this.channel.messages.fetch(this.messageId);
+    return this;
   }
 
   /**
@@ -98,10 +109,10 @@ class Poll extends Base {
    * @returns {Promise<Message>}
    */
   async end() {
-    if (Date.now() > this.expiresTimestamp) {
+    if (this.expiresTimestamp !== null && Date.now() > this.expiresTimestamp) {
       throw new Error('POLL_ALREADY_EXPIRED');
     }
-    return this.message.channel.messages.endPoll(this.message.id);
+    return this.channel.messages.endPoll(this.messageId);
   }
 }
 

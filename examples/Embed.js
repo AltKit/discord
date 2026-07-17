@@ -1,11 +1,11 @@
-const { Client, WebEmbed } = require('../src/index');
+const { Client, Events, WebEmbed } = require('selfbotjs');
 const client = new Client();
 
-client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
+client.once(Events.ClientReady, readyClient => {
+  console.log(`${readyClient.user.tag} is ready`);
 });
 
-client.on('messageCreate', message => {
+client.on(Events.MessageCreate, message => {
   if (message.content == 'embed_hidden_url') {
     const embed = new WebEmbed()
       .setAuthor({ name: 'hello', url: 'https://google.com' })
@@ -38,4 +38,4 @@ client.on('messageCreate', message => {
   }
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

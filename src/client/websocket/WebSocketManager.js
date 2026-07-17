@@ -384,6 +384,7 @@ class WebSocketManager extends EventEmitter {
      * @param {Client} client The client
      */
     this.client.emit(Events.CLIENT_READY, this.client);
+    this.client.emit('clientReady', this.client);
 
     this.handlePacket();
   }

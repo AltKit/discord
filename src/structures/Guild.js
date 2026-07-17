@@ -691,6 +691,15 @@ class Guild extends AnonymousGuild {
   }
 
   /**
+   * The maximum bitrate available for a stage channel in this guild.
+   * @type {number}
+   * @readonly
+   */
+  get maximumStageBitrate() {
+    return 64_000;
+  }
+
+  /**
    * Fetches a collection of integrations to this guild.
    * Resolves with a collection mapping integrations by their ids.
    * @returns {Promise<Collection<Snowflake|string, Integration>>}

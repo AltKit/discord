@@ -1,5 +1,6 @@
 'use strict';
 
+const AuthorizingIntegrationOwners = require('./AuthorizingIntegrationOwners');
 const Base = require('./Base');
 const { InteractionTypes, MessageComponentTypes, ApplicationCommandTypes } = require('../util/Constants');
 const Permissions = require('../util/Permissions');
@@ -128,6 +129,15 @@ class Interaction extends Base {
      * @type {?Locale}
      */
     this.guildLocale = data.guild_locale ?? null;
+
+    /**
+     * Owners for each installation context that authorized this interaction.
+     * @type {AuthorizingIntegrationOwners}
+     */
+    this.authorizingIntegrationOwners = new AuthorizingIntegrationOwners(
+      this.client,
+      data.authorizing_integration_owners,
+    );
   }
 
   /**

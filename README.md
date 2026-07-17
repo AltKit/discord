@@ -1,124 +1,116 @@
-> [!IMPORTANT]
-> ## Project Archival
-> 
-> **This project is no longer actively maintained and this repository has been archived.**
->
-> You can read the full announcement [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions/1743)
+# SelfbotJS
 
-<div align="center">
-  <br />
-  <p>
-    <a href="https://discord.js.org"><img src="https://discord.js.org/static/logo.svg" width="546" alt="discord.js" /></a>
-  </p>
-</div>
+An unofficial Discord.js v14-compatible fork that preserves selfbot support
+
+[![npm](https://img.shields.io/npm/v/selfbotjs.svg)](https://www.npmjs.com/package/selfbotjs)
+[![CI](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions/workflows/ci.yml/badge.svg)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions/workflows/ci.yml)
+[![Discord.js compatibility](https://img.shields.io/badge/discord.js-14.27.0-5865f2)](https://github.com/discordjs/discord.js/releases/tag/14.27.0)
 
 > [!CAUTION]
-> **The use of this module under a different name on NPM (or another source besides this Github) is not associated with this library.**
-> **When using these libraries, you accept the risk of exposing your Discord Token.**
+> Automating a normal Discord user account violates Discord's Terms of Service and may result in account termination.
+> SelfbotJS is unofficial, is not supported by Discord, and is used entirely at your own risk.
 
-## About
+## What is v4?
 
-<strong>Welcome to `discord.js-selfbot-v13@v3.7`, based on `discord.js@13.17` and backport `discord.js@14.21.0`</strong>
+SelfbotJS v4 moves the fork to the Discord.js 14.27.0 API surface while preserving its user-account transport and
+selfbot-specific helpers. It includes modern Discord.js exports, events, partials, poll support, current modal components,
+shared client themes, activity instances, voice messages, and the fork's existing guild, interaction, presence, captcha,
+TOTP, voice, and video features.
 
-- discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
+Read [the complete v14.27 change and migration guide](docs/v14.27.md) before upgrading from v3.
 
+## Requirements
 
-<div align="center">
-  <p>
-    <a href="https://www.npmjs.com/package/discord.js-selfbot-v13"><img src="https://img.shields.io/npm/v/discord.js-selfbot-v13.svg" alt="npm version" /></a>
-    <a href="https://www.npmjs.com/package/discord.js-selfbot-v13"><img src="https://img.shields.io/npm/dt/discord.js-selfbot-v13.svg" alt="npm downloads" /></a>
-    <a href="https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions"><img src="https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions/workflows/lint.yml/badge.svg" alt="Tests status" /></a>
-  </p>
-</div>
-
-> [!WARNING]
-> **I don't take any responsibility for blocked Discord accounts that used this module.**
-
-> [!CAUTION]
-> **Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.**
-
-### <strong>[Document Website](https://discordjs-self-v13.netlify.app/)</strong>
-
-### <strong>[Example Code](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/examples)</strong>
-
-## Features (User)
-- [x] Message
-- [x] ClientUser: Status, Activity, RemoteAuth, etc.
-- [X] Guild: Fetch Members, Join / Leave, Top emojis, etc.
-- [X] Interactions: Slash Commands, Buttons, Menu, Modal.
-- [X] Captcha & TOTP Handler
-- [X] Documentation
-- [x] Voice & Video
-- [ ] Everything
+- Node.js 20.18 or newer
+- A Discord user token supplied at runtime (never committed to source control)
 
 ## Installation
 
-> [!NOTE]
-> **Node.js 20.18.0 or newer is required**
-
-```sh-session
-npm install discord.js-selfbot-v13@latest
+```sh
+npm install selfbotjs
 ```
 
-## Example
+## Quick start
 
 ```js
-const { Client } = require('discord.js-selfbot-v13');
+const { Client, Events } = require('selfbotjs');
+
 const client = new Client();
 
-client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
-})
+client.once(Events.ClientReady, readyClient => {
+  console.log(`${readyClient.user.tag} is ready`);
+});
 
-client.login('token');
+client.on(Events.MessageCreate, async message => {
+  if (message.author.id === client.user.id && message.content === '!ping') {
+    await message.reply('Pong!');
+  }
+});
+
+client.login(process.env.DISCORD_TOKEN);
 ```
 
-## Get Token ?
+Run it without placing the token in the file:
 
-- Based: [findByProps](https://discord.com/channels/603970300668805120/1085682686607249478/1085682686607249478)
+```sh
+DISCORD_TOKEN='your-token' node index.js
+```
 
-<strong>Run code (Discord Console - [Ctrl + Shift + I])</strong>
+## Highlights
+
+- Discord.js 14.27-compatible builders, formatters, REST utilities, API enums, `Events`, and `Partials`
+- Messages, attachments, embeds, polls, voice messages, and shared client themes
+- Slash commands, buttons, select menus, labels, file uploads, radio groups, checkbox groups, and modals
+- Guild discovery, invite acceptance, application authorization, and user-installed applications
+- Rich presence, custom status, Spotify presence, voice, audio, and video helpers
+- Captcha callback and automatic TOTP support for flows where Discord requests additional verification
+
+## Documentation and examples
+
+- [v4 / Discord.js 14.27 changes](docs/v14.27.md)
+- [API documentation data](docs/main.json)
+- [Runnable examples](examples/README.md)
+
+The examples use `DISCORD_TOKEN` and other environment variables. Copy `.env.example` values into your own environment;
+do not commit credentials.
+
+## Compatibility
+
+SelfbotJS exposes modern names such as `AttachmentBuilder`, `Events`, `Partials`, and `PermissionsBitField`. Selected legacy
+names and events remain available so v3 applications can migrate incrementally. Selfbot-specific behavior is not part of
+upstream Discord.js, and bot-only Discord.js examples may not apply to user accounts.
+
+You can inspect compatibility at runtime:
 
 ```js
-window.webpackChunkdiscord_app.push([
-	[Symbol()],
-	{},
-	req => {
-		if (!req.c) return;
-		for (let m of Object.values(req.c)) {
-			try {
-				if (!m.exports || m.exports === window) continue;
-				if (m.exports?.getToken) return copy(m.exports.getToken());
-				for (let ex in m.exports) {
-					if (m.exports?.[ex]?.getToken && m.exports[ex][Symbol.toStringTag] !== 'IntlMessagesProxy') return copy(m.exports[ex].getToken());
-				}
-			} catch {}
-		}
-	},
-]);
+const { version, discordJsVersion } = require('selfbotjs');
 
-window.webpackChunkdiscord_app.pop();
-console.log('%cWorked!', 'font-size: 50px');
-console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
+console.log({ version, discordJsVersion });
 ```
+
+## Security
+
+- Never paste a user token into an issue, log, screenshot, or committed file.
+- Install only the package named `selfbotjs` from a source you trust.
+- Treat third-party captcha solvers, proxies, and media tools as separate security boundaries.
+- Rotate the account token immediately if it may have been exposed.
+
+This project intentionally does not include browser-console token extraction instructions.
 
 ## Contributing
 
-- Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
-[documentation](https://discordjs-self-v13.netlify.app/).  
-- See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.github/CONTRIBUTING.md) if you'd like to submit a PR.
+Before opening a pull request, run:
 
-## Need help?
-Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions)
+```sh
+npm install
+npm test
+```
 
-## Credits
-- [Discord.js](https://github.com/discordjs/discord.js)
+Keep runtime changes, declarations in `typings/index.d.ts`, documentation, and examples in sync. Bug reports should include
+the SelfbotJS version, Node.js version, a minimal reproduction with secrets removed, and the relevant error or debug output.
 
-## <strong>Other project(s)
+## License and credits
 
-- 📘 [***aiko-chan-ai/DiscordBotClient***](https://github.com/aiko-chan-ai/DiscordBotClient) <br/>
-  A patched version of discord, with bot login support
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=aiko-chan-ai/discord.js-selfbot-v13&type=Date)](https://star-history.com/#aiko-chan-ai/discord.js-selfbot-v13&Date)
+SelfbotJS is licensed under the [GNU General Public License v3.0](LICENSE). It is based on
+[discord.js](https://github.com/discordjs/discord.js) and the original
+[discord.js-selfbot-v13](https://github.com/aiko-chan-ai/discord.js-selfbot-v13) project.

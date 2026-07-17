@@ -1,35 +1,22 @@
 'use strict';
 
-// No longer using 2captcha since the website no longer supports hCaptcha, which Discord uses.
-const Captcha = require('2captcha');
-const Discord = require('../src/index');
+const { Client, Events } = require('selfbotjs');
 
-const solver = new Captcha.Solver('<2captcha key>');
-
-const client = new Discord.Client({
-  captchaSolver: function (captcha, UA) {
-    return solver
-      .hcaptcha(captcha.captcha_sitekey, 'discord.com', {
-        invisible: 1,
-        userAgent: UA,
-        data: captcha.captcha_rqdata,
-      })
-      .then(res => res.data);
-  },
-  TOTPKey: '<string>',
+const client = new Client({
+  // Add TOTPKey only when the account has TOTP enabled and this flow needs it.
+  TOTPKey: process.env.TOTP_SECRET,
 });
 
-client.on('ready', async () => {
-  console.log('Ready!', client.user.tag);
-  // Note
-  // You need to include `guild_id` to invite the bot
-  // These two fields can appear either in the URL or in the options.
-  await client.authorizeURL(
-    `https://discord.com/api/oauth2/authorize?client_id=289066747443675143&permissions=414501424448&scope=bot%20applications.commands`,
-    {
-      guild_id: 'guild id',
-    },
-  );
+client.once(Events.ClientReady, async readyClient => {
+  const query = new URLSearchParams({
+    client_id: process.env.APPLICATION_ID,
+    permissions: '0',
+    scope: 'bot applications.commands',
+  });
+
+  await readyClient.authorizeURL(`https://discord.com/oauth2/authorize?${query}`, {
+    guild_id: process.env.GUILD_ID,
+  });
 });
 
-client.login('token');
+client.login(process.env.DISCORD_TOKEN);

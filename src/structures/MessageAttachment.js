@@ -200,7 +200,9 @@ class MessageAttachment {
    * @readonly
    */
   get spoiler() {
-    return Util.basename(this.url ?? this.name).startsWith('SPOILER_');
+    return (
+      this.flags?.has(AttachmentFlags.FLAGS.IS_SPOILER) || Util.basename(this.url ?? this.name).startsWith('SPOILER_')
+    );
   }
 
   toJSON() {

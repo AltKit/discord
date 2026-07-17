@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Node.js ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['20.18.0', '22', '24']
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run checks
+        run: npm test
+
+      - name: Verify generated documentation is current
+        if: matrix.node-version == '22'
+        run: |
+          docs_date=$(node -p "require('./docs/main.json').meta.date")
+          npm run docs
+          DOCS_DATE="$docs_date" node -e "const fs=require('node:fs'); const docs=require('./docs/main.json'); docs.meta.date=Number(process.env.DOCS_DATE); fs.writeFileSync('docs/main.json', JSON.stringify(docs));"
+          git diff --exit-code -- docs/main.json
+
+  package:
+    name: Package contents
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Inspect publish archive
+        run: npm pack --dry-run

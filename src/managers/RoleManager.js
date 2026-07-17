@@ -14,6 +14,8 @@ let cacheWarningEmitted = false;
 let deprecationEmittedForCreate = false;
 let deprecationEmittedForEdit = false;
 
+const resolveRoleColor = color => (color === null || color === undefined ? color : resolveColor(color));
+
 /**
  * Manages API methods for roles and stores their cache.
  * @extends {CachedManager}
@@ -201,9 +203,9 @@ class RoleManager extends CachedManager {
     }
 
     let colors = options.colors && {
-      primary_color: resolveColor(options.colors.primaryColor),
-      secondary_color: options.colors.secondaryColor && resolveColor(options.colors.secondaryColor),
-      tertiary_color: options.colors.tertiaryColor && resolveColor(options.colors.tertiaryColor),
+      primary_color: resolveRoleColor(options.colors.primaryColor),
+      secondary_color: resolveRoleColor(options.colors.secondaryColor),
+      tertiary_color: resolveRoleColor(options.colors.tertiaryColor),
     };
 
     if (color !== undefined) {
@@ -266,9 +268,9 @@ class RoleManager extends CachedManager {
     }
 
     let colors = data.colors && {
-      primary_color: resolveColor(data.colors.primaryColor),
-      secondary_color: data.colors.secondaryColor && resolveColor(data.colors.secondaryColor),
-      tertiary_color: data.colors.tertiaryColor && resolveColor(data.colors.tertiaryColor),
+      primary_color: resolveRoleColor(data.colors.primaryColor),
+      secondary_color: resolveRoleColor(data.colors.secondaryColor),
+      tertiary_color: resolveRoleColor(data.colors.tertiaryColor),
     };
 
     if (data.color !== undefined) {

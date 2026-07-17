@@ -2,6 +2,7 @@
 
 const Base = require('./Base');
 const { Emoji } = require('./Emoji');
+const PollAnswerVoterManager = require('../managers/PollAnswerVoterManager');
 
 /**
  * Represents an answer to a {@link Poll}
@@ -25,11 +26,13 @@ class PollAnswer extends Base {
      */
     this.id = data.answer_id;
 
+    this.voters = new PollAnswerVoterManager(this);
+
     /**
      * The text of this answer
      * @type {?string}
      */
-    this.text = data.poll_media.text ?? null;
+    this.text = data.poll_media?.text ?? null;
 
     /**
      * The raw emoji of this answer
@@ -37,7 +40,7 @@ class PollAnswer extends Base {
      * @type {?APIPartialEmoji}
      * @private
      */
-    Object.defineProperty(this, '_emoji', { value: data.poll_media.emoji ?? null });
+    Object.defineProperty(this, '_emoji', { value: data.poll_media?.emoji ?? null, writable: true });
 
     this._patch(data);
   }
@@ -51,7 +54,7 @@ class PollAnswer extends Base {
        */
       this.voteCount = data.count;
     } else {
-      this.voteCount ??= 0;
+      this.voteCount ??= this.voters.cache.size;
     }
   }
 
@@ -62,6 +65,10 @@ class PollAnswer extends Base {
   get emoji() {
     if (!this._emoji || (!this._emoji.id && !this._emoji.name)) return null;
     return this.client.emojis.cache.get(this._emoji.id) ?? new Emoji(this.client, this._emoji);
+  }
+
+  get partial() {
+    return this.poll.partial || (this.text === null && this.emoji === null);
   }
 
   /**
@@ -76,12 +83,7 @@ class PollAnswer extends Base {
    * @returns {Promise<Collection<Snowflake, User>>}
    */
   fetchVoters({ after, limit } = {}) {
-    return this.poll.message.channel.messages.fetchPollAnswerVoters({
-      messageId: this.poll.message.id,
-      answerId: this.id,
-      after,
-      limit,
-    });
+    return this.voters.fetch({ after, limit });
   }
 }
 

@@ -1,0 +1,24 @@
+[
+  {
+    "name": "General",
+    "path": "..",
+    "files": [
+      {
+        "name": "Welcome",
+        "id": "welcome",
+        "path": "README.md"
+      }
+    ]
+  },
+  {
+    "name": "Version guides",
+    "path": ".",
+    "files": [
+      {
+        "name": "Changes in v4 / Discord.js 14.27",
+        "id": "v14-27",
+        "path": "v14.27.md"
+      }
+    ]
+  }
+]

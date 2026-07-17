@@ -119,16 +119,24 @@ class Modal {
     if (!this.applicationId || !this.client || !this.channelId || this.replied) throw new Error('Modal cannot reply');
     // Get Object
     const dataFinal = this.toJSON();
-    dataFinal.components = dataFinal.components
-      .map(c => {
-        c.components[0] = {
-          type: c.components[0].type,
-          value: c.components[0].value,
-          custom_id: c.components[0].custom_id,
-        };
-        return c;
-      })
-      .filter(c => typeof c.components[0].value == 'string');
+    const serializeSubmittedComponent = component => {
+      const result = { type: component.type };
+      if (component.id !== undefined) result.id = component.id;
+
+      if (Array.isArray(component.components)) {
+        result.components = component.components.map(serializeSubmittedComponent);
+      } else if (component.component) {
+        result.component = serializeSubmittedComponent(component.component);
+      } else {
+        if (component.custom_id !== undefined) result.custom_id = component.custom_id;
+        if (component.value !== undefined && component.value !== null) result.value = component.value;
+        if (component.values !== undefined && component.values !== null) result.values = component.values;
+      }
+
+      return result;
+    };
+
+    dataFinal.components = dataFinal.components.map(serializeSubmittedComponent);
     delete dataFinal.title;
     const nonce = SnowflakeUtil.generate();
     const postData = {

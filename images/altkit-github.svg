@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">AltKit GitHub organization logo</title>
+  <desc id="description">A luminous angular AK monogram on a dark rounded-square background.</desc>
+  <defs>
+    <linearGradient id="background" x1="72" y1="42" x2="440" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#161B22" />
+      <stop offset="1" stop-color="#080B10" />
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000" flood-opacity="0.45" />
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#background)" />
+  <rect x="18" y="18" width="476" height="476" rx="96" fill="none" stroke="#30363D" stroke-width="4" />
+
+  <g transform="translate(-38 10)" filter="url(#shadow)">
+    <path
+      d="M103 358 218 142c8-15 29-15 37 0l45 85-31 59-34-64-38 72h54l-34 64H103Z"
+      fill="#F0F6FC"
+    />
+    <path
+      d="M291 154h70l-62 116 108-116h79L360 282l58 76h-77l-51-70-37 70h-70l108-204Z"
+      fill="#A371F7"
+    />
+  </g>
+
+  <circle cx="107" cy="123" r="8" fill="#79C0FF" />
+  <circle cx="402" cy="392" r="6" fill="#F778BA" />
+</svg>

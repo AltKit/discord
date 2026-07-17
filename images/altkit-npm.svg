@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">AltKit npm author logo</title>
+  <desc id="description">A bold angular AK monogram in an npm-red rounded-square badge.</desc>
+  <defs>
+    <linearGradient id="background" x1="72" y1="48" x2="438" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E44B46" />
+      <stop offset="0.52" stop-color="#CB3837" />
+      <stop offset="1" stop-color="#9F2929" />
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#601313" flood-opacity="0.38" />
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#background)" />
+  <rect x="18" y="18" width="476" height="476" rx="96" fill="none" stroke="#FFF" stroke-opacity="0.22" stroke-width="4" />
+
+  <g transform="translate(-38 10)" filter="url(#shadow)">
+    <path
+      d="M103 358 218 142c8-15 29-15 37 0l45 85-31 59-34-64-38 72h54l-34 64H103Z"
+      fill="#FFF7F6"
+    />
+    <path
+      d="M291 154h70l-62 116 108-116h79L360 282l58 76h-77l-51-70-37 70h-70l108-204Z"
+      fill="#2B1111"
+    />
+  </g>
+
+  <path d="M115 407h282" fill="none" stroke="#FFF" stroke-opacity="0.38" stroke-width="8" stroke-linecap="round" />
+</svg>

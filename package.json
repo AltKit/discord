@@ -2,7 +2,7 @@
   "name": "@altkit/discord",
   "version": "4.0.0",
   "discordJsVersion": "14.27.0",
-  "description": "An unofficial Discord.js v14-compatible fork that preserves selfbot support",
+  "description": "An unofficial Discord.js v14.27-compatible fork that preserves selfbot support",
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
   "scripts": {

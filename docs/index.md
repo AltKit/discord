@@ -5,7 +5,7 @@ titleTemplate: false
 hero:
   name: Altkit Discord
   text: Discord.js for user accounts
-  tagline: A typed v14-compatible toolkit for messages, presence, voice, and media.
+  tagline: A typed v14.27-compatible toolkit for messages, presence, voice, and media.
   image:
     src: /logo.svg
     alt: Altkit Discord

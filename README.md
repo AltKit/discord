@@ -1,6 +1,6 @@
 # Altkit Discord
 
-An unofficial Discord.js v14-compatible fork that preserves selfbot support
+An unofficial Discord.js v14.27-compatible fork that preserves selfbot support
 
 [![npm](https://img.shields.io/npm/v/%40altkit%2Fdiscord.svg)](https://www.npmjs.com/package/@altkit/discord)
 [![CI](https://github.com/altkit/discord/actions/workflows/ci.yml/badge.svg)](https://github.com/altkit/discord/actions/workflows/ci.yml)

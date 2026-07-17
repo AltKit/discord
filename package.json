@@ -1,6 +1,6 @@
 {
   "name": "@altkit/discord",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "discordJsVersion": "14.27.0",
   "description": "An unofficial Discord.js v14.27-compatible fork for Discord API and Gateway v10 user-account workflows",
   "main": "./src/index.js",

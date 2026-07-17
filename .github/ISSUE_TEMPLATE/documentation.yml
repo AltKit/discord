@@ -1,0 +1,67 @@
+name: Documentation issue
+description: Report missing, unclear, or incorrect documentation or examples
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for README, developer-guide, migration-guide, API-documentation, and example issues. For runtime failures, use the bug report form.
+
+        Never include real account credentials or unredacted personal data in example code, screenshots, or logs.
+
+  - type: dropdown
+    id: location
+    attributes:
+      label: Documentation area
+      options:
+        - README
+        - Developer and release guide
+        - v4 migration guide
+        - Generated API documentation
+        - Runnable examples
+        - Environment configuration
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: link
+    attributes:
+      label: Page or file
+      description: Link the page or provide the repository path and section name.
+      placeholder: "docs/devguide.md#github-actions"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear or incorrect?
+      description: Quote only the small portion needed to identify the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: Explain what the documentation should say or demonstrate instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: Relevant Altkit Discord version
+      description: Provide a version when the documentation issue is version-specific.
+      placeholder: "4.x.x or not version-specific"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched open and closed issues for an existing report.
+          required: true
+        - label: I removed all credentials, private identifiers, and personal data.
+          required: true

@@ -1,44 +1,103 @@
 name: Feature request
-description: Request a new Altkit Discord v4 feature
-labels: [feature]
+description: Propose an improvement to Altkit Discord
+title: "[Feature]: "
+labels:
+  - feature
 body:
   - type: markdown
     attributes:
       value: |
-        Link public Discord API or Discord.js documentation when possible. For undocumented user-account behavior,
-        include sanitized request/response details and explain how the behavior was verified without exposing credentials.
+        Describe the use case before the implementation. Link public Discord API or Discord.js documentation when possible.
+
+        Do not include credentials or unredacted account data. Requests whose primary purpose is credential extraction, platform abuse, safety-control bypasses, spam, or evasion are not appropriate for this project.
+
   - type: dropdown
-    id: package
+    id: area
     attributes:
-      label: Which package is the feature request for?
+      label: Area
       options:
-        - The core library
-        - The documentation
-        - An example
+        - Gateway, client, or events
+        - REST API or rate limits
+        - Messages, channels, guilds, or users
+        - Interactions, components, or applications
+        - Presence or activities
+        - Voice, audio, or video
+        - TypeScript declarations
+        - Package exports or developer tooling
+        - Documentation or examples
+        - Other
     validations:
       required: true
+
   - type: textarea
-    id: description
+    id: problem
     attributes:
-      label: Feature
-      description: A clear and concise description of what the problem is, or what feature you want to be implemented.
-      placeholder: I'm always frustrated when..., Discord has recently released..., A good addition would be...
+      label: Problem or use case
+      description: What limitation are you encountering? Who would benefit from solving it?
+      placeholder: Describe the use case without assuming a particular implementation.
     validations:
       required: true
+
   - type: textarea
-    id: solution
+    id: proposal
     attributes:
-      label: Ideal solution or implementation
-      description: A clear and concise description of what you want to happen.
+      label: Proposed solution
+      description: Describe the desired behavior and, if relevant, the public API shape.
+      placeholder: Include a short usage example if it makes the proposal clearer.
     validations:
       required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: API or compatibility references
+      description: Link relevant Discord.js source/docs, public Discord API docs, changelogs, or sanitized protocol evidence.
+      placeholder: "https://..."
+
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternative solutions or implementations
-      description: A clear and concise description of any alternative solutions or features you have considered.
+      label: Alternatives considered
+      description: Explain current workarounds or other designs you considered.
+
+  - type: dropdown
+    id: compatibility
+    attributes:
+      label: Compatibility impact
+      description: Could this change break existing Altkit Discord applications?
+      options:
+        - No breaking change expected
+        - A breaking change may be required
+        - Unsure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be interested in implementing this after the approach is agreed upon?
+      options:
+        - Yes, I can open a pull request
+        - Maybe, with maintainer guidance
+        - No, I am only proposing the feature
+    validations:
+      required: true
+
   - type: textarea
     id: additional-context
     attributes:
-      label: Other context
-      description: Any other context, screenshots, or file uploads that help us understand your feature request.
+      label: Additional context
+      description: Add sanitized examples, screenshots, mockups, or related issues.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched open and closed issues for an existing proposal.
+          required: true
+        - label: I have not included credentials, private identifiers, or personal data.
+          required: true
+        - label: This request is consistent with the project's safety warning and GPLv3 license.
+          required: true

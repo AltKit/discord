@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Security vulnerability
+    url: https://github.com/altkit/discord/security/advisories/new
+    about: Privately report vulnerabilities that should not be disclosed in a public issue.
   - name: Discord.js upstream
-    url: https://github.com/discordjs/discord.js
-    about: Report issues that also reproduce with normal Discord.js bot accounts upstream.
+    url: https://github.com/discordjs/discord.js/issues
+    about: Report bugs that also reproduce with an unmodified Discord.js bot application.
+  - name: npm package
+    url: https://www.npmjs.com/package/@altkit/discord
+    about: Check published versions and package metadata before reporting an installation issue.

@@ -3,14 +3,13 @@
 This guide covers local development, GitHub Actions, npm publishing, project
 preservation, and GPLv3 redistribution for Altkit Discord.
 
-> [!CAUTION]
-> Automating a normal Discord user account violates Discord's Terms of Service
-> and may result in account termination. Never commit or publish Discord tokens,
-> TOTP secrets, proxy credentials, npm credentials, or other account secrets.
+::: danger Account safety
+Automating a normal Discord user account violates Discord's Terms of Service and may result in account termination. Never commit or publish Discord tokens, TOTP secrets, proxy credentials, npm credentials, or other account secrets.
+:::
 
-> [!NOTE]
-> The licensing sections are practical project guidance, not legal advice. The
-> complete and controlling license text is in [`LICENSE`](https://github.com/altkit/discord/blob/selfbotjs/LICENSE).
+::: info Licensing guidance
+The licensing sections are practical project guidance, not legal advice. The complete and controlling license text is in [`LICENSE`](https://github.com/altkit/discord/blob/selfbotjs/LICENSE).
+:::
 
 ## Contents
 
@@ -29,11 +28,11 @@ preservation, and GPLv3 redistribution for Altkit Discord.
 
 ### Requirements
 
-| Tool | Requirement | Purpose |
-| --- | --- | --- |
-| Node.js | 20.19 or newer | Runtime and test environment |
-| npm | Included with Node.js | Dependency and package management |
-| Git | Current supported version | Source control and release tags |
+| Tool    | Requirement               | Purpose                           |
+| ------- | ------------------------- | --------------------------------- |
+| Node.js | 20.19 or newer            | Runtime and test environment      |
+| npm     | Included with Node.js     | Dependency and package management |
+| Git     | Current supported version | Source control and release tags   |
 
 CI tests the project on Node.js 20.19, 22, and 24. Node.js 22 is the release
 runtime, so maintainers should test with it before publishing.
@@ -68,30 +67,26 @@ and any additional media or native dependencies.
 
 ## Project commands
 
-| Command | What it does |
-| --- | --- |
-| `npm test` | Runs all lint, docs, TypeScript, example syntax, unit, and smoke checks |
-| `npm run lint:all` | Checks JavaScript and TypeScript declarations |
-| `npm run test:typescript` | Runs `tsc --noEmit` and `tsd` declaration tests |
-| `npm run test:examples` | Syntax-checks every JavaScript example |
-| `npm run test:unit` | Runs the Node.js unit tests |
-| `npm run test:smoke` | Verifies that the package entry point loads |
-| `npm run docs` | Regenerates `docs/main.json` |
-| `npm run docs:dev` | Starts the VitePress development server |
-| `npm run docs:build` | Builds the static documentation website |
-| `npm run docs:preview` | Serves the built documentation locally |
-| `npm run fix:all` | Applies lint and formatting fixes |
-| `npm run build` | Applies fixes, formats source, and regenerates API docs |
-| `npm pack --dry-run` | Shows the files and metadata that npm would publish |
+| Command                   | What it does                                                            |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `npm test`                | Runs all lint, docs, TypeScript, example syntax, unit, and smoke checks |
+| `npm run lint`            | Checks JavaScript sources and VitePress configuration                   |
+| `npm run format:check`    | Checks formatting for sources and declarations                          |
+| `npm run test:typescript` | Runs `tsc --noEmit` and `tsd` declaration tests                         |
+| `npm run test:examples`   | Syntax-checks every JavaScript example                                  |
+| `npm run test:unit`       | Runs the Node.js unit tests                                             |
+| `npm run test:smoke`      | Verifies that the package entry point loads                             |
+| `npm run docs`            | Regenerates `docs/main.json`                                            |
+| `npm run docs:dev`        | Starts the VitePress development server                                 |
+| `npm run docs:build`      | Builds the static documentation website                                 |
+| `npm run docs:preview`    | Serves the built documentation locally                                  |
+| `npm run fix:all`         | Applies lint and formatting fixes                                       |
+| `npm run build`           | Builds the production VitePress site                                    |
+| `npm pack --dry-run`      | Shows the files and metadata that npm would publish                     |
 
-> [!IMPORTANT]
-> `npm run build` modifies tracked files because it applies automatic fixes and
-> regenerates documentation. Review `git diff` after running it. The package
-> uses `src/` directly and does not transpile to a separate output directory.
-
-The `npm run all` script builds and immediately runs `npm publish`. It is best
-reserved for an intentional manual release; do not use it as a routine local
-verification command.
+::: tip Separate verification from mutation
+`npm test` is read-only. Use `npm run fix:all` only when you intend to modify source formatting, and `npm run docs` only when public JSDoc changes require an updated `docs/main.json` artifact. The package uses `src/` directly and does not transpile to a separate output directory.
+:::
 
 ## Documentation website
 
@@ -137,7 +132,7 @@ generated output. Do not commit hundreds of generated API Markdown pages.
 ### GitHub Pages deployment
 
 `.github/workflows/docs.yml` builds and deploys the site on every push to
-`main`, and can also be started manually. The workflow uses the repository name
+`selfbotjs`, and can also be started manually. The workflow uses the repository name
 as the VitePress base path, so forks deploy to
 `https://<owner>.github.io/<repository>/` without editing the config.
 
@@ -145,7 +140,7 @@ To enable deployment in a repository:
 
 1. Open **Settings → Pages**.
 2. Set **Build and deployment → Source** to **GitHub Actions**.
-3. Push to `main` or run **Actions → Documentation → Run workflow**.
+3. Push to `selfbotjs` or run **Actions → Documentation → Run workflow**.
 4. Confirm the `github-pages` environment reports the deployed URL.
 
 For a custom domain or a user/organization Pages repository, set the
@@ -196,7 +191,7 @@ To enable CI in a new fork:
 2. Open the repository's **Actions** tab and enable workflows if GitHub prompts
    you to do so.
 3. In **Settings → Actions → General**, allow the actions used by this project.
-   The workflow requires `actions/checkout@v4` and `actions/setup-node@v4`.
+   The workflow requires `actions/checkout@v5` and `actions/setup-node@v6`.
 4. Keep the default `GITHUB_TOKEN` workflow permission at **Read repository
    contents**. CI does not require write access or repository secrets.
 5. Run the workflow manually once, or push a branch and open a pull request.
@@ -252,10 +247,9 @@ The npm account or organization must have publish access to
    an OpenID Connect identity token. The workflow's `id-token: write`
    permission is required for provenance; it does not grant source write access.
 
-> [!TIP]
-> Prefer a granular npm token scoped to the single package. Never store an npm
-> token in `.npmrc`, `.env`, a workflow file, a release artifact, or a repository
-> secret when the job reads it from the protected `npm` environment.
+::: tip Limit npm credential scope
+Prefer a granular npm token scoped to the single package. Never store an npm token in `.npmrc`, `.env`, a workflow file, a release artifact, or a repository secret when the job reads it from the protected `npm` environment.
+:::
 
 If the package is configured for npm trusted publishing, the workflow can be
 migrated to tokenless publishing. Configure the GitHub repository and
@@ -265,16 +259,16 @@ Until that migration is complete, the checked-in workflow requires `NPM_TOKEN`.
 
 #### Common workflow failures
 
-| Failure | Likely cause | Resolution |
-| --- | --- | --- |
-| `npm ci` reports lockfile mismatch | `package.json` changed without updating the lockfile | Run `npm install`, review, and commit `package-lock.json` |
-| Lint or formatting fails | Source does not match project rules | Run `npm run fix:all`, then `npm test` |
-| Documentation check has a diff | `docs/main.json` is stale | Run `npm run docs`, review the meaningful changes, and commit them |
-| Tag/version verification fails | Git tag and package version differ | Recreate the release with matching versions; do not publish mismatched source |
-| `ENEEDAUTH` or HTTP 401 | `NPM_TOKEN` is missing, expired, or inaccessible to the environment | Replace the `npm` environment secret and verify environment rules |
-| HTTP 403 during publish | Token lacks package access, 2FA policy blocks it, or the version already exists | Check npm package permissions and choose a new version if already published |
-| Provenance generation fails | `id-token: write` is missing or the publish is not running in supported GitHub Actions | Restore the permission and publish only from the release workflow |
-| Workflow does not start | Actions are disabled, tag pattern does not match, or workflow is absent from the tagged commit | Enable Actions and inspect the pushed tag with `git show <tag>:.github/workflows/release.yml` |
+| Failure                            | Likely cause                                                                                   | Resolution                                                                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `npm ci` reports lockfile mismatch | `package.json` changed without updating the lockfile                                           | Run `npm install`, review, and commit `package-lock.json`                                     |
+| Lint or formatting fails           | Source does not match project rules                                                            | Run `npm run fix:all`, then `npm test`                                                        |
+| Documentation check has a diff     | `docs/main.json` is stale                                                                      | Run `npm run docs`, review the meaningful changes, and commit them                            |
+| Tag/version verification fails     | Git tag and package version differ                                                             | Recreate the release with matching versions; do not publish mismatched source                 |
+| `ENEEDAUTH` or HTTP 401            | `NPM_TOKEN` is missing, expired, or inaccessible to the environment                            | Replace the `npm` environment secret and verify environment rules                             |
+| HTTP 403 during publish            | Token lacks package access, 2FA policy blocks it, or the version already exists                | Check npm package permissions and choose a new version if already published                   |
+| Provenance generation fails        | `id-token: write` is missing or the publish is not running in supported GitHub Actions         | Restore the permission and publish only from the release workflow                             |
+| Workflow does not start            | Actions are disabled, tag pattern does not match, or workflow is absent from the tagged commit | Enable Actions and inspect the pushed tag with `git show <tag>:.github/workflows/release.yml` |
 
 ## Building the npm package
 
@@ -287,7 +281,6 @@ Prepare and inspect a local archive:
 
 ```sh
 npm ci
-npm run build
 npm test
 npm pack --dry-run
 npm pack
@@ -323,7 +316,7 @@ Update the version without creating a tag automatically:
 ```sh
 npm version 4.0.1 --no-git-tag-version
 npm install
-npm run build
+npm run docs
 npm test
 npm pack --dry-run
 ```
@@ -348,9 +341,9 @@ npm install @altkit/discord@4.0.1
 Also verify the provenance entry on npm and create GitHub release notes for the
 same immutable tag.
 
-> [!WARNING]
-> npm versions are immutable. If a release is wrong, publish a corrected new
-> version. Do not move a published release tag to different source.
+::: warning Published versions are immutable
+npm versions are immutable. If a release is wrong, publish a corrected new version. Do not move a published release tag to different source.
+:::
 
 ### Manual fallback
 
@@ -372,19 +365,16 @@ workflow, so document why the fallback was used.
 
 ## Release checklist
 
-- [ ] Choose a semantic version and update both `package.json` and
-  `package-lock.json`.
+- [ ] Choose a semantic version and update both package manifest files.
 - [ ] Record user-visible changes and any required migration steps.
 - [ ] Confirm runtime code, declarations, tests, docs, and examples agree.
-- [ ] Run `npm ci`, `npm run build`, `npm test`, and `npm pack --dry-run`.
-- [ ] Review `git diff`, package contents, dependency licenses, and security
-  notices.
+- [ ] Run `npm ci`, `npm test`, `npm run docs:build`, and `npm pack --dry-run`.
+- [ ] Review `git diff`, package contents, dependency licenses, and security notices.
 - [ ] Test the packed archive in a clean temporary project.
 - [ ] Confirm the exact release commit has passed every required CI check.
 - [ ] Create a tag whose version exactly matches `package.json`.
 - [ ] Monitor the release workflow and its protected `npm` environment.
-- [ ] Verify npm version, integrity, provenance, installability, and package
-  contents.
+- [ ] Verify npm version, integrity, provenance, installability, and package contents.
 - [ ] Publish GitHub release notes and link the immutable source tag.
 - [ ] Preserve the source archive, package archive, checksums, and release notes.
 

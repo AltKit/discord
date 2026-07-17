@@ -31,7 +31,7 @@ npm install @altkit/discord
 
 Create `index.js`:
 
-```js
+```js [index.js]
 'use strict';
 
 const { Client, Events } = require('@altkit/discord');
@@ -59,7 +59,7 @@ Never hard-code a token, include it in a command that will be saved to shared sh
 
 For local development, create a `.env` file that is excluded by `.gitignore`:
 
-```dotenv
+```dotenv [.env]
 DISCORD_TOKEN=
 ```
 
@@ -144,4 +144,4 @@ const { discordJsVersion, version } = require('@altkit/discord');
 console.log({ version, discordJsVersion });
 ```
 
-Altkit Discord v4 targets the Discord.js 14.27 API surface. Continue with [client configuration](./client-configuration), or jump to the [example gallery](/examples/).
+Altkit Discord v4 targets the Discord.js 14.27 API surface. Continue with [client configuration](/guide/client-configuration), or jump to the [example gallery](/examples/).

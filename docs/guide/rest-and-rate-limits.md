@@ -6,7 +6,7 @@ Most manager methods ultimately use Altkit's REST layer. It builds Discord API r
 
 Use documented high-level methods when one exists:
 
-```js
+```js [send-message.js]
 const channel = await client.channels.fetch(process.env.CHANNEL_ID);
 await channel.send('Hello');
 ```
@@ -86,13 +86,13 @@ A warning is a signal to fix the request source—not to increase retry limits.
 
 Relevant client options include:
 
-| Option | Purpose |
-| --- | --- |
-| `restRequestTimeout` | Cancel a request that takes too long |
-| `retryLimit` | Bound retries for eligible server failures |
-| `restTimeOffset` | Add timing tolerance before a bucket resumes |
+| Option                | Purpose                                         |
+| --------------------- | ----------------------------------------------- |
+| `restRequestTimeout`  | Cancel a request that takes too long            |
+| `retryLimit`          | Bound retries for eligible server failures      |
+| `restTimeOffset`      | Add timing tolerance before a bucket resumes    |
 | `restGlobalRateLimit` | Apply an application-level global request limit |
-| `restSweepInterval` | Remove inactive request buckets periodically |
+| `restSweepInterval`   | Remove inactive request buckets periodically    |
 
 Use conservative values and measure. Raising a retry limit cannot fix invalid credentials, forbidden actions, malformed payloads, or missing resources.
 
@@ -113,7 +113,7 @@ Never log authorization headers, webhook tokens, TOTP values, or full authentica
 
 REST proxy configuration lives under `http.agent`; gateway proxy configuration lives under `ws.agent`. A proxy changes the trust and failure boundaries but does not bypass Discord rate limits.
 
-See [client configuration](./client-configuration#rest-proxy) and [security](./security#proxies).
+See [client configuration](/guide/client-configuration#rest-proxy) and [security](/guide/security#proxies).
 
 ## Useful API pages
 

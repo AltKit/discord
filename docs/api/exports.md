@@ -24,14 +24,14 @@ const {
 
 ## Compatibility aliases
 
-| Export | Resolves to |
-| --- | --- |
-| `AttachmentBuilder` | `MessageAttachment` |
-| `BaseChannel` | `Channel` |
-| `IntentsBitField` | `Intents` |
-| `MessageFlagsBitField` | `MessageFlags` |
-| `PermissionsBitField` | `Permissions` |
-| `UserFlagsBitField` | `UserFlags` |
+| Export                 | Resolves to         |
+| ---------------------- | ------------------- |
+| `AttachmentBuilder`    | `MessageAttachment` |
+| `BaseChannel`          | `Channel`           |
+| `IntentsBitField`      | `Intents`           |
+| `MessageFlagsBitField` | `MessageFlags`      |
+| `PermissionsBitField`  | `Permissions`       |
+| `UserFlagsBitField`    | `UserFlags`         |
 
 The aliases refer to the same fork implementation; they are not separate subclasses.
 

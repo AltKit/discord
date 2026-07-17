@@ -35,9 +35,7 @@ Permission flags are `bigint` values:
 ```js
 const { PermissionsBitField } = require('@altkit/discord');
 
-const bits =
-  PermissionsBitField.FLAGS.VIEW_CHANNEL |
-  PermissionsBitField.FLAGS.SEND_MESSAGES;
+const bits = PermissionsBitField.FLAGS.VIEW_CHANNEL | PermissionsBitField.FLAGS.SEND_MESSAGES;
 
 const permissions = new PermissionsBitField(bits);
 console.log(permissions.bitfield); // bigint
@@ -72,12 +70,7 @@ Intents select categories of gateway events:
 ```js
 const { Client, IntentsBitField } = require('@altkit/discord');
 
-const intents = new IntentsBitField([
-  'GUILDS',
-  'GUILD_MESSAGES',
-  'DIRECT_MESSAGES',
-  'MESSAGE_CONTENT',
-]);
+const intents = new IntentsBitField(['GUILDS', 'GUILD_MESSAGES', 'DIRECT_MESSAGES', 'MESSAGE_CONTENT']);
 
 const client = new Client({ intents });
 ```

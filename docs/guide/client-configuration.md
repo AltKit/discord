@@ -16,18 +16,18 @@ See [ClientOptions](/api/typedefs/clientoptions) for the generated, field-by-fie
 
 ## Common options
 
-| Option | Purpose | Default |
-| --- | --- | --- |
-| `partials` | Permit events to contain partially cached structures | Common user, channel, member, message, reaction, and event partials |
-| `presence` | Initial status and activities | Online with no activities |
-| `waitGuildTimeout` | Time to wait for initial guild availability | `15_000` ms |
-| `retryLimit` | Retries for eligible server errors | `1` |
-| `restRequestTimeout` | REST request timeout | `15_000` ms |
-| `failIfNotExists` | Fail replies whose referenced message no longer exists | `true` |
-| `makeCache` | Factory used for manager caches | Library defaults |
-| `sweepers` | Periodic cache cleanup | Disabled unless configured |
-| `http` | REST URLs, headers, and proxy agent | Discord defaults |
-| `ws` | Gateway properties, compression, version, and proxy agent | User-client defaults |
+| Option               | Purpose                                                   | Default                                                             |
+| -------------------- | --------------------------------------------------------- | ------------------------------------------------------------------- |
+| `partials`           | Permit events to contain partially cached structures      | Common user, channel, member, message, reaction, and event partials |
+| `presence`           | Initial status and activities                             | Online with no activities                                           |
+| `waitGuildTimeout`   | Time to wait for initial guild availability               | `15_000` ms                                                         |
+| `retryLimit`         | Retries for eligible server errors                        | `1`                                                                 |
+| `restRequestTimeout` | REST request timeout                                      | `15_000` ms                                                         |
+| `failIfNotExists`    | Fail replies whose referenced message no longer exists    | `true`                                                              |
+| `makeCache`          | Factory used for manager caches                           | Library defaults                                                    |
+| `sweepers`           | Periodic cache cleanup                                    | Disabled unless configured                                          |
+| `http`               | REST URLs, headers, and proxy agent                       | Discord defaults                                                    |
+| `ws`                 | Gateway properties, compression, version, and proxy agent | User-client defaults                                                |
 
 ## Partials
 
@@ -49,7 +49,7 @@ const client = new Client({
 });
 ```
 
-Poll partials are particularly important when vote events may refer to messages not present in cache. See [events and partials](./events-and-partials).
+Poll partials are particularly important when vote events may refer to messages not present in cache. See [events and partials](/guide/events-and-partials).
 
 ## Caches and sweepers
 
@@ -89,7 +89,7 @@ const client = new Client({
 });
 ```
 
-For rich activities and custom statuses after login, see [presence and activities](./presence).
+For rich activities and custom statuses after login, see [presence and activities](/guide/presence).
 
 ## REST proxy
 
@@ -101,7 +101,7 @@ const client = new Client({
 });
 ```
 
-The library creates the underlying `undici` proxy agent. Keep proxy credentials in the environment and review the [security guide](./security).
+The library creates the underlying `undici` proxy agent. Keep proxy credentials in the environment and review the [security guide](/guide/security).
 
 ## Rate limits and retries
 

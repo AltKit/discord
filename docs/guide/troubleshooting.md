@@ -47,13 +47,13 @@ Wait for `Events.ClientReady` before startup fetches. When handling events, acco
 
 ## REST requests fail
 
-| Symptom | Likely area |
-| --- | --- |
-| HTTP 400 | Invalid payload or unsupported field |
-| HTTP 401 | Invalid or expired authentication |
-| HTTP 403 | Account lacks permission or action is unavailable |
-| HTTP 404 | Resource is missing or inaccessible |
-| HTTP 429 | Rate limit; let the REST manager queue requests |
+| Symptom  | Likely area                                            |
+| -------- | ------------------------------------------------------ |
+| HTTP 400 | Invalid payload or unsupported field                   |
+| HTTP 401 | Invalid or expired authentication                      |
+| HTTP 403 | Account lacks permission or action is unavailable      |
+| HTTP 404 | Resource is missing or inaccessible                    |
+| HTTP 429 | Rate limit; let the REST manager queue requests        |
 | HTTP 5xx | Discord or upstream service error; use bounded retries |
 
 Capture the error name, status, route, and message. Do not log request headers or the full client object.
@@ -73,7 +73,7 @@ npx tsc --noEmit
 
 ## A Discord.js example does not work
 
-Upstream examples may depend on bot-only application behavior. Check the [compatibility guide](./compatibility), verify each API symbol in the [catalog](/api/), and compare with a repository example written for this fork.
+Upstream examples may depend on bot-only application behavior. Check the [compatibility guide](/guide/compatibility), verify each API symbol in the [catalog](/api/), and compare with a repository example written for this fork.
 
 ## Reporting a bug
 

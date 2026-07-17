@@ -1,20 +1,20 @@
 # Migrate to Altkit Discord v4
 
-> [!IMPORTANT]
-> Altkit Discord v4 moves the fork from its previous Discord.js 14.21-compatible surface to **Discord.js 14.27.0** while
-> retaining its user-account transport and selfbot-specific APIs.
+::: info Compatibility target
+Altkit Discord v4 moves the fork from its previous Discord.js 14.21-compatible surface to **Discord.js 14.27.0** while retaining its user-account transport and selfbot-specific APIs.
+:::
 
-|                         | Version          |
-| ----------------------- | ---------------- |
-| Altkit Discord               | `4.0.0`          |
-| Discord.js API target   | `14.27.0`        |
-| Minimum Node.js version | `20.19.0`        |
-| Tested Node.js versions | `20`, `22`, `24` |
-| Package/import name     | `@altkit/discord`      |
+|                         | Version           |
+| ----------------------- | ----------------- |
+| Altkit Discord          | `4.0.0`           |
+| Discord.js API target   | `14.27.0`         |
+| Minimum Node.js version | `20.19.0`         |
+| Tested Node.js versions | `20`, `22`, `24`  |
+| Package/import name     | `@altkit/discord` |
 
-> [!CAUTION]
-> Automating a normal Discord user account violates Discord's Terms of Service and can result in account termination.
-> Never share or commit a user token, TOTP secret, or proxy credential.
+::: danger Account safety
+Automating a normal Discord user account violates Discord's Terms of Service and can result in account termination. Never share or commit a user token, TOTP secret, or proxy credential.
+:::
 
 ## Contents
 
@@ -44,15 +44,15 @@ npm uninstall discord.js-selfbot-v13
 npm install @altkit/discord
 ```
 
-> [!NOTE]
-> Selected legacy names, string events, and partial identifiers remain available for gradual migration. New code should use
-> the Discord.js v14-style exports.
+::: tip Incremental migration
+Selected legacy names, string events, and partial identifiers remain available for gradual migration. New code should use the Discord.js v14-style exports.
+:::
 
 ## Discord.js 14.27 parity
 
 ### New API surface
 
-| Feature              | Altkit Discord v4 behavior                                                                             |
+| Feature              | Altkit Discord v4 behavior                                                                        |
 | -------------------- | ------------------------------------------------------------------------------------------------- |
 | Voice messages       | Sends Ogg/Opus attachments with waveform and duration metadata using `IS_VOICE_MESSAGE`.          |
 | Stage bitrate        | Adds `Guild#maximumStageBitrate`.                                                                 |
@@ -94,13 +94,13 @@ await channel.send({
 The following Discord.js v14 names resolve to the fork's existing implementations:
 
 | v14 export             | Altkit Discord implementation |
-| ---------------------- | ------------------------ |
-| `AttachmentBuilder`    | `MessageAttachment`      |
-| `BaseChannel`          | `Channel`                |
-| `IntentsBitField`      | `Intents`                |
-| `MessageFlagsBitField` | `MessageFlags`           |
-| `PermissionsBitField`  | `Permissions`            |
-| `UserFlagsBitField`    | `UserFlags`              |
+| ---------------------- | ----------------------------- |
+| `AttachmentBuilder`    | `MessageAttachment`           |
+| `BaseChannel`          | `Channel`                     |
+| `IntentsBitField`      | `Intents`                     |
+| `MessageFlagsBitField` | `MessageFlags`                |
+| `PermissionsBitField`  | `Permissions`                 |
+| `UserFlagsBitField`    | `UserFlags`                   |
 
 Altkit Discord also re-exports formatters, REST utilities, WebSocket utilities, shared utilities, and Discord
 API v10 types from its package root. Existing fork implementations take precedence where user-account behavior differs.
@@ -109,8 +109,9 @@ API v10 types from its package root. Existing fork implementations take preceden
 
 ## Poll updates
 
-> [!TIP]
-> Configure `Partials.Message`, `Partials.Poll`, and `Partials.PollAnswer` when vote events must work for uncached messages.
+::: tip Poll partials
+Configure `Partials.Message`, `Partials.Poll`, and `Partials.PollAnswer` when vote events must work for uncached messages.
+:::
 
 ```js
 const { Client, Partials } = require('@altkit/discord');
@@ -128,17 +129,15 @@ const client = new Client({
 
 ## Fixes and behavior changes
 
-<details>
-<summary><strong>Events and gateway</strong></summary>
+::: details Events and gateway
 
 - Emits the v14 `clientReady` and `webhooksUpdate` names alongside their legacy equivalents.
 - Emits `voiceServerUpdate` from gateway voice-server updates.
 - Handles gateway `RATE_LIMITED` packets with debug output and a one-time process warning per affected opcode.
 
-</details>
+:::
 
-<details>
-<summary><strong>Guilds, roles, and members</strong></summary>
+::: details Guilds, roles, and members
 
 - Stage instance creation resolves `guildScheduledEvent` through the guild scheduled-event manager.
 - Passing `null` for a secondary or tertiary role color clears that gradient color.
@@ -146,17 +145,16 @@ const client = new Client({
 - `GuildMember#joinedTimestamp` is `null` for a missing or invalid join date instead of `NaN`.
 - Team members always initialize the legacy `permissions` array.
 
-</details>
+:::
 
-<details>
-<summary><strong>Messages and attachments</strong></summary>
+::: details Messages and attachments
 
 - `Message#pinnable` checks `READ_MESSAGE_HISTORY` and `PIN_MESSAGES` and excludes voice channels.
 - Attachment spoiler detection recognizes both the `SPOILER_` filename prefix and Discord's spoiler attachment flag.
 - Attachment flags include clip, thumbnail, remix, spoiler, and animated values.
 - Declaration fixes cover raw message data and direct-message send return types where applicable to this fork.
 
-</details>
+:::
 
 ## Dependency alignment
 
@@ -174,7 +172,9 @@ Runtime packages shared with Discord.js are aligned with the 14.27.0 release:
 | `undici`                | `^6.27.0`     | HTTP transport and proxy support             |
 | `tslib`                 | `^2.6.3`      | Shared TypeScript runtime helpers            |
 
-> [!NOTE] > `@discordjs/collection` intentionally remains on `1.5.3` instead of silently moving applications to Collection v2.
+::: info Collection compatibility
+`@discordjs/collection` intentionally remains on `1.5.3` instead of silently moving applications to Collection v2.
+:::
 
 ## Migration guide
 
@@ -207,9 +207,9 @@ After installation, confirm the resolved versions:
 npm list @altkit/discord @discordjs/collection @discordjs/rest @discordjs/ws
 ```
 
-> [!WARNING]
-> Do not copy the old `node_modules` directory into a v4 deployment. Install from the updated `package.json` and lockfile
-> so packages from the previous compatibility baseline cannot remain in the dependency tree.
+::: warning Reinstall dependencies
+Do not copy the old `node_modules` directory into a v4 deployment. Install from the updated `package.json` and lockfile so packages from the previous compatibility baseline cannot remain in the dependency tree.
+:::
 
 ### 2. Update package imports
 
@@ -243,8 +243,9 @@ Legacy names remain usable, but these aliases make shared Discord.js v14 code ea
 | `Permissions`       | `PermissionsBitField`         | No; permission values remain bigint-based.         |
 | `UserFlags`         | `UserFlagsBitField`           | No; the legacy class remains exported.             |
 
-> [!NOTE]
-> These are compatibility aliases, not replacements with different constructors. You can migrate names incrementally.
+::: info Aliases retain their implementation
+These are compatibility aliases, not replacements with different constructors. You can migrate names incrementally.
+:::
 
 ### 4. Prefer modern event constants
 
@@ -448,9 +449,9 @@ Use this final rollout checklist:
 
 ### Compatibility caveats
 
-> [!IMPORTANT]
-> Altkit Discord targets the public Discord.js 14.27 API surface where it applies to this fork. It is not a drop-in replacement
-> for every bot-only behavior in upstream Discord.js.
+::: info Compatibility caveats
+Altkit Discord targets the public Discord.js 14.27 API surface where it applies to this fork. It is not a drop-in replacement for every bot-only behavior in upstream Discord.js.
+:::
 
 - User accounts do not have the same gateway intent and application-command lifecycle as bot users.
 - User accounts cannot register application commands or create and handle bot-owned buttons, select menus, or modals.

@@ -4,7 +4,7 @@ The repository includes voice connection, playback, receive, recording, and vide
 
 ## Voice messages versus voice channels
 
-A voice message is an Ogg/Opus attachment sent to a text-based channel. It does not require joining a voice channel. See [messages and polls](./messages-and-polls#voice-messages).
+A voice message is an Ogg/Opus attachment sent to a text-based channel. It does not require joining a voice channel. See [messages and polls](/guide/messages-and-polls#voice-messages).
 
 Voice-channel playback establishes a gateway and UDP voice connection, then dispatches encoded audio or video.
 

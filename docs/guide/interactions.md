@@ -10,12 +10,7 @@ rejected or timed-out requests explicitly.
 Text-based channels expose the fork-specific `sendSlash()` helper:
 
 ```js
-const response = await channel.sendSlash(
-  process.env.APPLICATION_ID,
-  'command_name',
-  'first option',
-  42,
-);
+const response = await channel.sendSlash(process.env.APPLICATION_ID, 'command_name', 'first option', 42);
 ```
 
 The first argument identifies the application, the second identifies a command path, and remaining values map to command options in order. Subcommands and groups can be expressed in the command path:
@@ -31,14 +26,7 @@ Command definitions can become stale. Fetch or inspect the current command befor
 Use `undefined` to skip an optional positional value while preserving later positions:
 
 ```js
-await channel.sendSlash(
-  process.env.APPLICATION_ID,
-  'image make',
-  'model-name',
-  'portrait',
-  undefined,
-  30,
-);
+await channel.sendSlash(process.env.APPLICATION_ID, 'image make', 'model-name', 'portrait', undefined, 30);
 ```
 
 Choice values may be strings even when they look numeric. Use the exact value from the command definition.

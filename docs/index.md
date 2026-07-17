@@ -41,10 +41,9 @@ features:
     details: Environment-based credentials, safe examples, proxy boundaries, and practical guidance for protecting account secrets.
 ---
 
-<div class="warning custom-block">
-  <p class="custom-block-title">Before you use this library</p>
-  <p>Automating a normal Discord user account violates Discord's Terms of Service and may result in account termination. Altkit Discord is unofficial, is not supported by Discord, and is used entirely at your own risk.</p>
-</div>
+::: danger Before you use this library
+Automating a normal Discord user account violates Discord's Terms of Service and may result in account termination. Altkit Discord is unofficial, is not supported by Discord, and is used entirely at your own risk.
+:::
 
 ## Install
 
@@ -54,7 +53,7 @@ Altkit Discord v4 requires Node.js 20.19 or newer.
 npm install @altkit/discord
 ```
 
-```js
+```js [index.js]
 const { Client, Events } = require('@altkit/discord');
 
 const client = new Client();
@@ -66,4 +65,6 @@ client.once(Events.ClientReady, readyClient => {
 client.login(process.env.DISCORD_TOKEN);
 ```
 
+::: tip Next step
 [Continue with installation and first-run guidance →](/guide/getting-started)
+:::

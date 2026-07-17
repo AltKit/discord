@@ -52,11 +52,9 @@ Retain the returned message ID rather than searching a channel for content that 
 Creating a webhook requires an authenticated client and sufficient guild permissions:
 
 ```js
-const created = await guild.channels.createWebhook(
-  process.env.CHANNEL_ID,
-  'Release reporter',
-  { reason: 'Automated release notifications' },
-);
+const created = await guild.channels.createWebhook(process.env.CHANNEL_ID, 'Release reporter', {
+  reason: 'Automated release notifications',
+});
 ```
 
 Text-based guild channels also expose a convenience `createWebhook()` method.

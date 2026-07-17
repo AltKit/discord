@@ -14,14 +14,14 @@ Altkit Discord v4 presents a Discord.js 14.27-compatible API while preserving us
 
 Several modern names point to the fork's established implementation:
 
-| Preferred name | Compatibility implementation |
-| --- | --- |
-| `AttachmentBuilder` | `MessageAttachment` |
-| `BaseChannel` | `Channel` |
-| `IntentsBitField` | `Intents` |
-| `MessageFlagsBitField` | `MessageFlags` |
-| `PermissionsBitField` | `Permissions` |
-| `UserFlagsBitField` | `UserFlags` |
+| Preferred name         | Compatibility implementation |
+| ---------------------- | ---------------------------- |
+| `AttachmentBuilder`    | `MessageAttachment`          |
+| `BaseChannel`          | `Channel`                    |
+| `IntentsBitField`      | `Intents`                    |
+| `MessageFlagsBitField` | `MessageFlags`               |
+| `PermissionsBitField`  | `Permissions`                |
+| `UserFlagsBitField`    | `UserFlags`                  |
 
 Both names currently work, so applications can migrate incrementally.
 

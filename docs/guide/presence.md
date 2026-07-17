@@ -19,9 +19,7 @@ Presence updates propagate through Discord's gateway and may be rate-limited or 
 ```js
 const { CustomStatus } = require('@altkit/discord');
 
-const custom = new CustomStatus(client)
-  .setEmoji('🛠️')
-  .setState('Building documentation');
+const custom = new CustomStatus(client).setEmoji('🛠️').setState('Building documentation');
 
 client.user.setPresence({ activities: [custom] });
 ```

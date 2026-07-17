@@ -94,7 +94,7 @@ const voters = await poll.answers.get('1').voters.fetch();
 console.log(voters.map(user => user.tag));
 ```
 
-Vote methods and cache shape can vary with the gateway data available to the client. Enable the poll partials described in [events and partials](./events-and-partials) when processing vote events.
+Vote methods and cache shape can vary with the gateway data available to the client. Enable the poll partials described in [events and partials](/guide/events-and-partials) when processing vote events.
 
 ## Voice messages
 

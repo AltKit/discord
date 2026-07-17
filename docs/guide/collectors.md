@@ -9,8 +9,7 @@ A normal event listener is appropriate for application-wide behavior. A collecto
 ## Message collector
 
 ```js
-const filter = message =>
-  message.author.id === client.user.id && message.content.startsWith('!answer');
+const filter = message => message.author.id === client.user.id && message.content.startsWith('!answer');
 
 const collector = channel.createMessageCollector({
   filter,

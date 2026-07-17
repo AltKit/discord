@@ -6,12 +6,12 @@ Guild and channel structures are organized through managers. Understanding the d
 
 Use the least expensive operation that still gives the guarantees you need:
 
-| Operation | Behavior |
-| --- | --- |
-| `manager.cache.get(id)` | Synchronous; returns only an already-cached object |
-| `manager.resolve(value)` | Synchronous; accepts a supported structure or ID and checks cache |
-| `manager.resolveId(value)` | Synchronous; extracts an ID from a supported resolvable |
-| `manager.fetch(id)` | Asynchronous; may use cache or request Discord, depending on options |
+| Operation                  | Behavior                                                             |
+| -------------------------- | -------------------------------------------------------------------- |
+| `manager.cache.get(id)`    | Synchronous; returns only an already-cached object                   |
+| `manager.resolve(value)`   | Synchronous; accepts a supported structure or ID and checks cache    |
+| `manager.resolveId(value)` | Synchronous; extracts an ID from a supported resolvable              |
+| `manager.fetch(id)`        | Asynchronous; may use cache or request Discord, depending on options |
 
 ```js
 const cached = client.channels.cache.get(process.env.CHANNEL_ID);

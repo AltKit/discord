@@ -82,16 +82,16 @@ client.on(Events.MessagePollVoteRemove, (answer, userId) => {
 
 Useful operational events include:
 
-| Event | Use |
-| --- | --- |
-| `ClientReady` | Start work that requires a connected and hydrated client |
-| `Error` | Observe client errors |
-| `Warn` | Observe non-fatal warnings |
-| `Debug` | Diagnose gateway and library behavior during development |
-| `ShardDisconnect` | Track gateway disconnects |
-| `ShardReconnecting` | Track reconnect attempts |
-| `ShardResume` | Confirm a gateway session resumed |
-| `Invalidated` | Stop work when the gateway session can no longer continue |
+| Event               | Use                                                       |
+| ------------------- | --------------------------------------------------------- |
+| `ClientReady`       | Start work that requires a connected and hydrated client  |
+| `Error`             | Observe client errors                                     |
+| `Warn`              | Observe non-fatal warnings                                |
+| `Debug`             | Diagnose gateway and library behavior during development  |
+| `ShardDisconnect`   | Track gateway disconnects                                 |
+| `ShardReconnecting` | Track reconnect attempts                                  |
+| `ShardResume`       | Confirm a gateway session resumed                         |
+| `Invalidated`       | Stop work when the gateway session can no longer continue |
 
 REST diagnostics such as `rateLimit`, `apiRequest`, `apiResponse`, and `invalidRequestWarning` are documented on [BaseClient](/api/classes/baseclient). High-frequency diagnostic events should be filtered before logging.
 

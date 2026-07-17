@@ -10,13 +10,13 @@ Automating a normal Discord user account violates Discord's Terms of Service and
 
 At a high level, the package covers five areas:
 
-| Area | Important capabilities |
-| --- | --- |
-| Gateway | Login, reconnects, events, partial structures, presence, and cache updates |
-| REST | Rate-limit-aware Discord API requests, managers, fetches, and mutations |
-| Discord data | Guilds, channels, messages, users, members, roles, polls, and attachments |
+| Area                  | Important capabilities                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Gateway               | Login, reconnects, events, partial structures, presence, and cache updates                                    |
+| REST                  | Rate-limit-aware Discord API requests, managers, fetches, and mutations                                       |
+| Discord data          | Guilds, channels, messages, users, members, roles, polls, and attachments                                     |
 | User-account features | Relationships, notes, settings, invites, authorized applications, rich presence, and slash-command invocation |
-| Media | Voice messages, voice connections, audio/video dispatch, receive streams, and recording helpers |
+| Media                 | Voice messages, voice connections, audio/video dispatch, receive streams, and recording helpers               |
 
 The package also re-exports formatters, API enums, REST helpers, collections, and WebSocket utilities used by Discord.js 14.27.
 
@@ -86,7 +86,7 @@ This means:
 - some legacy fork names remain as compatibility aliases;
 - the fork's implementation takes precedence when user-account behavior differs.
 
-Read [Discord.js compatibility](./compatibility) and the [v4 migration guide](/migrate) before porting an existing application.
+Read [Discord.js compatibility](/guide/compatibility) and the [v4 migration guide](/migrate) before porting an existing application.
 
 ## Supported module styles
 
@@ -114,10 +114,10 @@ import { Client, Events, type ClientOptions } from '@altkit/discord';
 
 ## Recommended reading path
 
-1. [Getting started](./getting-started)
-2. [Security and account safety](./security)
-3. [Client configuration](./client-configuration)
-4. [Events and partials](./events-and-partials)
-5. [Guilds, channels, and managers](./guilds-and-channels)
+1. [Getting started](/guide/getting-started)
+2. [Security and account safety](/guide/security)
+3. [Client configuration](/guide/client-configuration)
+4. [Events and partials](/guide/events-and-partials)
+5. [Guilds, channels, and managers](/guide/guilds-and-channels)
 6. The feature page matching your application
 7. The generated [API reference](/api/)

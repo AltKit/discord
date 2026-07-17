@@ -27,7 +27,7 @@ Discord snowflake IDs should remain strings. Voice and media examples may also n
 
 ### Connect and respond
 
-```js
+```js [examples/Basic.js]
 const { Client, Events } = require('@altkit/discord');
 
 const client = new Client();
@@ -49,7 +49,7 @@ Repository file: [`examples/Basic.js`](https://github.com/altkit/discord/blob/se
 
 ### Use an HTTP proxy
 
-```js
+```js [examples/Proxy.js]
 const client = new Client({
   http: {
     agent: process.env.HTTP_PROXY,
@@ -61,12 +61,12 @@ Repository file: [`examples/Proxy.js`](https://github.com/altkit/discord/blob/se
 
 ## Messages
 
-| Example | What it demonstrates | Environment |
-| --- | --- | --- |
-| `ActivityMessage.js` | Send a message activity payload | `DISCORD_TOKEN`, `CHANNEL_ID` |
-| `CreateAndVotePoll.js` | Create, vote on, and observe a poll | `DISCORD_TOKEN`, `CHANNEL_ID` |
-| `VoiceMessage.js` | Send prepared Ogg/Opus as a voice message | `DISCORD_TOKEN`, `CHANNEL_ID` |
-| `Embed.js` | Build the fork-specific hidden `WebEmbed` format | `DISCORD_TOKEN` |
+| Example                | What it demonstrates                             | Environment                   |
+| ---------------------- | ------------------------------------------------ | ----------------------------- |
+| `ActivityMessage.js`   | Send a message activity payload                  | `DISCORD_TOKEN`, `CHANNEL_ID` |
+| `CreateAndVotePoll.js` | Create, vote on, and observe a poll              | `DISCORD_TOKEN`, `CHANNEL_ID` |
+| `VoiceMessage.js`      | Send prepared Ogg/Opus as a voice message        | `DISCORD_TOKEN`, `CHANNEL_ID` |
+| `Embed.js`             | Build the fork-specific hidden `WebEmbed` format | `DISCORD_TOKEN`               |
 
 ### Poll
 
@@ -98,12 +98,12 @@ client.once(Events.ClientReady, async readyClient => {
 
 ## Account and application helpers
 
-| Example | What it demonstrates | Environment |
-| --- | --- | --- |
-| `JoinGuild.js` | Accept an invite code | `DISCORD_TOKEN`, `INVITE_CODE` |
-| `AuthorizeUserApps.js` | Install a user application | `DISCORD_TOKEN`, `APPLICATION_ID` |
-| `AddBot.js` | Authorize an application into a guild | `DISCORD_TOKEN`, `APPLICATION_ID`, `GUILD_ID`; optional `TOTP_SECRET` |
-| [Slash commands](./slash-commands) | Invoke commands, upload attachments, and reply to modals | Varies by command |
+| Example                                    | What it demonstrates                                     | Environment                                                           |
+| ------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------- |
+| `JoinGuild.js`                             | Accept an invite code                                    | `DISCORD_TOKEN`, `INVITE_CODE`                                        |
+| `AuthorizeUserApps.js`                     | Install a user application                               | `DISCORD_TOKEN`, `APPLICATION_ID`                                     |
+| `AddBot.js`                                | Authorize an application into a guild                    | `DISCORD_TOKEN`, `APPLICATION_ID`, `GUILD_ID`; optional `TOTP_SECRET` |
+| [Slash commands](/examples/slash-commands) | Invoke commands, upload attachments, and reply to modals | Varies by command                                                     |
 
 Treat invite, authorization, and verification flows as sensitive account operations. Use explicit IDs and inspect results instead of retrying failures indefinitely.
 
@@ -112,9 +112,7 @@ Treat invite, authorization, and verification flows as sensitive account operati
 `RichPresence.js` combines `RichPresence`, `CustomStatus`, and `SpotifyRPC`. `SamsungRPC.js` demonstrates a mobile-platform activity shape.
 
 ```js
-const custom = new CustomStatus(client)
-  .setEmoji('🛠️')
-  .setState('Building');
+const custom = new CustomStatus(client).setEmoji('🛠️').setState('Building');
 
 client.user.setPresence({ activities: [custom] });
 ```
@@ -129,12 +127,12 @@ Read [voice and media](/guide/voice-and-media) before installing optional depend
 
 ## Environment matrix
 
-| Example | Required values |
-| --- | --- |
-| `Basic.js`, `Embed.js`, `RichPresence.js`, `SamsungRPC.js` | `DISCORD_TOKEN` |
-| `ActivityMessage.js`, `CreateAndVotePoll.js`, `VoiceMessage.js` | `DISCORD_TOKEN`, `CHANNEL_ID` |
-| `JoinGuild.js` | `DISCORD_TOKEN`, `INVITE_CODE` |
-| `AuthorizeUserApps.js` | `DISCORD_TOKEN`, `APPLICATION_ID` |
-| `AddBot.js` | `DISCORD_TOKEN`, `APPLICATION_ID`, `GUILD_ID`; optional `TOTP_SECRET` |
-| `Proxy.js` | `DISCORD_TOKEN`; optional `HTTP_PROXY` |
-| `VoiceChannel/*.js` | `DISCORD_TOKEN`, `VOICE_CHANNEL_ID`, plus example-specific media requirements |
+| Example                                                         | Required values                                                               |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `Basic.js`, `Embed.js`, `RichPresence.js`, `SamsungRPC.js`      | `DISCORD_TOKEN`                                                               |
+| `ActivityMessage.js`, `CreateAndVotePoll.js`, `VoiceMessage.js` | `DISCORD_TOKEN`, `CHANNEL_ID`                                                 |
+| `JoinGuild.js`                                                  | `DISCORD_TOKEN`, `INVITE_CODE`                                                |
+| `AuthorizeUserApps.js`                                          | `DISCORD_TOKEN`, `APPLICATION_ID`                                             |
+| `AddBot.js`                                                     | `DISCORD_TOKEN`, `APPLICATION_ID`, `GUILD_ID`; optional `TOTP_SECRET`         |
+| `Proxy.js`                                                      | `DISCORD_TOKEN`; optional `HTTP_PROXY`                                        |
+| `VoiceChannel/*.js`                                             | `DISCORD_TOKEN`, `VOICE_CHANNEL_ID`, plus example-specific media requirements |

@@ -2,7 +2,7 @@
 
 `TextBasedChannel#sendSlash()` invokes an application command as the logged-in user account.
 
-```ts
+```ts [send-slash.d.ts]
 channel.sendSlash(
   application: Snowflake | User,
   commandName: string,

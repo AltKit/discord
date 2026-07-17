@@ -1,20 +1,9 @@
-# Interactions and components
+# Slash command invocation
 
-Altkit Discord supports receiving interactions and includes user-account helpers for invoking application commands. Discord can change command schemas and user-account interaction behavior independently of this package, so handle rejected or timed-out requests explicitly.
-
-## Receive interactions
-
-```js
-const { Events } = require('@altkit/discord');
-
-client.on(Events.InteractionCreate, async interaction => {
-  if (interaction.isButton()) {
-    await interaction.reply({ content: `Pressed ${interaction.customId}` });
-  }
-});
-```
-
-Use type guards such as `isButton()`, `isModalSubmit()`, or the guards available on the installed version before reading subtype-specific fields.
+Altkit Discord includes a user-account helper for invoking commands exposed by installed applications. This is distinct from
+the bot application-command lifecycle: a user account cannot use this library to register commands or handle bot-owned
+interactions. Discord can change command schemas and user-account invocation behavior independently of this package, so handle
+rejected or timed-out requests explicitly.
 
 ## Invoke a slash command
 
@@ -76,18 +65,14 @@ if (!response.isMessage) {
 }
 ```
 
-Modern modal submissions may contain nested labels, file uploads, radio groups, checkbox groups, and individual checkboxes. `ModalSubmitFieldsResolver` provides corresponding getters; see its [API page](/api/classes/modalsubmitfieldsresolver).
+This only fills and submits a modal returned by another application's command. It does not create or register a modal owned by
+the logged-in user account.
 
 ## Deferred responses
 
 Applications may first return a loading message and edit it later. Listen for the matching message update and impose a timeout so the listener cannot remain forever. The complete pattern is in the [slash command example](/examples/slash-commands).
 
-## Components
+## Unsupported bot workflows
 
-Altkit Discord v4 includes current message and modal component builders alongside compatibility structures. When handling components:
-
-- use stable, scoped `customId` values;
-- validate the acting user and channel when the action is sensitive;
-- acknowledge interactions within Discord's deadline;
-- disable or remove controls after one-time workflows finish;
-- treat uploaded files and text values as untrusted input.
+Do not copy upstream bot examples that deploy slash commands, send custom-ID buttons or select menus, open owned modals, or
+listen for their interaction submissions. Those workflows require a bot application and bot token.

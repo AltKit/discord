@@ -48,9 +48,12 @@ The package root includes `Events`, `Partials`, bit fields, flags, `Collection`,
 
 Fork-defined exports take precedence if a dependency exposes the same name.
 
+An exported builder only constructs payload data; it does not grant a user account access to bot-only endpoints. In
+particular, command registration and bot-owned interactive component workflows are unsupported.
+
 ## Managers and structures
 
-Managers, structures, voice classes, interactions, message components, presence helpers, collectors, and fork-specific account helpers are exported from the package root. Use the [symbol catalog](/api/) to locate the exact API and source link.
+Managers, structures, voice classes, presence helpers, collectors, and fork-specific account helpers are exported from the package root. Use the [symbol catalog](/api/) to locate the exact API and source link.
 
 ## CommonJS and TypeScript
 

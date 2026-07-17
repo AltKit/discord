@@ -5,7 +5,7 @@ titleTemplate: false
 hero:
   name: Altkit Discord
   text: Discord.js for user accounts
-  tagline: A typed v14-compatible toolkit for messages, interactions, presence, voice, and media.
+  tagline: A typed v14-compatible toolkit for messages, presence, voice, and media.
   image:
     src: /logo.svg
     alt: Altkit Discord
@@ -23,7 +23,7 @@ hero:
 features:
   - icon: ⚡
     title: Discord.js 14.27 surface
-    details: Modern exports, events, partials, builders, formatters, REST utilities, polls, components, and TypeScript declarations.
+    details: Modern exports, events, partials, formatters, REST utilities, polls, and TypeScript declarations.
   - icon: 💬
     title: User-account workflows
     details: Messaging, invites, user-installed applications, slash command invocation, relationships, settings, and rich presence.

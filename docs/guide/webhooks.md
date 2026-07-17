@@ -35,7 +35,7 @@ const sent = await webhook.send({
 console.log(sent.id);
 ```
 
-Webhook messages support many normal message payload features, including content, embeds, components, files, and mention controls. Features still depend on the webhook type and Discord's payload rules.
+Webhook messages support normal payload features such as content, embeds, files, and mention controls. Features still depend on the webhook type and Discord's payload rules.
 
 ## Fetch, edit, and delete
 

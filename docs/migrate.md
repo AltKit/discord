@@ -21,7 +21,6 @@
 - [Before upgrading](#before-upgrading)
 - [Discord.js 14.27 parity](#discordjs-1427-parity)
 - [Compatibility exports](#compatibility-exports)
-- [Components and modals](#components-and-modals)
 - [Poll updates](#poll-updates)
 - [Fixes and behavior changes](#fixes-and-behavior-changes)
 - [Dependency alignment](#dependency-alignment)
@@ -57,7 +56,6 @@ npm install @altkit/discord
 | -------------------- | ------------------------------------------------------------------------------------------------- |
 | Voice messages       | Sends Ogg/Opus attachments with waveform and duration metadata using `IS_VOICE_MESSAGE`.          |
 | Stage bitrate        | Adds `Guild#maximumStageBitrate`.                                                                 |
-| Integration owners   | Adds `Interaction#authorizingIntegrationOwners` as an `AuthorizingIntegrationOwners` structure.   |
 | Role member counts   | Adds `RoleManager#fetchMemberCounts()`.                                                           |
 | Voice server events  | Emits `voiceServerUpdate` with raw gateway voice-server update data.                              |
 | Member collectibles  | Exposes collectible nameplate data through `GuildMember#collectibles`.                            |
@@ -104,37 +102,10 @@ The following Discord.js v14 names resolve to the fork's existing implementation
 | `PermissionsBitField`  | `Permissions`            |
 | `UserFlagsBitField`    | `UserFlags`              |
 
-Altkit Discord also re-exports the public builders, formatters, REST utilities, WebSocket utilities, shared utilities, and Discord
+Altkit Discord also re-exports formatters, REST utilities, WebSocket utilities, shared utilities, and Discord
 API v10 types from its package root. Existing fork implementations take precedence where user-account behavior differs.
 
 `HolographicStyle` now exposes the v14-style `Primary`, `Secondary`, and `Tertiary` role color values.
-
-## Components and modals
-
-### Added component support
-
-- Labels
-- File uploads
-- Radio groups
-- Checkbox groups
-- Individual checkboxes
-
-### New and updated structures
-
-- `LabelComponent` represents a label and its nested modal input.
-- `ModalInputComponent` represents the new modal-only input types and supports scalar and multiple values.
-- Modal submission parsing now walks nested labels and action rows recursively.
-- Modal replies preserve their nested component shape and serialize both `value` and `values`.
-
-`ModalSubmitFieldsResolver` adds these helpers:
-
-| Method                             | Result                         |
-| ---------------------------------- | ------------------------------ |
-| `getStringSelectValues(customId)`  | Selected string values         |
-| `getFileUploadValues(customId)`    | Uploaded attachment IDs        |
-| `getRadioGroupValue(customId)`     | Selected radio value or `null` |
-| `getCheckboxGroupValues(customId)` | Selected checkbox-group values |
-| `getCheckboxValue(customId)`       | Checkbox boolean               |
 
 ## Poll updates
 
@@ -183,7 +154,6 @@ const client = new Client({
 - `Message#pinnable` checks `READ_MESSAGE_HISTORY` and `PIN_MESSAGES` and excludes voice channels.
 - Attachment spoiler detection recognizes both the `SPOILER_` filename prefix and Discord's spoiler attachment flag.
 - Attachment flags include clip, thumbnail, remix, spoiler, and animated values.
-- Interaction response updates accept an omitted options object.
 - Declaration fixes cover raw message data and direct-message send return types where applicable to this fork.
 
 </details>
@@ -216,8 +186,8 @@ Upgrade in small steps instead of renaming every API at once:
 2. Confirm the existing application can connect without changing legacy event names.
 3. Move imports to the v14-compatible aliases.
 4. Migrate events and partials.
-5. Adopt the new poll, modal, attachment, and activity APIs only where needed.
-6. Run type checks and exercise login, messaging, interactions, and reconnect behavior.
+5. Adopt the new poll, attachment, and activity APIs only where needed.
+6. Run type checks and exercise login, messaging, command invocation, and reconnect behavior.
 
 This order makes package/runtime problems easier to distinguish from API migration problems.
 
@@ -402,28 +372,11 @@ for (const answer of message.poll?.answers.values() ?? []) {
 }
 ```
 
-### 8. Migrate modal field handling
-
-Text inputs continue to use `getTextInputValue()`. New modal component types have dedicated accessors:
-
-```js
-const description = interaction.fields.getTextInputValue('description');
-const tags = interaction.fields.getStringSelectValues('tags');
-const uploads = interaction.fields.getFileUploadValues('attachments');
-const visibility = interaction.fields.getRadioGroupValue('visibility');
-const features = interaction.fields.getCheckboxGroupValues('features');
-const confirmed = interaction.fields.getCheckboxValue('confirm');
-```
-
-Do not assume every field has a string `value`. Selects and file uploads use `values`, while checkboxes can return booleans.
-Nested label components are traversed automatically by `ModalSubmitFieldsResolver`.
-
-### 9. Adopt new 14.27 data safely
+### 8. Adopt new 14.27 data safely
 
 Several properties are nullable or depend on Discord including them in a payload. Use guards when adopting them:
 
 ```js
-const owner = interaction.authorizingIntegrationOwners.user;
 const theme = message.sharedClientTheme;
 const nameplate = member.collectibles?.nameplate;
 
@@ -442,7 +395,7 @@ const instance = await application.fetchActivityInstance(instanceId);
 console.log(instance.location.channel, instance.users);
 ```
 
-### 10. Move credentials out of source code
+### 9. Move credentials out of source code
 
 Replace literal tokens with the environment variable supported by `Client`:
 
@@ -460,7 +413,7 @@ node --env-file=.env index.js
 
 See [`.env.example`](https://github.com/altkit/discord/blob/main/.env.example) for every example variable and credential-handling guidance.
 
-### 11. Verify the migrated application
+### 10. Verify the migrated application
 
 At minimum, check the installed compatibility target and root exports:
 
@@ -489,7 +442,6 @@ Use this final rollout checklist:
 - [ ] Message create/update listeners still receive the expected payloads.
 - [ ] Reconnect and resume behavior works without duplicate listeners.
 - [ ] Poll handlers account for partial data.
-- [ ] Modal handlers use the accessor matching each input type.
 - [ ] Voice message attachments are valid Ogg/Opus files.
 - [ ] TypeScript and declaration tests pass without imports from the old package.
 - [ ] No token, TOTP secret, or proxy credential appears in committed files or logs.
@@ -501,11 +453,13 @@ Use this final rollout checklist:
 > for every bot-only behavior in upstream Discord.js.
 
 - User accounts do not have the same gateway intent and application-command lifecycle as bot users.
+- User accounts cannot register application commands or create and handle bot-owned buttons, select menus, or modals.
+- `sendSlash()` invokes commands exposed by installed applications; it does not register them.
 - Fork-specific methods such as `acceptInvite()`, `authorizeURL()`, rich presence helpers, and voice/video helpers remain
   outside the upstream Discord.js API.
 - Existing uppercase flag names such as `MessageFlags.FLAGS.IS_VOICE_MESSAGE` remain part of the fork's compatibility layer.
-- Builders and API enums are re-exported from companion packages, while selfbot-specific structures take precedence when
-  an export name overlaps.
+- API enums and compatible utilities are re-exported from companion packages, while selfbot-specific structures take
+  precedence when an export name overlaps.
 - Undocumented Discord payloads can change independently of Altkit Discord or Discord.js releases.
 
 ### Complete migrated example

@@ -9,7 +9,7 @@ client.once(Events.ClientReady, readyClient => {});
 client.on(Events.MessageCreate, message => {});
 ```
 
-The table reflects `src/util/Events.js`. Individual class pages describe payloads for documented events.
+The table lists the user-account-oriented event subset. Individual class pages describe payloads for documented events.
 
 ## Client and diagnostics
 
@@ -23,11 +23,10 @@ The table reflects `src/util/Events.js`. Individual class pages describe payload
 | `Warn` | `warn` |
 | `CacheSweep` | `cacheSweep` |
 
-## Messages and interactions
+## Messages
 
 | Constant | Event value |
 | --- | --- |
-| `InteractionCreate` | `interactionCreate` |
 | `MessageCreate` | `messageCreate` |
 | `MessageDelete` | `messageDelete` |
 | `MessageBulkDelete` | `messageDeleteBulk` |
@@ -98,11 +97,10 @@ The table reflects `src/util/Events.js`. Individual class pages describe payload
 | `StageInstanceDelete` | `stageInstanceDelete` |
 | `StageInstanceUpdate` | `stageInstanceUpdate` |
 
-## Scheduled events and application commands
+## Scheduled events
 
 | Constant | Event value |
 | --- | --- |
-| `ApplicationCommandPermissionsUpdate` | `applicationCommandPermissionsUpdate` |
 | `GuildScheduledEventCreate` | `guildScheduledEventCreate` |
 | `GuildScheduledEventDelete` | `guildScheduledEventDelete` |
 | `GuildScheduledEventUpdate` | `guildScheduledEventUpdate` |

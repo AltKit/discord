@@ -23,7 +23,7 @@ body:
         - Gateway, client, or events
         - REST API or rate limits
         - Messages, channels, guilds, or users
-        - Interactions, components, or applications
+        - User-installed applications or command invocation
         - Presence or activities
         - Voice, audio, or video
         - TypeScript declarations

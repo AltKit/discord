@@ -4,10 +4,10 @@ Altkit Discord v4 presents a Discord.js 14.27-compatible API while preserving us
 
 ## What is compatible
 
-- Common v14 root exports, builders, formatters, REST utilities, WebSocket utilities, API enums, and utility packages
+- Common v14 root exports, formatters, REST utilities, WebSocket utilities, API enums, and utility packages
 - Modern event names through `Events`
 - Numeric partial identifiers through `Partials`
-- Current components, modals, polls, attachments, and activity structures implemented by the fork
+- Polls, attachments, and activity structures implemented by the fork
 - TypeScript declarations shipped with the package
 
 ## Aliases
@@ -42,6 +42,9 @@ Selected legacy event names continue to be emitted for older applications. New c
 ## Where upstream examples differ
 
 Upstream Discord.js documentation assumes a bot application and bot token. Bot-only features, privileged-intent setup, OAuth installation flows, and permission expectations may not apply to a user account. Conversely, Altkit's relationships, account settings, invite acceptance, user-app installation, rich presence, and certain voice/video helpers are fork-specific.
+
+In particular, Altkit does not advertise bot-owned application command registration or the creation and handling of buttons,
+select menus, and modals as user-account features. `sendSlash()` only invokes a command exposed by an installed application.
 
 When adapting an upstream example:
 

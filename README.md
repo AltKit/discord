@@ -13,8 +13,8 @@ An unofficial Discord.js v14-compatible fork that preserves selfbot support
 ## What is v4?
 
 Altkit Discord v4 moves the fork to the Discord.js 14.27.0 API surface while preserving its user-account transport and
-selfbot-specific helpers. It includes modern Discord.js exports, events, partials, poll support, current modal components,
-shared client themes, activity instances, voice messages, and the fork's existing guild, interaction, presence, captcha,
+selfbot-specific helpers. It includes modern Discord.js exports, events, partials, poll support, shared client themes,
+activity instances, voice messages, and the fork's existing guild, presence, captcha,
 TOTP, voice, and video features.
 
 Read [the complete v4 migration guide](docs/migrate.md) before upgrading from v3.
@@ -58,9 +58,9 @@ DISCORD_TOKEN='your-token' node index.js
 
 ## Highlights
 
-- Discord.js 14.27-compatible builders, formatters, REST utilities, API enums, `Events`, and `Partials`
+- Discord.js 14.27-compatible formatters, REST utilities, API enums, `Events`, and `Partials`
 - Messages, attachments, embeds, polls, voice messages, and shared client themes
-- Slash commands, buttons, select menus, labels, file uploads, radio groups, checkbox groups, and modals
+- Invoke slash commands exposed by installed applications, including commands that return modals
 - Guild discovery, invite acceptance, application authorization, and user-installed applications
 - Rich presence, custom status, Spotify presence, voice, audio, and video helpers
 - Captcha callback and automatic TOTP support for flows where Discord requests additional verification
@@ -88,7 +88,8 @@ npm run docs:preview
 
 Altkit Discord exposes modern names such as `AttachmentBuilder`, `Events`, `Partials`, and `PermissionsBitField`. Selected legacy
 names and events remain available so v3 applications can migrate incrementally. Selfbot-specific behavior is not part of
-upstream Discord.js, and bot-only Discord.js examples may not apply to user accounts.
+upstream Discord.js. User accounts cannot register application commands or create and handle bot-owned interactive components,
+so bot-only Discord.js examples for slash-command deployment, buttons, select menus, and modals do not apply.
 
 You can inspect compatibility at runtime:
 

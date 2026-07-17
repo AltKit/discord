@@ -14,11 +14,11 @@ At a high level, the package covers five areas:
 | --- | --- |
 | Gateway | Login, reconnects, events, partial structures, presence, and cache updates |
 | REST | Rate-limit-aware Discord API requests, managers, fetches, and mutations |
-| Discord data | Guilds, channels, messages, users, members, roles, interactions, polls, and components |
+| Discord data | Guilds, channels, messages, users, members, roles, polls, and attachments |
 | User-account features | Relationships, notes, settings, invites, authorized applications, rich presence, and slash-command invocation |
 | Media | Voice messages, voice connections, audio/video dispatch, receive streams, and recording helpers |
 
-The package also re-exports builders, formatters, API enums, REST helpers, collections, and WebSocket utilities used by Discord.js 14.27.
+The package also re-exports formatters, API enums, REST helpers, collections, and WebSocket utilities used by Discord.js 14.27.
 
 ## The mental model
 
@@ -40,7 +40,7 @@ From there, four concepts appear throughout the API:
 
 ### Structures
 
-Structures represent Discord objects such as `Guild`, `Message`, `User`, `Role`, and `Interaction`. They expose the object's current data plus operations that naturally belong to it.
+Structures represent Discord objects such as `Guild`, `Message`, `User`, and `Role`. They expose the object's current data plus operations that naturally belong to it.
 
 ```js
 console.log(message.author.tag);
@@ -110,6 +110,7 @@ import { Client, Events, type ClientOptions } from '@altkit/discord';
 - It does not safely manage your credentials for you.
 - It does not automatically encode arbitrary media into every Discord-compatible format.
 - It does not make every upstream Discord.js bot example applicable to user accounts.
+- It does not register application commands or create and handle bot-owned buttons, select menus, or modals.
 
 ## Recommended reading path
 

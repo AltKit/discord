@@ -52,7 +52,7 @@ const Intents = require('./Intents');
  * @typedef {Object} ClientOptions
  * @property {number} [DMChannelVoiceStatusSync=0] The amount of time in milliseconds that the Client to register the event with each DM channel (0=Disable)
  * @property {number} [captchaRetryLimit=3] Captcha retry limit
- * @property {CaptchaSolver} [captchaSolver] Captcha Solver
+ * @property {CaptchaSolver|null} [captchaSolver] Captcha Solver
  * @property {string} [TOTPKey] TOTP key / 2FA Key for two-factor authentication
  * This is a 32-character Base32 string (excluding spaces), typically shown only once during your 2FA setup (QR code), or in the "Manual Entry" section.
  * The library automatically removes spaces and converts the secret to uppercase.
@@ -164,12 +164,7 @@ class Options extends null {
     return {
       DMChannelVoiceStatusSync: 0,
       captchaRetryLimit: 3,
-      captchaSolver: () => {
-        const err = new Error('CAPTCHA_SOLVER_NOT_IMPLEMENTED');
-        err.cause =
-          'You need to provide a captcha solver to use this feature\nExample: const client = new Client({ captchaSolver: yourAsyncFunction })';
-        throw err;
-      },
+      captchaSolver: null,
       TOTPKey: null,
       closeTimeout: 5_000,
       waitGuildTimeout: 15_000,

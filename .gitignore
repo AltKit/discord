@@ -67,7 +67,8 @@ dist
 
 # Env
 .env
-test/
+test/*
+!test/captcha.test.js
 docs/deploy/deploy_key
 docs/deploy/deploy_key.pub
 deploy/deploy_key

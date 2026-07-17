@@ -6,7 +6,10 @@ const { FormData, buildConnector, Client, ProxyAgent } = require('undici');
 const { ciphers } = require('../util/Constants');
 const Util = require('../util/Util');
 
-let agent = null;
+// Dispatchers must be scoped to a REST manager. A module-wide dispatcher would
+// silently reuse the first client's proxy and TLS configuration for every
+// client created later in the same process.
+const agents = new WeakMap();
 
 class APIRequest {
   constructor(rest, method, path, options) {
@@ -16,6 +19,7 @@ class APIRequest {
     this.route = options.route;
     this.options = options;
     this.retries = 0;
+    this.captchaRetries = 0;
 
     this.fullUserAgent = this.client.options.http.headers['User-Agent'];
 
@@ -32,6 +36,7 @@ class APIRequest {
   }
 
   make(captchaKey, captchaRqToken) {
+    let agent = agents.get(this.rest);
     if (!agent) {
       const r_ = Util.checkUndiciProxyAgent(this.client.options.http.agent);
       if (!r_) {
@@ -44,6 +49,7 @@ class APIRequest {
           ciphers: ciphers.join(':'),
         });
       }
+      agents.set(this.rest, agent);
     }
 
     const API =

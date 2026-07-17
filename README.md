@@ -3,7 +3,7 @@
 An unofficial Discord.js v14-compatible fork that preserves selfbot support
 
 [![npm](https://img.shields.io/npm/v/selfbotjs.svg)](https://www.npmjs.com/package/selfbotjs)
-[![CI](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions/workflows/ci.yml/badge.svg)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions/workflows/ci.yml)
+[![CI](https://github.com/MagiqueDeveloper/selfbotjs/actions/workflows/ci.yml/badge.svg)](https://github.com/MagiqueDeveloper/selfbotjs/actions/workflows/ci.yml)
 [![Discord.js compatibility](https://img.shields.io/badge/discord.js-14.27.0-5865f2)](https://github.com/discordjs/discord.js/releases/tag/14.27.0)
 
 > [!CAUTION]
@@ -112,5 +112,5 @@ the SelfbotJS version, Node.js version, a minimal reproduction with secrets remo
 ## License and credits
 
 SelfbotJS is licensed under the [GNU General Public License v3.0](LICENSE). It is based on
-[discord.js](https://github.com/discordjs/discord.js) and the original
-[discord.js-selfbot-v13](https://github.com/aiko-chan-ai/discord.js-selfbot-v13) project.
+[discord.js](https://github.com/discordjs/discord.js) and continues the original discord.js-selfbot-v13 project. Current
+development lives in [MagiqueDeveloper/selfbotjs](https://github.com/MagiqueDeveloper/selfbotjs).

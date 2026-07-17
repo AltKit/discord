@@ -88,7 +88,7 @@ if (!response.isMessage) {
 
 ### Receive messages after bot has replied `{botname} is thinking...`
 
-> [aiko-chan-ai/discord.js-selfbot-v13#1055 (comment)](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues/1055#issuecomment-1949653100)
+> [MagiqueDeveloper/selfbotjs#1055 (comment)](https://github.com/MagiqueDeveloper/selfbotjs/issues/1055#issuecomment-1949653100)
 
 ![image](https://github.com/user-attachments/assets/0a1d253a-7751-4f63-a750-58b50d055928)
 

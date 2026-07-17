@@ -1,0 +1,176 @@
+'use strict';
+
+const assert = require('node:assert/strict');
+const { EventEmitter } = require('node:events');
+const { test } = require('node:test');
+const APIRequest = require('../src/rest/APIRequest');
+const DiscordAPIError = require('../src/rest/DiscordAPIError');
+const HTTPError = require('../src/rest/HTTPError');
+const RequestHandler = require('../src/rest/RequestHandler');
+
+const challenge = {
+  captcha_key: ['captcha-required'],
+  captcha_sitekey: 'site-key',
+  captcha_service: 'hcaptcha',
+  captcha_rqdata: 'sensitive-rqdata',
+  captcha_rqtoken: 'sensitive-rqtoken',
+};
+
+function jsonResponse(data, status = 400, headers = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json', ...headers },
+  });
+}
+
+function createHarness({ captchaSolver = null, captchaRetryLimit = 3, responses = [] } = {}) {
+  const client = new EventEmitter();
+  client.options = {
+    captchaSolver,
+    captchaRetryLimit,
+    retryLimit: 1,
+    restTimeOffset: 0,
+    invalidRequestWarningInterval: 0,
+    rejectOnRateLimit: null,
+    TOTPKey: null,
+  };
+
+  const manager = {
+    client,
+    globalLimit: Infinity,
+    globalRemaining: Infinity,
+    globalReset: null,
+    globalDelay: null,
+  };
+  const calls = [];
+  const request = {
+    method: 'post',
+    path: '/test',
+    route: '/test',
+    options: { data: { value: true } },
+    retries: 0,
+    captchaRetries: 0,
+    fullUserAgent: 'test-agent',
+    async make(captchaKey, captchaRqToken) {
+      calls.push({ captchaKey, captchaRqToken });
+      const response = responses.shift();
+      if (response instanceof Error) throw response;
+      return response;
+    },
+  };
+
+  return { calls, client, handler: new RequestHandler(manager), request };
+}
+
+test('surfaces CAPTCHA details when no callback is configured', async () => {
+  const { handler, request } = createHarness({ responses: [jsonResponse(challenge)] });
+
+  await assert.rejects(handler.execute(request), error => {
+    assert.ok(error instanceof DiscordAPIError);
+    assert.deepEqual(error.captcha, challenge);
+    return true;
+  });
+});
+
+test('accepts a malformed captcha_key shape without hiding the challenge', async () => {
+  const malformedChallenge = { ...challenge, captcha_key: null };
+  const debugMessages = [];
+  const { calls, client, handler, request } = createHarness({
+    captchaSolver: async () => 'captcha-response',
+    responses: [jsonResponse(malformedChallenge), jsonResponse({ ok: true }, 200)],
+  });
+  client.on('debug', message => debugMessages.push(message));
+
+  assert.deepEqual(await handler.execute(request), { ok: true });
+  assert.deepEqual(calls[1], {
+    captchaKey: 'captcha-response',
+    captchaRqToken: 'sensitive-rqtoken',
+  });
+  assert.equal(request.captchaRetries, 1);
+  assert.equal(request.retries, 0);
+  assert.ok(debugMessages.every(message => !message.includes('captcha-response')));
+  assert.ok(debugMessages.every(message => !message.includes('sensitive-rqtoken')));
+  assert.ok(debugMessages.every(message => !message.includes('sensitive-rqdata')));
+});
+
+test('preserves callback failures', async () => {
+  const solverError = new Error('solver unavailable');
+  const { handler, request } = createHarness({
+    captchaSolver: async () => {
+      throw solverError;
+    },
+    responses: [jsonResponse(challenge)],
+  });
+
+  await assert.rejects(handler.execute(request), error => error === solverError);
+});
+
+test('rejects an invalid callback result', async () => {
+  const { handler, request } = createHarness({
+    captchaSolver: async () => ({ token: 'wrong shape' }),
+    responses: [jsonResponse(challenge)],
+  });
+
+  await assert.rejects(handler.execute(request), {
+    name: 'TypeError',
+    message: 'CAPTCHA_SOLVER_INVALID_RESPONSE',
+  });
+});
+
+test('does not replay after an ambiguous transport failure', async () => {
+  const transportError = new Error('connection reset');
+  const { calls, handler, request } = createHarness({
+    captchaSolver: async () => 'captcha-response',
+    responses: [jsonResponse(challenge), transportError, jsonResponse({ ok: true }, 200)],
+  });
+
+  await assert.rejects(handler.execute(request), error => {
+    assert.ok(error instanceof HTTPError);
+    assert.equal(error.cause, transportError);
+    return true;
+  });
+  assert.equal(calls.length, 2);
+  assert.equal(request.retries, 0);
+});
+
+test('uses separate HTTP dispatchers for separate REST managers', async t => {
+  function createRest() {
+    const dispatchers = [];
+    const client = {
+      options: {
+        http: {
+          agent: {},
+          api: 'https://discord.com/api',
+          headers: { 'User-Agent': 'test-agent' },
+          version: 9,
+        },
+        restRequestTimeout: 1_000,
+        ws: { properties: {} },
+      },
+    };
+    const rest = {
+      client,
+      async fetch(_url, options) {
+        dispatchers.push(options.dispatcher);
+        return jsonResponse({ ok: true }, 200);
+      },
+      getAuth: () => 'token',
+    };
+    return { dispatchers, rest };
+  }
+
+  const first = createRest();
+  const second = createRest();
+  const options = { auth: false, route: '/test' };
+  await new APIRequest(first.rest, 'get', '/test', options).make();
+  await new APIRequest(first.rest, 'get', '/test', options).make();
+  await new APIRequest(second.rest, 'get', '/test', options).make();
+
+  assert.equal(first.dispatchers[0], first.dispatchers[1]);
+  assert.notEqual(first.dispatchers[0], second.dispatchers[0]);
+
+  t.after(async () => {
+    await first.dispatchers[0].close();
+    await second.dispatchers[0].close();
+  });
+});

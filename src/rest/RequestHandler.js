@@ -10,18 +10,6 @@ const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
 
-const captchaMessage = [
-  'incorrect-captcha',
-  'response-already-used',
-  'captcha-required',
-  'invalid-input-response',
-  'invalid-response',
-  'You need to update your app',
-  'response-already-used-error',
-  'rqkey-mismatch',
-  'sitekey-secret-mismatch',
-];
-
 function parseResponse(res) {
   if (res.headers.get('content-type')?.startsWith('application/json')) return res.json();
   return res.arrayBuffer();
@@ -208,6 +196,15 @@ class RequestHandler {
     try {
       res = await request.make(captchaKey, captchaToken);
     } catch (error) {
+      // A CAPTCHA response may be single-use. Once a request carrying one has
+      // been transmitted, an abort leaves us unable to know whether Discord
+      // consumed it, so replaying it is unsafe.
+      if (typeof captchaKey === 'string' && captchaKey.length > 0) {
+        const httpError = new HTTPError(error.message, error.constructor.name, error.status, request);
+        httpError.cause = error;
+        throw httpError;
+      }
+
       // Retry the specified number of times for request abortions
       if (request.retries === this.manager.client.options.retryLimit) {
         throw new HTTPError(error.message, error.constructor.name, error.status, request);
@@ -344,6 +341,15 @@ class RequestHandler {
 
         await this.onRateLimit(request, limit, timeout, isGlobal);
 
+        if (typeof captchaKey === 'string' && captchaKey.length > 0) {
+          throw new HTTPError(
+            'Captcha-authenticated request was rate limited and was not replayed',
+            res.constructor.name,
+            res.status,
+            request,
+          );
+        }
+
         // If caused by a sublimit, wait it out here so other requests on the route can be handled
         if (sublimitTimeout) {
           await sleep(sublimitTimeout);
@@ -355,83 +361,92 @@ class RequestHandler {
       let data;
       try {
         data = await parseResponse(res);
-        // Captcha
-        if (
-          data?.captcha_service &&
-          typeof this.manager.client.options.captchaSolver == 'function' &&
-          request.retries < this.manager.client.options.captchaRetryLimit &&
-          captchaMessage.some(s => data.captcha_key[0].includes(s))
-        ) {
-          // Retry the request after a captcha is solved
-          this.manager.client.emit(
-            DEBUG,
-            `[Request Handler] Hit a captcha while executing a request (${data.captcha_key.join(', ')})
+      } catch (err) {
+        throw new HTTPError(err.message, err.constructor.name, err.status, request);
+      }
+
+      // Captcha
+      if (
+        data &&
+        typeof data === 'object' &&
+        typeof data.captcha_service === 'string' &&
+        typeof this.manager.client.options.captchaSolver === 'function' &&
+        request.captchaRetries < this.manager.client.options.captchaRetryLimit
+      ) {
+        const captchaMessages = Array.isArray(data.captcha_key)
+          ? data.captcha_key.filter(message => typeof message === 'string')
+          : [];
+        this.manager.client.emit(
+          DEBUG,
+          `[Request Handler] Hit a captcha while executing a request${
+            captchaMessages.length ? ` (${captchaMessages.join(', ')})` : ''
+          }
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
-    Sitekey : ${data.captcha_sitekey}
-    rqToken : ${data.captcha_rqtoken}`,
-          );
-          const captcha = await this.manager.client.options.captchaSolver(data, request.fullUserAgent);
-          this.manager.client.emit(
-            DEBUG,
-            `[Request Handler] Captcha details:
-    Method  : ${request.method}
-    Path    : ${request.path}
-    Route   : ${request.route}
-    Key     : ${captcha ? `${captcha.slice(0, 120)}...` : '[Captcha not solved]'}
-    rqToken : ${data.captcha_rqtoken}`,
-          );
-          request.retries++;
-          return this.execute(request, captcha, data.captcha_rqtoken);
+    Service : ${data.captcha_service}
+    Attempt : ${request.captchaRetries + 1}/${this.manager.client.options.captchaRetryLimit}`,
+        );
+
+        // Solver failures intentionally propagate unchanged so callers can
+        // distinguish them from HTTP transport failures.
+        const captcha = await this.manager.client.options.captchaSolver(data, request.fullUserAgent);
+        if (typeof captcha !== 'string' || captcha.trim().length === 0) {
+          throw new TypeError('CAPTCHA_SOLVER_INVALID_RESPONSE');
         }
-        // Two factor handling
-        if (data?.code && data.code == 60003 && request.options.auth !== false && request.retries < 1) {
-          // https://gist.github.com/Dziurwa14/de2498e5ee28d2089f095aa037957cbb
-          // 60003: Two factor is required for this operation
-          /**
-           * {
-           *     message: "Two factor is required for this operation";
-           *     code: 60003;
-           *     mfa: {
-           *         ticket: string;
-           *         methods: {
-           *             type: "password" | "totp" | "sms" | "backup" | "webauthn";
-           *             backup_codes_allowed?: boolean;
-           *         }[];
-           *     };
-           * };
-           */
-          if (
-            data.mfa.methods.find(o => o.type === 'totp') &&
-            typeof this.manager.client.options.TOTPKey === 'string'
-          ) {
-            // Get mfa code
-            const otp = this.manager.client.authenticator.generate(this.manager.client.options.TOTPKey);
-            this.manager.client.emit(
-              DEBUG,
-              `[Request Handler] ${data.message}
+
+        this.manager.client.emit(
+          DEBUG,
+          `[Request Handler] Captcha callback completed:
+    Method  : ${request.method}
+    Path    : ${request.path}
+    Route   : ${request.route}`,
+        );
+        request.captchaRetries++;
+        return this.execute(request, captcha, data.captcha_rqtoken);
+      }
+
+      // Two factor handling
+      if (data?.code && data.code == 60003 && request.options.auth !== false && request.retries < 1) {
+        // https://gist.github.com/Dziurwa14/de2498e5ee28d2089f095aa037957cbb
+        // 60003: Two factor is required for this operation
+        /**
+         * {
+         *     message: "Two factor is required for this operation";
+         *     code: 60003;
+         *     mfa: {
+         *         ticket: string;
+         *         methods: {
+         *             type: "password" | "totp" | "sms" | "backup" | "webauthn";
+         *             backup_codes_allowed?: boolean;
+         *         }[];
+         *     };
+         * };
+         */
+        if (data.mfa.methods.find(o => o.type === 'totp') && typeof this.manager.client.options.TOTPKey === 'string') {
+          // Get mfa code
+          const otp = this.manager.client.authenticator.generate(this.manager.client.options.TOTPKey);
+          this.manager.client.emit(
+            DEBUG,
+            `[Request Handler] ${data.message}
     Method  : ${request.method}
     Path    : ${request.path}
     Route   : ${request.route}
     mfaCode : ${otp}`,
-            );
-            // Get ticket
-            const mfaData = data.mfa;
-            const mfaPost = await this.manager.client.api.mfa.finish.post({
-              data: {
-                ticket: mfaData.ticket,
-                data: otp,
-                mfa_type: 'totp',
-              },
-            });
-            request.options.mfaToken = mfaPost.token;
-            request.retries++;
-            return this.execute(request);
-          }
+          );
+          // Get ticket
+          const mfaData = data.mfa;
+          const mfaPost = await this.manager.client.api.mfa.finish.post({
+            data: {
+              ticket: mfaData.ticket,
+              data: otp,
+              mfa_type: 'totp',
+            },
+          });
+          request.options.mfaToken = mfaPost.token;
+          request.retries++;
+          return this.execute(request);
         }
-      } catch (err) {
-        throw new HTTPError(err.message, err.constructor.name, err.status, request);
       }
 
       throw new DiscordAPIError(data, res.status, request);
@@ -439,6 +454,15 @@ class RequestHandler {
 
     // Handle 5xx responses
     if (res.status >= 500 && res.status < 600) {
+      if (typeof captchaKey === 'string' && captchaKey.length > 0) {
+        throw new HTTPError(
+          'Captcha-authenticated request received a server error and was not replayed',
+          res.constructor.name,
+          res.status,
+          request,
+        );
+      }
+
       // Retry the specified number of times for possible serverside issues
       if (request.retries === this.manager.client.options.retryLimit) {
         throw new HTTPError(res.statusText, res.constructor.name, res.status, request);

@@ -6117,7 +6117,7 @@ export type CaptchaSolver = (captcha: Captcha, UserAgent: string) => Promise<str
 export interface ClientOptions {
   DMChannelVoiceStatusSync?: number;
   captchaRetryLimit?: number;
-  captchaSolver?: CaptchaSolver;
+  captchaSolver?: CaptchaSolver | null;
   closeTimeout?: number;
   makeCache?: CacheFactory;
   /** @deprecated Pass the value of this property as `lifetime` to `sweepers.messages` instead. */

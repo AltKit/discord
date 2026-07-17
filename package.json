@@ -7,7 +7,7 @@
   "types": "./typings/index.d.ts",
   "scripts": {
     "all": "npm run build && npm publish",
-    "test": "npm run lint:all && npm run docs:test && npm run test:typescript && npm run test:examples && npm run test:smoke",
+    "test": "npm run lint:all && npm run docs:test && npm run test:typescript && npm run test:examples && npm run test:unit && npm run test:smoke",
     "fix:all": "npm run lint:fix && npm run lint:typings:fix && npm run format",
     "test:typescript": "tsc --noEmit && tsd",
     "lint": "eslint .",
@@ -19,6 +19,7 @@
     "docs": "docgen --input 'src/**/*.js' --custom docs/index.json --output docs/main.json",
     "docs:test": "docgen --input 'src/**/*.js' --custom docs/index.json",
     "test:examples": "find examples -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "test:unit": "node --test test/*.test.js",
     "test:smoke": "node -e \"require('./src')\"",
     "build": "npm run lint:fix && npm run lint:typings:fix && npm run format && npm run docs"
   },
@@ -32,7 +33,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aiko-chan-ai/discord.js-selfbot-v13.git"
+    "url": "git+https://github.com/MagiqueDeveloper/selfbotjs.git"
   },
   "keywords": [
     "discord.js",
@@ -50,9 +51,9 @@
   "author": "aiko-chan-ai",
   "license": "GNU General Public License v3.0",
   "bugs": {
-    "url": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13/issues"
+    "url": "https://github.com/MagiqueDeveloper/selfbotjs/issues"
   },
-  "homepage": "https://github.com/aiko-chan-ai/discord.js-selfbot-v13#readme",
+  "homepage": "https://github.com/MagiqueDeveloper/selfbotjs#readme",
   "dependencies": {
     "@discordjs/builders": "^1.14.1",
     "@discordjs/collection": "1.5.3",

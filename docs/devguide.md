@@ -10,12 +10,13 @@ preservation, and GPLv3 redistribution for Altkit Discord.
 
 > [!NOTE]
 > The licensing sections are practical project guidance, not legal advice. The
-> complete and controlling license text is in [`LICENSE`](../LICENSE).
+> complete and controlling license text is in [`LICENSE`](https://github.com/altkit/discord/blob/main/LICENSE).
 
 ## Contents
 
 - [Development setup](#development-setup)
 - [Project commands](#project-commands)
+- [Documentation website](#documentation-website)
 - [Making a change](#making-a-change)
 - [GitHub Actions](#github-actions)
 - [Building the npm package](#building-the-npm-package)
@@ -62,7 +63,7 @@ node --env-file=.env examples/Basic.js
 ```
 
 The `.env` file is ignored by Git and must remain local. See
-[`examples/README.md`](../examples/README.md) for the example requirement matrix
+the [example gallery](/examples/) for the requirement matrix
 and any additional media or native dependencies.
 
 ## Project commands
@@ -76,6 +77,9 @@ and any additional media or native dependencies.
 | `npm run test:unit` | Runs the Node.js unit tests |
 | `npm run test:smoke` | Verifies that the package entry point loads |
 | `npm run docs` | Regenerates `docs/main.json` |
+| `npm run docs:dev` | Starts the VitePress development server |
+| `npm run docs:build` | Builds the static documentation website |
+| `npm run docs:preview` | Serves the built documentation locally |
 | `npm run fix:all` | Applies lint and formatting fixes |
 | `npm run build` | Applies fixes, formats source, and regenerates API docs |
 | `npm pack --dry-run` | Shows the files and metadata that npm would publish |
@@ -88,6 +92,66 @@ and any additional media or native dependencies.
 The `npm run all` script builds and immediately runs `npm publish`. It is best
 reserved for an intentional manual release; do not use it as a routine local
 verification command.
+
+## Documentation website
+
+The documentation is a VitePress site rooted at `docs/`. Curated Markdown
+guides live alongside the existing migration and maintainer pages, while the
+complete API reference is generated as static routes from `docs/main.json` at
+VitePress build time.
+
+### Local authoring
+
+Install the locked dependencies and start the development server:
+
+```sh
+npm ci
+npm run docs:dev
+```
+
+The local site is normally available at `http://localhost:5173`. Before opening
+a documentation pull request, run the production build:
+
+```sh
+npm run docs:build
+npm run docs:preview
+```
+
+VitePress writes its cache to `docs/.vitepress/cache/` and the production site
+to `docs/.vitepress/dist/`; both directories are ignored by Git.
+
+### Updating the API reference
+
+Source JSDoc remains the source of truth. Regenerate the docgen data after any
+public API or documentation change:
+
+```sh
+npm run docs
+npm run docs:build
+git diff -- docs/main.json
+```
+
+The files under `docs/api/[category]/` are dynamic route templates, not
+generated output. Do not commit hundreds of generated API Markdown pages.
+
+### GitHub Pages deployment
+
+`.github/workflows/docs.yml` builds and deploys the site on every push to
+`main`, and can also be started manually. The workflow uses the repository name
+as the VitePress base path, so forks deploy to
+`https://<owner>.github.io/<repository>/` without editing the config.
+
+To enable deployment in a repository:
+
+1. Open **Settings → Pages**.
+2. Set **Build and deployment → Source** to **GitHub Actions**.
+3. Push to `main` or run **Actions → Documentation → Run workflow**.
+4. Confirm the `github-pages` environment reports the deployed URL.
+
+For a custom domain or a user/organization Pages repository, set the
+`DOCS_BASE` environment variable in the build step when the automatic base is
+not correct. Use `/` for a root domain and always include both leading and
+trailing slashes for a subpath, such as `/docs/`.
 
 ## Making a change
 
@@ -112,11 +176,11 @@ or local test data.
 
 ## GitHub Actions
 
-The workflows live in [`.github/workflows/`](../.github/workflows/).
+The workflows live in [`.github/workflows/`](https://github.com/altkit/discord/tree/main/.github/workflows).
 
 ### CI workflow
 
-[`ci.yml`](../.github/workflows/ci.yml) runs:
+[`ci.yml`](https://github.com/altkit/discord/blob/main/.github/workflows/ci.yml) runs:
 
 - on every branch push;
 - on every pull request; and
@@ -159,7 +223,7 @@ the diff rather than committing a timestamp-only update.
 
 ### Release workflow
 
-[`release.yml`](../.github/workflows/release.yml) publishes when a tag matching
+[`release.yml`](https://github.com/altkit/discord/blob/main/.github/workflows/release.yml) publishes when a tag matching
 `v4.*.*` or `4.*.*` is pushed. It:
 
 1. checks out the tagged commit;
@@ -438,8 +502,8 @@ packaging, hardware, proprietary components, or commercial distribution terms.
 ### Credits and downstream communication
 
 Altkit Discord is based on Discord.js and continues the original
-discord.js-selfbot-v13 work. Preserve the credits in [`README.md`](../README.md),
-the notices in [`LICENSE`](../LICENSE), and notices embedded in individual files
+discord.js-selfbot-v13 work. Preserve the credits in [`README.md`](https://github.com/altkit/discord/blob/main/README.md),
+the notices in [`LICENSE`](https://github.com/altkit/discord/blob/main/LICENSE), and notices embedded in individual files
 or dependencies.
 
 Downstream docs should repeat the project's safety warning: automating a normal

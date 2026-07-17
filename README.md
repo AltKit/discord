@@ -17,7 +17,7 @@ selfbot-specific helpers. It includes modern Discord.js exports, events, partial
 shared client themes, activity instances, voice messages, and the fork's existing guild, interaction, presence, captcha,
 TOTP, voice, and video features.
 
-Read [the complete v14.27 change and migration guide](docs/v14.27.md) before upgrading from v3.
+Read [the complete v4 migration guide](docs/migrate.md) before upgrading from v3.
 
 ## Requirements
 
@@ -67,13 +67,22 @@ DISCORD_TOKEN='your-token' node index.js
 
 ## Documentation and examples
 
-- [v4 / Discord.js 14.27 changes](docs/v14.27.md)
+- [Documentation website](https://magiquedeveloper.github.io/selfbotjs/)
+- [Migrate to v4 / Discord.js 14.27 changes](docs/migrate.md)
 - [Developer preservation and redistribution guide](docs/devguide.md)
 - [API documentation data](docs/main.json)
 - [Runnable examples](examples/README.md)
 
 The examples use `DISCORD_TOKEN` and other environment variables. Copy `.env.example` values into your own environment;
 do not commit credentials.
+
+To work on the VitePress documentation locally:
+
+```sh
+npm run docs:dev
+npm run docs:build
+npm run docs:preview
+```
 
 ## Compatibility
 

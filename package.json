@@ -18,6 +18,9 @@
     "lint:all": "npm run lint &&  npm run lint:typings",
     "docs": "docgen --input 'src/**/*.js' --custom docs/index.json --output docs/main.json",
     "docs:test": "docgen --input 'src/**/*.js' --custom docs/index.json",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "test:examples": "find examples -name '*.js' -print0 | xargs -0 -n1 node --check",
     "test:unit": "node --test test/*.test.js",
     "test:smoke": "node -e \"require('./src')\"",
@@ -92,6 +95,7 @@
     "prettier": "^2.8.8",
     "tsd": "^0.32.0",
     "tslint": "^6.1.3",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "vitepress": "^1.6.4"
   }
 }

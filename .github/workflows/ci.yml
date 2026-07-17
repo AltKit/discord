@@ -48,6 +48,10 @@ jobs:
           DOCS_DATE="$docs_date" node -e "const fs=require('node:fs'); const docs=require('./docs/main.json'); docs.meta.date=Number(process.env.DOCS_DATE); fs.writeFileSync('docs/main.json', JSON.stringify(docs));"
           git diff --exit-code -- docs/main.json
 
+      - name: Build documentation website
+        if: matrix.node-version == '22'
+        run: npm run docs:build
+
   package:
     name: Package contents
     runs-on: ubuntu-latest

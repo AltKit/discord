@@ -1,4 +1,4 @@
-# Altkit Discord v4 — Discord.js 14.27 compatibility
+# Migrate to Altkit Discord v4
 
 > [!IMPORTANT]
 > Altkit Discord v4 moves the fork from its previous Discord.js 14.21-compatible surface to **Discord.js 14.27.0** while
@@ -458,7 +458,7 @@ cp .env.example .env
 node --env-file=.env index.js
 ```
 
-See [`.env.example`](../.env.example) for every example variable and credential-handling guidance.
+See [`.env.example`](https://github.com/altkit/discord/blob/main/.env.example) for every example variable and credential-handling guidance.
 
 ### 11. Verify the migrated application
 
@@ -524,13 +524,13 @@ client.once(Events.ClientReady, readyClient => {
 client.login(process.env.DISCORD_TOKEN);
 ```
 
-For runnable feature demonstrations, see the [examples guide](../examples/README.md).
+For runnable feature demonstrations, see the [example gallery](/examples/).
 
 ## Upstream reference
 
 - [Discord.js 14.27.0 release notes](https://github.com/discordjs/discord.js/releases/tag/14.27.0)
-- [Altkit Discord README](../README.md)
-- [Altkit Discord examples](../examples/README.md)
+- [Altkit Discord README](https://github.com/altkit/discord/blob/main/README.md)
+- [Altkit Discord examples](/examples/)
 
 Altkit Discord implements the parts of Discord.js 14.27 applicable to this fork. Bot-only guide changes and webhook-only typing
 changes do not alter the selfbot runtime API.

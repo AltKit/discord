@@ -53,6 +53,11 @@ dist
 # vuepress build output
 .vuepress/dist
 
+# VitePress build output and cache
+**/.vitepress/cache/
+**/.vitepress/dist/
+**/.vitepress/.temp/
+
 # Serverless directories
 .serverless/
 

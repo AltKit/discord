@@ -41,7 +41,7 @@ await channel.sendSlash('450323683840491530', 'animal chat', 'bye');
 ### Code test
 
 ```js
-const { AttachmentBuilder } = require('selfbotjs');
+const { AttachmentBuilder } = require('@altkit/discord');
 const fs = require('fs');
 const a = new AttachmentBuilder(fs.readFileSync('./wallpaper.jpg'), 'test.jpg');
 await message.channel.sendSlash('718642000898818048', 'sauce', a);
@@ -88,7 +88,7 @@ if (!response.isMessage) {
 
 ### Receive messages after bot has replied `{botname} is thinking...`
 
-> [MagiqueDeveloper/selfbotjs#1055 (comment)](https://github.com/MagiqueDeveloper/selfbotjs/issues/1055#issuecomment-1949653100)
+> [altkit/discord#1055 (comment)](https://github.com/altkit/discord/issues/1055#issuecomment-1949653100)
 
 ![image](https://github.com/user-attachments/assets/0a1d253a-7751-4f63-a750-58b50d055928)
 

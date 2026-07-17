@@ -1,6 +1,6 @@
 'use strict';
 
-const { Client, Events, MessageActivityType } = require('selfbotjs');
+const { Client, Events, MessageActivityType } = require('@altkit/discord');
 
 const client = new Client();
 

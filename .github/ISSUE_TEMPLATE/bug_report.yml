@@ -1,11 +1,11 @@
 name: Bug report
-description: Report incorrect or unexpected SelfbotJS v4 behavior
+description: Report incorrect or unexpected Altkit Discord v4 behavior
 labels: [bug, need repro]
 body:
   - type: dropdown
     id: package
     attributes:
-      label: Which part of SelfbotJS has the bug?
+      label: Which part of Altkit Discord has the bug?
       options:
         - The core library
         - The documentation
@@ -42,9 +42,9 @@ body:
   - type: input
     id: djs-version
     attributes:
-      label: SelfbotJS version
-      description: Run `npm list selfbotjs` in your project directory and paste the output.
-      placeholder: selfbotjs@4.x.x
+      label: Altkit Discord version
+      description: Run `npm list @altkit/discord` in your project directory and paste the output.
+      placeholder: @altkit/discord@4.x.x
     validations:
       required: true
   - type: input
@@ -54,7 +54,7 @@ body:
       description: |
         Which version of Node.js are you using? Run `node --version` in your project directory and paste the output.
         If you are using TypeScript, please include its version (`npm list typescript`) as well.
-      placeholder: Node.js 20.18 or newer is required for SelfbotJS v4.
+      placeholder: Node.js 20.18 or newer is required for Altkit Discord v4.
     validations:
       required: true
   - type: input

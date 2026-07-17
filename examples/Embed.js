@@ -1,4 +1,4 @@
-const { Client, Events, WebEmbed } = require('selfbotjs');
+const { Client, Events, WebEmbed } = require('@altkit/discord');
 const client = new Client();
 
 client.once(Events.ClientReady, readyClient => {

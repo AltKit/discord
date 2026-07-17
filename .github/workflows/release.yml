@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   publish:
-    name: Publish selfbotjs
+    name: Publish @altkit/discord
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: npm

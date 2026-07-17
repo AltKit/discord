@@ -1,7 +1,7 @@
-# SelfbotJS examples
+# Altkit Discord examples
 
-These examples target SelfbotJS v4 and Node.js 20.18 or newer. Run them from the repository root after installing
-dependencies, or copy the relevant example into an application that depends on `selfbotjs`.
+These examples target Altkit Discord v4 and Node.js 20.18 or newer. Run them from the repository root after installing
+dependencies, or copy the relevant example into an application that depends on `@altkit/discord`.
 
 Set credentials and IDs through the environment:
 

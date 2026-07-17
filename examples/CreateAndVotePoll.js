@@ -1,6 +1,6 @@
 'use strict';
 
-const { Client, Events, Partials } = require('selfbotjs');
+const { Client, Events, Partials } = require('@altkit/discord');
 
 const client = new Client({
   partials: [Partials.Message, Partials.Poll, Partials.PollAnswer],

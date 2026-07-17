@@ -10,7 +10,7 @@ Install:
 - ffmpeg (install and add to your system environment)
 */
 
-const { Client, Events } = require('selfbotjs');
+const { Client, Events } = require('@altkit/discord');
 const ytdl = require('@distube/ytdl-core'); // better than ytdl-core
 const client = new Client();
 

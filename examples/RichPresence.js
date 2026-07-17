@@ -1,4 +1,4 @@
-const { Client, CustomStatus, Events, RichPresence, SpotifyRPC } = require('selfbotjs');
+const { Client, CustomStatus, Events, RichPresence, SpotifyRPC } = require('@altkit/discord');
 const client = new Client();
 
 client.once(Events.ClientReady, async readyClient => {

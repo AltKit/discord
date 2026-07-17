@@ -161,7 +161,7 @@ class ThreadManager extends CachedManager {
     // Discord sends the thread id as id in this object
     for (const rawMember of rawThreads.members) client.channels.cache.get(rawMember.id)?.members._add(rawMember);
     // Patch firstMessage
-    // According to https://github.com/MagiqueDeveloper/selfbotjs/issues/1502, rawThreads.first_messages could be null.
+    // According to https://github.com/altkit/discord/issues/1502, rawThreads.first_messages could be null.
     for (const rawMessage of rawThreads?.first_messages || []) {
       client.channels.cache.get(rawMessage.id)?.messages._add(rawMessage);
     }

@@ -1,10 +1,10 @@
 'use strict';
 
-const { Client, Events } = require('selfbotjs');
+const { Client, Events } = require('@altkit/discord');
 
 const client = new Client({
   http: {
-    // SelfbotJS creates the undici ProxyAgent used for API requests.
+    // Altkit Discord creates the undici ProxyAgent used for API requests.
     agent: process.env.HTTP_PROXY,
   },
 });

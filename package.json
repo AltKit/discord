@@ -1,5 +1,5 @@
 {
-  "name": "selfbotjs",
+  "name": "@altkit/discord",
   "version": "4.0.0",
   "discordJsVersion": "14.27.0",
   "description": "An unofficial Discord.js v14-compatible fork that preserves selfbot support",
@@ -33,7 +33,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MagiqueDeveloper/selfbotjs.git"
+    "url": "git+https://github.com/altkit/discord.git"
   },
   "keywords": [
     "discord.js",
@@ -51,9 +51,9 @@
   "author": "aiko-chan-ai",
   "license": "GNU General Public License v3.0",
   "bugs": {
-    "url": "https://github.com/MagiqueDeveloper/selfbotjs/issues"
+    "url": "https://github.com/altkit/discord/issues"
   },
-  "homepage": "https://github.com/MagiqueDeveloper/selfbotjs#readme",
+  "homepage": "https://github.com/altkit/discord#readme",
   "dependencies": {
     "@discordjs/builders": "^1.14.1",
     "@discordjs/collection": "1.5.3",

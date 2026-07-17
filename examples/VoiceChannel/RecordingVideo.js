@@ -10,7 +10,7 @@ Install:
 - ffmpeg (install and add to your system environment)
 */
 
-const { Client, Events } = require('selfbotjs');
+const { Client, Events } = require('@altkit/discord');
 const client = new Client();
 
 const fs = require('fs');

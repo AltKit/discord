@@ -19,7 +19,7 @@ class GuildMemberRemoveAction extends Action {
          * Emitted whenever a member leaves a guild, or is kicked.
          * @event Client#guildMemberRemove
          * @param {GuildMember} member The member that has left/been kicked from the guild
-         * @deprecated See {@link https://github.com/MagiqueDeveloper/selfbotjs/issues/197 this issue} for more information.
+         * @deprecated See {@link https://github.com/altkit/discord/issues/197 this issue} for more information.
          */
         if (shard.status === Status.READY) client.emit(Events.GUILD_MEMBER_REMOVE, member);
       }

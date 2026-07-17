@@ -1,18 +1,18 @@
-# SelfbotJS
+# Altkit Discord
 
 An unofficial Discord.js v14-compatible fork that preserves selfbot support
 
-[![npm](https://img.shields.io/npm/v/selfbotjs.svg)](https://www.npmjs.com/package/selfbotjs)
-[![CI](https://github.com/MagiqueDeveloper/selfbotjs/actions/workflows/ci.yml/badge.svg)](https://github.com/MagiqueDeveloper/selfbotjs/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/%40altkit%2Fdiscord.svg)](https://www.npmjs.com/package/@altkit/discord)
+[![CI](https://github.com/altkit/discord/actions/workflows/ci.yml/badge.svg)](https://github.com/altkit/discord/actions/workflows/ci.yml)
 [![Discord.js compatibility](https://img.shields.io/badge/discord.js-14.27.0-5865f2)](https://github.com/discordjs/discord.js/releases/tag/14.27.0)
 
 > [!CAUTION]
 > Automating a normal Discord user account violates Discord's Terms of Service and may result in account termination.
-> SelfbotJS is unofficial, is not supported by Discord, and is used entirely at your own risk.
+> Altkit Discord is unofficial, is not supported by Discord, and is used entirely at your own risk.
 
 ## What is v4?
 
-SelfbotJS v4 moves the fork to the Discord.js 14.27.0 API surface while preserving its user-account transport and
+Altkit Discord v4 moves the fork to the Discord.js 14.27.0 API surface while preserving its user-account transport and
 selfbot-specific helpers. It includes modern Discord.js exports, events, partials, poll support, current modal components,
 shared client themes, activity instances, voice messages, and the fork's existing guild, interaction, presence, captcha,
 TOTP, voice, and video features.
@@ -27,13 +27,13 @@ Read [the complete v14.27 change and migration guide](docs/v14.27.md) before upg
 ## Installation
 
 ```sh
-npm install selfbotjs
+npm install @altkit/discord
 ```
 
 ## Quick start
 
 ```js
-const { Client, Events } = require('selfbotjs');
+const { Client, Events } = require('@altkit/discord');
 
 const client = new Client();
 
@@ -68,6 +68,7 @@ DISCORD_TOKEN='your-token' node index.js
 ## Documentation and examples
 
 - [v4 / Discord.js 14.27 changes](docs/v14.27.md)
+- [Developer preservation and redistribution guide](docs/devguide.md)
 - [API documentation data](docs/main.json)
 - [Runnable examples](examples/README.md)
 
@@ -76,14 +77,14 @@ do not commit credentials.
 
 ## Compatibility
 
-SelfbotJS exposes modern names such as `AttachmentBuilder`, `Events`, `Partials`, and `PermissionsBitField`. Selected legacy
+Altkit Discord exposes modern names such as `AttachmentBuilder`, `Events`, `Partials`, and `PermissionsBitField`. Selected legacy
 names and events remain available so v3 applications can migrate incrementally. Selfbot-specific behavior is not part of
 upstream Discord.js, and bot-only Discord.js examples may not apply to user accounts.
 
 You can inspect compatibility at runtime:
 
 ```js
-const { version, discordJsVersion } = require('selfbotjs');
+const { version, discordJsVersion } = require('@altkit/discord');
 
 console.log({ version, discordJsVersion });
 ```
@@ -91,7 +92,7 @@ console.log({ version, discordJsVersion });
 ## Security
 
 - Never paste a user token into an issue, log, screenshot, or committed file.
-- Install only the package named `selfbotjs` from a source you trust.
+- Install only the package named `@altkit/discord` from a source you trust.
 - Treat third-party captcha solvers, proxies, and media tools as separate security boundaries.
 - Rotate the account token immediately if it may have been exposed.
 
@@ -107,10 +108,10 @@ npm test
 ```
 
 Keep runtime changes, declarations in `typings/index.d.ts`, documentation, and examples in sync. Bug reports should include
-the SelfbotJS version, Node.js version, a minimal reproduction with secrets removed, and the relevant error or debug output.
+the Altkit Discord version, Node.js version, a minimal reproduction with secrets removed, and the relevant error or debug output.
 
 ## License and credits
 
-SelfbotJS is licensed under the [GNU General Public License v3.0](LICENSE). It is based on
+Altkit Discord is licensed under the [GNU General Public License v3.0](LICENSE). It is based on
 [discord.js](https://github.com/discordjs/discord.js) and continues the original discord.js-selfbot-v13 project. Current
-development lives in [MagiqueDeveloper/selfbotjs](https://github.com/MagiqueDeveloper/selfbotjs).
+development lives in [altkit/discord](https://github.com/altkit/discord).

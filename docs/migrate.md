@@ -170,6 +170,7 @@ Runtime packages shared with Discord.js are aligned with the 14.27.0 release:
 | `@discordjs/ws`         | `^1.2.3`      | Root re-exports                              |
 | `discord-api-types`     | `^0.38.49`    | Discord API v10 types and enums              |
 | `undici`                | `^6.27.0`     | HTTP transport and proxy support             |
+| `otplib`                | `^13.4.1`     | TOTP generation for eligible MFA flows       |
 | `tslib`                 | `^2.6.3`      | Shared TypeScript runtime helpers            |
 
 ::: info Collection compatibility

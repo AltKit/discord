@@ -1,6 +1,6 @@
 # Package overview
 
-Altkit Discord is an unofficial CommonJS library that adapts the Discord.js v14 programming model to normal Discord user accounts. It combines familiar Discord.js structures and managers with account-oriented features that upstream Discord.js does not provide.
+Altkit Discord is an unofficial CommonJS library that adapts the Discord.js v14 programming model to normal Discord user accounts. REST and Gateway connections default to Discord API v10 and Gateway v10. It combines familiar Discord.js structures and managers with account-oriented features that upstream Discord.js does not provide.
 
 ::: danger Terms of Service
 Automating a normal Discord user account violates Discord's Terms of Service and may result in account termination. Altkit Discord is not affiliated with or supported by Discord.
@@ -18,7 +18,7 @@ At a high level, the package covers five areas:
 | User-account features | Relationships, notes, settings, invites, authorized applications, rich presence, and slash-command invocation |
 | Media                 | Voice messages, voice connections, audio/video dispatch, receive streams, and recording helpers               |
 
-The package also re-exports formatters, API enums, REST helpers, collections, and WebSocket utilities used by Discord.js 14.27.
+The package also re-exports formatters, API v10 enums, REST helpers, collections, and WebSocket utilities used by Discord.js 14.27.
 
 ## The mental model
 
@@ -106,6 +106,7 @@ import { Client, Events, type ClientOptions } from '@altkit/discord';
 
 - It does not make selfbot use compliant with Discord's Terms of Service.
 - It does not remove Discord permissions, verification, rate limits, or account restrictions.
+- It does not provide anti-detection, browser spoofing, or Cloudflare-bypass capabilities.
 - It does not guarantee that undocumented user-account endpoints remain stable.
 - It does not safely manage your credentials for you.
 - It does not automatically encode arbitrary media into every Discord-compatible format.

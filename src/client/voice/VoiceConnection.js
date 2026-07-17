@@ -310,7 +310,7 @@ class VoiceConnection extends EventEmitter {
       options,
     );
 
-    this.emit('debug', `Sending voice state update: ${JSON.stringify(options)}`);
+    this.emit('debug', 'Sending voice state update.');
 
     return this.channel.client.ws.broadcast({
       op: Opcodes.VOICE_STATE_UPDATE,
@@ -386,7 +386,7 @@ class VoiceConnection extends EventEmitter {
    */
   checkAuthenticated() {
     const { token, endpoint, sessionId } = this.authentication;
-    this.emit('debug', `Authenticated with sessionId ${sessionId}`);
+    this.emit('debug', 'Voice authentication details are complete.');
     if (token && endpoint && sessionId) {
       this.status = VoiceStatus.CONNECTING;
       /**
@@ -455,7 +455,7 @@ class VoiceConnection extends EventEmitter {
     this.authentication.endpoint = endpoint;
     this.speaking = new Speaking().freeze();
     this.status = VoiceStatus.RECONNECTING;
-    this.emit('debug', `Reconnecting to ${endpoint}`);
+    this.emit('debug', 'Reconnecting to the voice endpoint.');
     /**
      * Emitted when the voice connection is reconnecting (typically after a region change).
      * @event VoiceConnection#reconnecting
@@ -576,7 +576,7 @@ class VoiceConnection extends EventEmitter {
     this.status = VoiceStatus.CONNECTED;
     const ready = () => {
       clearTimeout(this.connectTimeout);
-      this.emit('debug', `Ready with authentication details: ${JSON.stringify(this.authentication)}`);
+      this.emit('debug', 'Voice connection is ready.');
       /**
        * Emitted once the connection is ready, when a promise to join a voice channel resolves,
        * the connection will already be ready.

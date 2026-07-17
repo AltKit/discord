@@ -1,6 +1,6 @@
 # Altkit Discord
 
-An unofficial Discord.js v14.27-compatible fork that preserves selfbot support
+An unofficial Discord.js v14.27-compatible fork for Discord API v10 and Gateway v10 user-account workflows.
 
 [![npm](https://img.shields.io/npm/v/%40altkit%2Fdiscord.svg)](https://www.npmjs.com/package/@altkit/discord)
 [![CI](https://github.com/altkit/discord/actions/workflows/ci.yml/badge.svg)](https://github.com/altkit/discord/actions/workflows/ci.yml)
@@ -12,10 +12,9 @@ An unofficial Discord.js v14.27-compatible fork that preserves selfbot support
 
 ## What is v4?
 
-Altkit Discord v4 moves the fork to the Discord.js 14.27.0 API surface while preserving its user-account transport and
-selfbot-specific helpers. It includes modern Discord.js exports, events, partials, poll support, shared client themes,
-activity instances, voice messages, and the fork's existing guild, presence, captcha,
-TOTP, voice, and video features.
+Altkit Discord v4 targets Discord API v10 and Gateway v10 by default while preserving its Discord.js 14.27-compatible
+surface and fork-specific helpers. It includes modern exports, events, partials, poll support, shared client themes,
+activity instances, voice messages, and account, presence, TOTP, voice, and video features.
 
 Read [the complete v4 migration guide](docs/migrate.md) before upgrading from v3.
 
@@ -58,12 +57,12 @@ DISCORD_TOKEN='your-token' node index.js
 
 ## Highlights
 
-- Discord.js 14.27-compatible formatters, REST utilities, API enums, `Events`, and `Partials`
+- Discord API v10 and Gateway v10 defaults, plus Discord.js 14.27-compatible formatters, REST utilities, API enums, `Events`, and `Partials`
 - Messages, attachments, embeds, polls, voice messages, and shared client themes
 - Invoke slash commands exposed by installed applications, including commands that return modals
 - Guild discovery, invite acceptance, application authorization, and user-installed applications
-- Rich presence, custom status, Spotify presence, voice, audio, and video helpers
-- Captcha callback and automatic TOTP support for flows where Discord requests additional verification
+- Native voice connections, audio/video dispatch, receive streams, recording helpers, and `@discordjs/voice` adapter support
+- Captcha callback and automatic TOTP support for eligible MFA flows, powered by otplib v13
 
 ## Documentation and examples
 
@@ -105,6 +104,7 @@ console.log({ version, discordJsVersion });
 - Install only the package named `@altkit/discord` from a source you trust.
 - Treat third-party captcha solvers, proxies, and media tools as separate security boundaries.
 - Rotate the account token immediately if it may have been exposed.
+- Do not rely on client-identification values or headers to evade Discord, Cloudflare, rate limits, or account restrictions.
 
 This project intentionally does not include browser-console token extraction instructions.
 

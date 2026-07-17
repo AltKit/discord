@@ -78,7 +78,7 @@ class VoiceWebSocket extends EventEmitter {
      * @type {WebSocket}
      */
     this.ws = WebSocket.create(`wss://${this.connection.authentication.endpoint}/`, { v: 8 });
-    this.emit('debug', `[WS] connecting, ${this.attempts} attempts, ${this.ws.url}`);
+    this.emit('debug', `[WS] connecting (attempt ${this.attempts}).`);
     this.ws.onopen = this.onOpen.bind(this);
     this.ws.onmessage = this.onMessage.bind(this);
     this.ws.onclose = this.onClose.bind(this);
@@ -91,7 +91,7 @@ class VoiceWebSocket extends EventEmitter {
    * @returns {Promise<string>}
    */
   send(data) {
-    this.emit('debug', `[WS] >> ${data}`);
+    this.emit('debug', '[WS] packet sent.');
     return new Promise((resolve, reject) => {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) throw new Error('WS_NOT_OPEN', data);
       this.ws.send(data, null, error => {
@@ -115,7 +115,7 @@ class VoiceWebSocket extends EventEmitter {
    * Called whenever the WebSocket opens.
    */
   onOpen() {
-    this.emit('debug', `[WS] opened at gateway ${this.connection.authentication.endpoint}`);
+    this.emit('debug', '[WS] opened.');
     this.sendPacket({
       op: Opcodes.DISPATCH,
       d: {
@@ -149,7 +149,7 @@ class VoiceWebSocket extends EventEmitter {
    * @param {CloseEvent} event The WebSocket close event
    */
   onClose(event) {
-    this.emit('debug', `[WS] closed with code ${event.code} and reason: ${event.reason}`);
+    this.emit('debug', `[WS] closed with code ${event.code}.`);
     if (!this.dead) setTimeout(this.connect.bind(this), this.attempts * 1000).unref();
   }
 
@@ -167,7 +167,7 @@ class VoiceWebSocket extends EventEmitter {
    * @param {Object} packet The received packet
    */
   onPacket(packet) {
-    this.emit('debug', `[WS] << ${JSON.stringify(packet)}`);
+    this.emit('debug', `[WS] packet received (opcode ${packet.op}).`);
     if (packet.seq) this._sequenceNumber = packet.seq;
     switch (packet.op) {
       case VoiceOpcodes.HELLO:

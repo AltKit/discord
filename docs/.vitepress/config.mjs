@@ -23,6 +23,16 @@ export default defineConfig({
   markdown: {
     lineNumbers: true,
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        onwarn(warning, warn) {
+          if (warning.code === 'INVALID_ANNOTATION' && warning.id?.includes('@vueuse/core/')) return;
+          warn(warning);
+        },
+      },
+    },
+  },
   themeConfig: {
     logo: '/logo.svg',
     siteTitle: 'Altkit Discord',

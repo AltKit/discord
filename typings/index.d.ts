@@ -72,7 +72,6 @@ import { AgentOptions } from 'node:https';
 import { Response, ProxyAgent } from 'undici';
 import { Readable, Writable, Stream } from 'node:stream';
 import { MessagePort, Worker } from 'node:worker_threads';
-import { authenticator } from 'otplib';
 import { CookieJar } from 'tough-cookie';
 import { RtpPacket } from 'werift-rtp';
 import * as WebSocket from 'ws';
@@ -854,7 +853,7 @@ export type If<T extends boolean, A, B = null> = T extends true ? A : T extends 
 export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions);
   private actions: unknown;
-  public authenticator: typeof authenticator;
+  public authenticator: TOTPAuthenticator;
   private presence: ClientPresence;
   private _eval(script: string): unknown;
   private _validateOptions(options: ClientOptions): void;
@@ -3748,6 +3747,15 @@ export class ThreadMember<HasMemberData extends boolean = boolean> extends Base 
 export class ThreadMemberFlags extends BitField<ThreadMemberFlagsString> {
   public static FLAGS: Record<ThreadMemberFlagsString, number>;
   public static resolve(bit?: BitFieldResolvable<ThreadMemberFlagsString, number>): number;
+}
+
+export interface TOTPAuthenticator {
+  options: {
+    step: number;
+    digits: number;
+    algorithm: TOTPAlgorithm;
+  };
+  generate(secret: string): string;
 }
 
 export class TOTP {
@@ -8213,6 +8221,7 @@ export interface WebSocketOptions {
   agent?: Omit<AgentOptions, 'keepAlive'>;
   compress?: boolean;
   properties?: WebSocketProperties;
+  version?: number;
 }
 
 export interface WebSocketProperties {

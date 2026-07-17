@@ -117,7 +117,7 @@ class VoiceConnectionUDPClient extends EventEmitter {
         return;
       }
 
-      this.emit('debug', `[UDP] Parse local packet: ${packet.address}:${packet.port}`);
+      this.emit('debug', '[UDP] Parsed local discovery packet.');
 
       this.localAddress = packet.address;
       this.localPort = packet.port;
@@ -141,7 +141,7 @@ class VoiceConnectionUDPClient extends EventEmitter {
         writable: false,
       });
 
-      this.emit('debug', `[UDP] << ${JSON.stringify(packet)}`);
+      this.emit('debug', '[UDP] Received IP discovery response.');
 
       socket.on('message', buffer => this.voiceConnection.receiver.packets.push(buffer));
     });
@@ -150,7 +150,7 @@ class VoiceConnectionUDPClient extends EventEmitter {
     blankMessage.writeUInt16BE(1, 0);
     blankMessage.writeUInt16BE(70, 2);
     blankMessage.writeUInt32BE(this.voiceConnection.authentication.ssrc, 4);
-    this.emit('debug', `Sending IP discovery packet: [${[...blankMessage]}]`);
+    this.emit('debug', 'Sending IP discovery packet.');
     await this.send(blankMessage);
     this.emit('debug', `Successfully sent IP discovery packet`);
   }

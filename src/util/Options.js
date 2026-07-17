@@ -34,17 +34,6 @@ const Intents = require('./Intents');
  * @param {Captcha} captcha Discord Captcha
  * @param {string} UserAgent Current UserAgent
  * @returns {Promise<string>} HCaptcha Token
- * @example
- * const Captcha = require("2captcha")
- * // A new 'solver' instance with our API key
- * const solver = new Captcha.Solver("<Your 2captcha api key>")
- * function solveCaptcha(captcha, UA) {
- *  return solver.hcaptcha(captcha.captcha_sitekey, 'discord.com', {
- *    invisible: 1,
- *    userAgent: UA,
- *    data: captcha.captcha_rqdata,
- *  }).then(res => res.data)
- * }
  */
 
 /**
@@ -124,6 +113,7 @@ const Intents = require('./Intents');
  * @property {AgentOptions} [agent={}] HTTPS Agent options (WS Proxy)
  * @property {boolean} [compress=false] Whether to compress data sent on the connection
  * @property {WebSocketProperties} [properties] Properties to identify the client with
+ * @property {number} [version=10] Gateway version to use
  */
 
 /**
@@ -142,7 +132,7 @@ const Intents = require('./Intents');
 /**
  * HTTP options
  * @typedef {Object} HTTPOptions
- * @property {number} [version=9] API version to use
+ * @property {number} [version=10] API version to use
  * @property {ProxyAgentOptions} [agent={}] ProxyAgent options
  * @property {string} [api='https://discord.com/api'] Base URL of the API
  * @property {string} [cdn='https://cdn.discordapp.com'] Base URL of the CDN
@@ -212,7 +202,7 @@ class Options extends null {
         client_state: {
           guild_versions: {},
         },
-        version: 9,
+        version: 10,
         agent: {},
       },
       http: {
@@ -220,7 +210,7 @@ class Options extends null {
         headers: {
           'User-Agent': UserAgent,
         },
-        version: 9,
+        version: 10,
         api: 'https://discord.com/api',
         cdn: 'https://cdn.discordapp.com',
         invite: 'https://discord.gg',

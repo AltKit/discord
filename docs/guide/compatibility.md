@@ -1,6 +1,6 @@
 # Discord.js compatibility
 
-Altkit Discord v4 presents a Discord.js 14.27-compatible API while preserving user-account transport and fork-specific helpers. Compatibility is intentionally broad, but it is not identical to installing upstream `discord.js`.
+Altkit Discord v4 presents a Discord.js 14.27-compatible API while preserving user-account transport and fork-specific helpers. REST and Gateway defaults target Discord API v10 and Gateway v10. Compatibility is intentionally broad, but it is not identical to installing upstream `discord.js`.
 
 ## What is compatible
 

@@ -12,7 +12,9 @@ const DiscordAPIError = require('../src/rest/DiscordAPIError');
 const HTTPError = require('../src/rest/HTTPError');
 const RESTManager = require('../src/rest/RESTManager');
 const RequestHandler = require('../src/rest/RequestHandler');
+const Options = require('../src/util/Options');
 const { VoiceStatus } = require('../src/util/Constants');
+const handleVoiceServerUpdate = require('../src/client/websocket/handlers/VOICE_SERVER_UPDATE');
 
 const challenge = {
   captcha_key: ['captcha-required'],
@@ -269,6 +271,16 @@ test('validates retry and rate-limit options before use', () => {
   client.destroy();
 });
 
+test('defaults REST and gateway traffic to Discord API v10 and generates TOTP codes with otplib v13', () => {
+  const options = Options.createDefault();
+  assert.equal(options.http.version, 10);
+  assert.equal(options.ws.version, 10);
+
+  const client = new Client();
+  assert.match(client.authenticator.generate('JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP'), /^\d{6}$/);
+  client.destroy();
+});
+
 test('redacts authentication and voice credentials from debug output', async () => {
   const loginToken = 'login-secret-token';
   const debug = [];
@@ -308,4 +320,31 @@ test('redacts authentication and voice credentials from debug output', async () 
   for (const secret of [loginToken, 'voice-secret', 'voice.example.test', 'session-secret']) {
     assert.equal(output.includes(secret), false, secret);
   }
+});
+
+test('redacts credentials from raw voice server diagnostics', () => {
+  const debug = [];
+  const packet = {
+    d: {
+      guild_id: 'guild',
+      token: 'voice-server-token',
+      endpoint: 'voice.example.test',
+    },
+  };
+  const client = {
+    emit(event, value) {
+      if (event === 'debug') debug.push(value);
+    },
+    voice: {
+      onVoiceServer(payload) {
+        assert.equal(payload, packet.d);
+      },
+    },
+  };
+
+  handleVoiceServerUpdate(client, packet);
+
+  const output = debug.join('\n');
+  assert.equal(output.includes(packet.d.token), false);
+  assert.equal(output.includes(packet.d.endpoint), false);
 });

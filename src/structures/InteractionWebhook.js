@@ -1,6 +1,11 @@
 'use strict';
 
 const Webhook = require('./Webhook');
+const { Error } = require('../errors');
+
+async function rejectBotOwnedInteractionWebhook() {
+  throw new Error('BOT_ONLY_API_DISABLED');
+}
 
 /**
  * Represents a webhook for an Interaction
@@ -39,5 +44,8 @@ class InteractionWebhook {
 }
 
 Webhook.applyToClass(InteractionWebhook, ['sendSlackMessage', 'edit', 'delete', 'createdTimestamp', 'createdAt']);
+for (const method of ['send', 'fetchMessage', 'editMessage', 'deleteMessage']) {
+  InteractionWebhook.prototype[method] = rejectBotOwnedInteractionWebhook;
+}
 
 module.exports = InteractionWebhook;

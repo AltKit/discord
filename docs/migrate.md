@@ -102,8 +102,9 @@ The following Discord.js v14 names resolve to the fork's existing implementation
 | `PermissionsBitField`  | `Permissions`                 |
 | `UserFlagsBitField`    | `UserFlags`                   |
 
-Altkit Discord also re-exports formatters, REST utilities, WebSocket utilities, shared utilities, and Discord
-API v10 types from its package root. Existing fork implementations take precedence where user-account behavior differs.
+Altkit Discord re-exports formatters, shared utilities, and Discord API v10 types from its package root. Upstream
+`@discordjs/rest` and `@discordjs/ws` transports are intentionally not re-exported because they provide independent
+bot-account authentication and Gateway paths.
 
 `HolographicStyle` now exposes the v14-style `Primary`, `Secondary`, and `Tertiary` role color values.
 
@@ -165,9 +166,9 @@ Runtime packages shared with Discord.js are aligned with the 14.27.0 release:
 | `@discordjs/builders`   | `^1.14.1`     | v14 builders                                 |
 | `@discordjs/collection` | `1.5.3`       | Pinned to the major used by Discord.js 14.27 |
 | `@discordjs/formatters` | `^0.6.2`      | Root re-exports                              |
-| `@discordjs/rest`       | `^2.6.2`      | Root re-exports                              |
+| `@discordjs/rest`       | `^2.6.2`      | Internal dependency; not re-exported         |
 | `@discordjs/util`       | `^1.2.0`      | Includes disposal polyfill support           |
-| `@discordjs/ws`         | `^1.2.3`      | Root re-exports                              |
+| `@discordjs/ws`         | `^1.2.3`      | Internal dependency; not re-exported         |
 | `discord-api-types`     | `^0.38.49`    | Discord API v10 types and enums              |
 | `undici`                | `^6.27.0`     | HTTP transport and proxy support             |
 | `otplib`                | `^13.4.1`     | TOTP generation for eligible MFA flows       |

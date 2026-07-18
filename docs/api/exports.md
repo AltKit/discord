@@ -41,9 +41,7 @@ The package root includes `Events`, `Partials`, bit fields, flags, `Collection`,
 
 - `@discordjs/builders`
 - `@discordjs/formatters`
-- `@discordjs/rest`
 - `@discordjs/util`
-- `@discordjs/ws`
 - Discord API v10 types and enums from `discord-api-types`
 
 Fork-defined exports take precedence if a dependency exposes the same name.

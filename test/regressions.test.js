@@ -6,9 +6,13 @@ const { readdirSync } = require('node:fs');
 const { dirname, extname, join, resolve } = require('node:path');
 const { test } = require('node:test');
 const { Collection } = require('@discordjs/collection');
-const { AttachmentBuilder, Client, Constants, Permissions, RichPresence } = require('../src');
+const library = require('../src');
+const { accountType, AttachmentBuilder, Client, Constants, Permissions, RichPresence, supportsBotAccounts } = library;
 const handleRelationshipUpdate = require('../src/client/websocket/handlers/RELATIONSHIP_UPDATE');
+const PacketHandlers = require('../src/client/websocket/handlers');
 const WebSocketShard = require('../src/client/websocket/WebSocketShard');
+const ApplicationCommandManager = require('../src/managers/ApplicationCommandManager');
+const ApplicationCommandPermissionsManager = require('../src/managers/ApplicationCommandPermissionsManager');
 const MessageManager = require('../src/managers/MessageManager');
 const RoleManager = require('../src/managers/RoleManager');
 const GuildChannel = require('../src/structures/GuildChannel');
@@ -16,8 +20,11 @@ const { GuildMember } = require('../src/structures/GuildMember');
 const MessagePayload = require('../src/structures/MessagePayload');
 const { StageInstance } = require('../src/structures/StageInstance');
 const User = require('../src/structures/User');
+const AutocompleteInteraction = require('../src/structures/AutocompleteInteraction');
+const InteractionWebhook = require('../src/structures/InteractionWebhook');
 const InteractionResponses = require('../src/structures/interfaces/InteractionResponses');
 const Shard = require('../src/sharding/Shard');
+const ShardingManager = require('../src/sharding/ShardingManager');
 const VoiceState = require('../src/structures/VoiceState');
 const Util = require('../src/util/Util');
 
@@ -169,6 +176,7 @@ test('gateway heartbeats use jitter before starting the recurring interval', asy
   assert.notEqual(shard.heartbeatTimeout, null);
   assert.equal(shard.heartbeatInterval, null);
 
+  shard.heartbeatTimeout.ref();
   await firstHeartbeat;
   assert.equal(heartbeatCount, 1);
   assert.equal(shard.heartbeatTimeout, null);
@@ -199,32 +207,87 @@ test('voice channel manageability requires view, manage, and connect permissions
   );
 });
 
-test('interaction updates accept omitted options', async () => {
-  let callbackData;
-  const interaction = {
-    id: snowflakes.client,
-    token: 'token',
-    deferred: false,
-    replied: false,
-    client: {
-      options: { allowedMentions: undefined },
-      api: {
-        interactions: () => ({
-          callback: {
-            post: async options => {
-              callbackData = options.data;
-            },
-          },
-        }),
-      },
-    },
+test('bot-owned interaction responses are inactive for user accounts', async () => {
+  const interaction = { deferred: false, replied: false };
+  const autocomplete = Object.create(AutocompleteInteraction.prototype);
+  const webhook = Object.create(InteractionWebhook.prototype);
+
+  await assert.rejects(
+    InteractionResponses.prototype.update.call(interaction),
+    error => error.code === 'BOT_ONLY_API_DISABLED',
+  );
+  assert.throws(
+    () => InteractionResponses.prototype.fetchReply.call(interaction),
+    error => error.code === 'BOT_ONLY_API_DISABLED',
+  );
+  assert.equal(interaction.replied, false);
+  await assert.rejects(autocomplete.respond([]), error => error.code === 'BOT_ONLY_API_DISABLED');
+  await assert.rejects(webhook.send('blocked'), error => error.code === 'BOT_ONLY_API_DISABLED');
+  await assert.rejects(webhook.fetchMessage('1'), error => error.code === 'BOT_ONLY_API_DISABLED');
+});
+
+test('the package and client explicitly support user accounts only', async t => {
+  const client = new Client({ shards: [0, 1], shardCount: 2 });
+  t.after(() => client.destroy());
+  client.token = null;
+
+  assert.equal(accountType, 'user');
+  assert.equal(supportsBotAccounts, false);
+  assert.equal(client.accountType, 'user');
+  assert.equal(client.supportsBotAccounts, false);
+  assert.equal(client.options.intents, 0);
+  assert.deepEqual(client.options.shards, [0]);
+  assert.equal(client.options.shardCount, 1);
+  assert.equal(library.REST, undefined);
+  assert.equal(library.SimpleShardingStrategy, undefined);
+  await assert.rejects(client.login('Bot bot-token'), error => error.code === 'BOT_ACCOUNT_UNSUPPORTED');
+  await assert.rejects(client.login('Bearer oauth-token'), error => error.code === 'BOT_ACCOUNT_UNSUPPORTED');
+  assert.equal(client.token, null);
+});
+
+test('raw bot tokens are rejected by account preflight before gateway login', async t => {
+  const client = new Client();
+  t.after(() => client.destroy());
+  let gatewayConnected = false;
+  client.rest.request = async () => ({ bot: true });
+  client.ws.connect = async () => {
+    gatewayConnected = true;
   };
 
-  await InteractionResponses.prototype.update.call(interaction);
+  await assert.rejects(client.login('raw-token'), error => error.code === 'BOT_ACCOUNT_UNSUPPORTED');
+  assert.equal(gatewayConnected, false);
+});
 
-  assert.equal(interaction.replied, true);
-  assert.equal(callbackData.type, Constants.InteractionResponseTypes.UPDATE_MESSAGE);
-  assert.equal(callbackData.data.content, undefined);
+test('bot-owned command management and sharding fail before network access', async () => {
+  const commands = Object.create(ApplicationCommandManager.prototype);
+  const permissions = Object.create(ApplicationCommandPermissionsManager.prototype);
+  const sharding = Object.create(ShardingManager.prototype);
+  sharding.totalShards = 1;
+
+  await assert.rejects(commands.fetch(), error => error.code === 'BOT_ONLY_API_DISABLED');
+  await assert.rejects(commands.create({ name: 'blocked' }), error => error.code === 'BOT_ONLY_API_DISABLED');
+  await assert.rejects(permissions.fetch(), error => error.code === 'BOT_ONLY_API_DISABLED');
+  await assert.rejects(sharding.spawn(), error => error.code === 'BOT_ONLY_API_DISABLED');
+  assert.throws(
+    () => sharding.createShard(0),
+    error => error.code === 'BOT_ONLY_API_DISABLED',
+  );
+});
+
+test('bot-only gateway dispatch handlers are inactive', () => {
+  for (const event of [
+    'APPLICATION_COMMAND_CREATE',
+    'APPLICATION_COMMAND_DELETE',
+    'APPLICATION_COMMAND_UPDATE',
+    'APPLICATION_COMMAND_PERMISSIONS_UPDATE',
+    'AUTO_MODERATION_ACTION_EXECUTION',
+    'AUTO_MODERATION_RULE_CREATE',
+    'AUTO_MODERATION_RULE_DELETE',
+    'AUTO_MODERATION_RULE_UPDATE',
+    'GUILD_AUDIT_LOG_ENTRY_CREATE',
+  ]) {
+    assert.equal(PacketHandlers[event], undefined);
+  }
 });
 
 test('message edits omit attachments unless explicitly changed', async () => {

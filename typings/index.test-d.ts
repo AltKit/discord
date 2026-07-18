@@ -2,6 +2,7 @@ import { expectNotAssignable, expectType } from 'tsd';
 import { Collection } from '@discordjs/collection';
 import { ApplicationIntegrationType } from 'discord-api-types/v10';
 import {
+  accountType,
   AuthorizingIntegrationOwners,
   Client,
   ClientUserSettingManager,
@@ -12,11 +13,17 @@ import {
   RichPresence,
   RoleManager,
   Snowflake,
+  supportsBotAccounts,
   AttachmentBuilder,
   WebhookMessageOptions,
 } from '.';
 
 const client = new Client();
+
+expectType<'user'>(accountType);
+expectType<false>(supportsBotAccounts);
+expectType<'user'>(client.accountType);
+expectType<false>(client.supportsBotAccounts);
 
 expectType<Promise<ClientUserSettingManager>>(client.settings.restrictedGuilds(true));
 expectType<Promise<ClientUserSettingManager>>(client.settings.addRestrictedGuild('33333333333333333'));

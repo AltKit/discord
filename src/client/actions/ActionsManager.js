@@ -11,15 +11,9 @@ class ActionsManager {
     this.injectedChannel = Symbol('djs.actions.injectedChannel');
     this.injectedMessage = Symbol('djs.actions.injectedMessage');
 
-    this.register(require('./ApplicationCommandPermissionsUpdate'));
-    this.register(require('./AutoModerationActionExecution'));
-    this.register(require('./AutoModerationRuleCreate'));
-    this.register(require('./AutoModerationRuleDelete'));
-    this.register(require('./AutoModerationRuleUpdate'));
     this.register(require('./ChannelCreate'));
     this.register(require('./ChannelDelete'));
     this.register(require('./ChannelUpdate'));
-    this.register(require('./GuildAuditLogEntryCreate'));
     this.register(require('./GuildBanAdd'));
     this.register(require('./GuildBanRemove'));
     this.register(require('./GuildChannelsPositionUpdate'));

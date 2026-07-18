@@ -10,6 +10,7 @@ const Messages = {
   CLIENT_DESTROYED: 'The client has been destroyed.',
 
   TOKEN_INVALID: 'An invalid token was provided.',
+  BOT_ACCOUNT_UNSUPPORTED: 'Bot and OAuth bearer tokens are not supported. A Discord user token is required.',
   TOKEN_MISSING: 'Request to use token, but token was unavailable to the client.',
   TOTPKEY_MISSING: 'Request to use mfa, but TOTPKey was not set in client options.',
 
@@ -20,11 +21,11 @@ const Messages = {
 
   BITFIELD_INVALID: bit => `Invalid bitfield flag or number: ${bit}.`,
 
-  SHARDING_INVALID: '[Bot Token] Invalid shard settings were provided.',
-  SHARDING_REQUIRED: '[Bot Token] This session would have handled too many guilds - Sharding is required.',
+  SHARDING_INVALID: 'Invalid shard settings were provided.',
+  SHARDING_REQUIRED: 'This session would have handled too many guilds; bot sharding is unavailable.',
   INVALID_API_VERSION: 'An invalid Gateway API version was provided.',
-  INVALID_INTENTS: '[Bot Token] Invalid intent provided for WebSocket intents.',
-  DISALLOWED_INTENTS: '[Bot Token] Privileged intent provided is not enabled or whitelisted.',
+  INVALID_INTENTS: 'Discord rejected the Gateway intents payload.',
+  DISALLOWED_INTENTS: 'Discord rejected privileged Gateway intents.',
   SHARDING_NO_SHARDS: 'No shards have been spawned.',
   SHARDING_IN_PROCESS: 'Shards are still being spawned.',
   SHARDING_INVALID_EVAL_BROADCAST: 'Script to evaluate must be a function',
@@ -172,7 +173,8 @@ const Messages = {
   GUILD_FORUM_MESSAGE_REQUIRED: 'You must provide a message to create a guild forum thread',
 
   // Selfbot
-  INVALID_USER_API: 'User accounts cannot use this endpoint',
+  INVALID_USER_API: 'User accounts cannot use this endpoint.',
+  BOT_ONLY_API_DISABLED: 'This bot-owned API is disabled in the user-account build.',
   INVALID_APPLICATION_COMMAND: id => `Could not find a valid command for this bot: ${id}`,
   INVALID_COMMAND_NAME: allCMD => `Could not parse subGroupCommand and subCommand due to too long: ${allCMD.join(' ')}`,
   INVALID_SLASH_COMMAND_CHOICES: (parentOptions, value) =>

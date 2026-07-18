@@ -2,7 +2,6 @@
 
 const { randomUUID } = require('node:crypto');
 const { UserAgent } = require('./Constants');
-const Intents = require('./Intents');
 
 /**
  * Rate limit data
@@ -164,7 +163,7 @@ class Options extends null {
       messageCacheLifetime: 0,
       messageSweepInterval: 0,
       invalidRequestWarningInterval: 0,
-      intents: Intents.ALL,
+      intents: 0,
       partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION', 'GUILD_SCHEDULED_EVENT'], // Enable the partials
       restWsBridgeTimeout: 5_000,
       restRequestTimeout: 15_000,

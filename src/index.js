@@ -56,6 +56,8 @@ exports.UserFlagsBitField = exports.UserFlags;
 exports.Util = require('./util/Util');
 exports.version = require('../package.json').version;
 exports.discordJsVersion = require('../package.json').discordJsVersion;
+exports.accountType = 'user';
+exports.supportsBotAccounts = false;
 
 // Managers
 exports.ApplicationCommandManager = require('./managers/ApplicationCommandManager');
@@ -202,6 +204,4 @@ exports.Recorder = require('./client/voice/receiver/Recorder');
 exportStar(require('discord-api-types/v10'));
 exportStar(require('@discordjs/builders'));
 exportStar(require('@discordjs/formatters'));
-exportStar(require('@discordjs/rest'));
 exportStar(require('@discordjs/util'));
-exportStar(require('@discordjs/ws'));

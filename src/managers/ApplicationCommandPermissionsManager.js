@@ -39,6 +39,10 @@ class ApplicationCommandPermissionsManager extends BaseManager {
     this.commandId = manager.id ?? null;
   }
 
+  _assertAvailable() {
+    throw new Error('BOT_ONLY_API_DISABLED');
+  }
+
   /**
    * The APIRouter path to the commands
    * @param {Snowflake} guildId The guild's id to use in the path,
@@ -93,6 +97,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *   .catch(console.error);
    */
   async fetch({ guild, command } = {}) {
+    this._assertAvailable();
     const { guildId, commandId } = this._validateOptions(guild, command);
     if (commandId) {
       const data = await this.permissionsPath(guildId, commandId).get();
@@ -159,6 +164,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *   .catch(console.error);
    */
   async set({ guild, command, permissions, fullPermissions } = {}) {
+    this._assertAvailable();
     const { guildId, commandId } = this._validateOptions(guild, command);
 
     if (commandId) {
@@ -220,6 +226,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *   .catch(console.error);
    */
   async add({ guild, command, permissions }) {
+    this._assertAvailable();
     const { guildId, commandId } = this._validateOptions(guild, command);
     if (!commandId) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
     if (!Array.isArray(permissions)) {
@@ -271,6 +278,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *    .catch(console.error);
    */
   async remove({ guild, command, users, roles }) {
+    this._assertAvailable();
     const { guildId, commandId } = this._validateOptions(guild, command);
     if (!commandId) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 

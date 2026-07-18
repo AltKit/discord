@@ -3,7 +3,7 @@
 const CommandInteractionOptionResolver = require('./CommandInteractionOptionResolver');
 const Interaction = require('./Interaction');
 const { Error } = require('../errors');
-const { InteractionResponseTypes, ApplicationCommandOptionTypes } = require('../util/Constants');
+const { ApplicationCommandOptionTypes } = require('../util/Constants');
 
 /**
  * Represents an autocomplete interaction.
@@ -90,17 +90,8 @@ class AutocompleteInteraction extends Interaction {
    *  .then(console.log)
    *  .catch(console.error);
    */
-  async respond(options) {
-    if (this.responded) throw new Error('INTERACTION_ALREADY_REPLIED');
-
-    await this.client.api.interactions(this.id, this.token).callback.post({
-      data: {
-        type: InteractionResponseTypes.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
-        data: { choices: options.map(choice => ({ ...choice, name_localizations: options.nameLocalizations })) },
-      },
-      auth: false,
-    });
-    this.responded = true;
+  async respond() {
+    throw new Error('BOT_ONLY_API_DISABLED');
   }
 }
 

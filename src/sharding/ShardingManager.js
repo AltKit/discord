@@ -21,6 +21,10 @@ const Util = require('../util/Util');
  * @deprecated
  */
 class ShardingManager extends EventEmitter {
+  _assertAvailable() {
+    throw new Error('BOT_ONLY_API_DISABLED');
+  }
+
   /**
    * The mode to spawn shards with for a {@link ShardingManager}. Can be either one of:
    * * 'process' to use child processes
@@ -136,7 +140,7 @@ class ShardingManager extends EventEmitter {
      * Token to use for obtaining the automatic shard count, and passing to shards
      * @type {?string}
      */
-    this.token = options.token?.replace(/^Bot\s*/i, '') ?? null;
+    this.token = options.token ?? null;
 
     /**
      * A collection of shards that this manager has spawned
@@ -157,6 +161,7 @@ class ShardingManager extends EventEmitter {
    * @returns {Shard} Note that the created shard needs to be explicitly spawned using its spawn method.
    */
   createShard(id = this.shards.size) {
+    this._assertAvailable();
     const shard = new Shard(this, id);
     this.shards.set(id, shard);
     /**
@@ -182,6 +187,7 @@ class ShardingManager extends EventEmitter {
    * @returns {Promise<Collection<number, Shard>>}
    */
   async spawn({ amount = this.totalShards, delay = 5500, timeout = 30_000 } = {}) {
+    this._assertAvailable();
     // Obtain/verify the number of shards to spawn
     if (amount === 'auto') {
       amount = 1;

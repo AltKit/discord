@@ -42,15 +42,16 @@
     "discord.js v14",
     "selfbot",
     "selfbot v14",
+    "user-account",
+    "userbot",
     "djs",
     "api",
-    "bot",
     "node",
     "discord",
     "client",
     "discordapp"
   ],
-  "author": "aiko-chan-ai",
+  "author": "altkit",
   "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/AltKit/discord/issues"

@@ -35,7 +35,6 @@ const Widget = require('../structures/Widget');
 const Application = require('../structures/interfaces/Application');
 const { Events, Status } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
-const Intents = require('../util/Intents');
 const DiscordAuthWebsocket = require('../util/RemoteAuth');
 const Sweepers = require('../util/Sweepers');
 
@@ -61,7 +60,7 @@ function validateRetryLimit(options, name, allowInfinity = false) {
 }
 
 /**
- * The main hub for interacting with the Discord API, and the starting point for any bot.
+ * The main hub for user-account Discord workflows.
  * @extends {BaseClient}
  */
 class Client extends BaseClient {
@@ -72,6 +71,20 @@ class Client extends BaseClient {
     super(options);
 
     this._validateOptions();
+
+    /**
+     * The account type supported by this client.
+     * @type {'user'}
+     * @readonly
+     */
+    Object.defineProperty(this, 'accountType', { value: 'user', enumerable: true });
+
+    /**
+     * Whether this client supports bot accounts.
+     * @type {false}
+     * @readonly
+     */
+    Object.defineProperty(this, 'supportsBotAccounts', { value: false, enumerable: true });
 
     /**
      * Functions called when a cache is garbage collected or the Client is destroyed
@@ -128,14 +141,14 @@ class Client extends BaseClient {
 
     /**
      * A manager of all the guilds the client is currently handling -
-     * as long as sharding isn't being used, this will be *every* guild the bot is a member of
+     * this will be every guild the user account is a member of
      * @type {GuildManager}
      */
     this.guilds = new GuildManager(this);
 
     /**
      * All of the {@link Channel}s that the client is currently handling -
-     * as long as sharding isn't being used, this will be *every* channel in *every* guild the bot
+     * this will be every cached channel in every guild the user account
      * is a member of. Note that DM channels will not be initially cached, and thus not be present
      * in the Manager without their explicit fetching or use.
      * @type {ChannelManager}
@@ -194,7 +207,7 @@ class Client extends BaseClient {
     Object.defineProperty(this, 'token', { writable: true });
     if (!this.token && 'DISCORD_TOKEN' in process.env) {
       /**
-       * Authorization token for the logged in bot.
+       * Authorization token for the logged in user account.
        * If present, this defaults to `process.env.DISCORD_TOKEN` when instantiating the client
        * <warn>This should be kept private at all times.</warn>
        * @type {?string}
@@ -288,7 +301,9 @@ class Client extends BaseClient {
    */
   async login(token = this.token) {
     if (!token || typeof token !== 'string') throw new Error('TOKEN_INVALID');
-    this.token = token = token.replace(/^(Bot|Bearer)\s*/i, '');
+    token = token.trim();
+    if (/^(?:Bot|Bearer)\s+/i.test(token)) throw new Error('BOT_ACCOUNT_UNSUPPORTED');
+    this.token = token;
     this.emit(
       Events.DEBUG,
       `
@@ -306,6 +321,8 @@ class Client extends BaseClient {
     this.emit(Events.DEBUG, 'Preparing to connect to the gateway...');
 
     try {
+      const identity = await this.api.users('@me').get();
+      if (identity.bot) throw new Error('BOT_ACCOUNT_UNSUPPORTED');
       await this.ws.connect();
       return this.token;
     } catch (error) {
@@ -357,7 +374,7 @@ class Client extends BaseClient {
 
   /**
    * Returns whether the client has logged in, indicative of being able to access
-   * properties such as `user` and `application`.
+   * properties such as `user`.
    * @returns {boolean}
    */
   isReady() {
@@ -537,7 +554,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Obtains a guild preview from Discord, available for all guilds the bot is in and all Discoverable guilds.
+   * Obtains a guild preview from Discord, available for joined guilds and Discoverable guilds.
    * @param {GuildResolvable} guild The guild to fetch the preview for
    * @returns {Promise<GuildPreview>}
    */
@@ -933,7 +950,7 @@ class Client extends BaseClient {
     // Hardcode
     this.options.shardCount = 1;
     this.options.shards = [0];
-    this.options.intents = Intents.ALL;
+    this.options.intents = 0;
   }
 }
 

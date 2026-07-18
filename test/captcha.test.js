@@ -314,6 +314,7 @@ test('redacts authentication and voice credentials from debug output', async () 
   const loginToken = 'login-secret-token';
   const debug = [];
   const client = new Client();
+  client.rest.request = async () => ({ bot: false });
   client.ws.connect = async () => {};
   client.on('debug', message => debug.push(message));
   await client.login(loginToken);

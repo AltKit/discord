@@ -16,6 +16,10 @@ Altkit Discord v4 targets Discord API v10 and Gateway v10 by default while prese
 surface and fork-specific helpers. It includes modern exports, events, partials, poll support, shared client themes,
 activity instances, voice messages, and account, presence, TOTP, voice, and video features.
 
+This package is user-account-only. Bot and OAuth bearer tokens are rejected, bot Gateway intents are disabled, and
+bot-owned command registration, command permissions, interaction responses, and multi-process sharding fail locally
+with `BOT_ONLY_API_DISABLED` before making a Discord request.
+
 Read [the complete v4 migration guide](docs/migrate.md) before upgrading from v3.
 
 ## Requirements
@@ -93,9 +97,9 @@ so bot-only Discord.js examples for slash-command deployment, buttons, select me
 You can inspect compatibility at runtime:
 
 ```js
-const { version, discordJsVersion } = require('@altkit/discord');
+const { version, discordJsVersion, accountType, supportsBotAccounts } = require('@altkit/discord');
 
-console.log({ version, discordJsVersion });
+console.log({ version, discordJsVersion, accountType, supportsBotAccounts });
 ```
 
 ## Security

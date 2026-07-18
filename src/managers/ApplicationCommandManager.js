@@ -4,7 +4,7 @@ const { isJSONEncodable } = require('@discordjs/builders');
 const { Collection } = require('@discordjs/collection');
 const ApplicationCommandPermissionsManager = require('./ApplicationCommandPermissionsManager');
 const CachedManager = require('./CachedManager');
-const { TypeError } = require('../errors');
+const { Error, TypeError } = require('../errors');
 const ApplicationCommand = require('../structures/ApplicationCommand');
 const { ApplicationCommandTypes } = require('../util/Constants');
 const Permissions = require('../util/Permissions');
@@ -32,6 +32,10 @@ class ApplicationCommandManager extends CachedManager {
 
   _add(data, cache, guildId) {
     return super._add(data, cache, { extras: [this.guild, guildId] });
+  }
+
+  _assertAvailable() {
+    throw new Error('BOT_ONLY_API_DISABLED');
   }
 
   /**
@@ -94,6 +98,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetch(id, { guildId, cache = true, force = false, locale, withLocalizations } = {}) {
+    this._assertAvailable();
     if (typeof id === 'object') {
       ({ guildId, cache = true, locale, withLocalizations } = id);
     } else if (id) {
@@ -130,6 +135,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async create(command, guildId) {
+    this._assertAvailable();
     const data = await this.commandPath({ guildId }).post({
       data: this.constructor.transformCommand(command),
     });
@@ -159,6 +165,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async set(commands, guildId) {
+    this._assertAvailable();
     const data = await this.commandPath({ guildId }).put({
       data: commands.map(c => this.constructor.transformCommand(c)),
     });
@@ -181,6 +188,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async edit(command, data, guildId) {
+    this._assertAvailable();
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
@@ -203,6 +211,7 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async delete(command, guildId) {
+    this._assertAvailable();
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 

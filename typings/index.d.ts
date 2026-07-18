@@ -853,6 +853,8 @@ export type If<T extends boolean, A, B = null> = T extends true ? A : T extends 
 
 export class Client<Ready extends boolean = boolean> extends BaseClient {
   public constructor(options?: ClientOptions);
+  public readonly accountType: 'user';
+  public readonly supportsBotAccounts: false;
   private actions: unknown;
   public authenticator: TOTPAuthenticator;
   private presence: ClientPresence;
@@ -4398,6 +4400,8 @@ export const Constants: {
 
 export const version: string;
 export const discordJsVersion: '14.27.0';
+export const accountType: 'user';
+export const supportsBotAccounts: false;
 
 export const Partials: {
   readonly User: 0;
@@ -4434,9 +4438,7 @@ export { UserFlags as UserFlagsBitField };
 
 export * from '@discordjs/builders';
 export * from '@discordjs/formatters';
-export * from '@discordjs/rest';
 export * from '@discordjs/util';
-export * from '@discordjs/ws';
 export * from 'discord-api-types/v10';
 
 //#endregion

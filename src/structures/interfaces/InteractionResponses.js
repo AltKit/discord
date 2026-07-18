@@ -7,6 +7,10 @@ const InteractionCollector = require('../InteractionCollector');
 const MessagePayload = require('../MessagePayload');
 const Modal = require('../Modal');
 
+const assertBotResponseAvailable = () => {
+  throw new Error('BOT_ONLY_API_DISABLED');
+};
+
 /**
  * Interface for classes that support shared interaction response types.
  * @interface
@@ -56,6 +60,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   async deferReply(options = {}) {
+    assertBotResponseAvailable();
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
     this.ephemeral = options.ephemeral ?? false;
     await this.client.api.interactions(this.id, this.token).callback.post({
@@ -91,6 +96,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   async reply(options) {
+    assertBotResponseAvailable();
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
     this.ephemeral = options.ephemeral ?? false;
 
@@ -125,6 +131,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   fetchReply(message = '@original') {
+    assertBotResponseAvailable();
     return this.webhook.fetchMessage(message);
   }
 
@@ -146,6 +153,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   async editReply(options) {
+    assertBotResponseAvailable();
     if (!this.deferred && !this.replied) throw new Error('INTERACTION_NOT_REPLIED');
     const message = await this.webhook.editMessage(options.message ?? '@original', options);
     this.replied = true;
@@ -164,6 +172,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   async deleteReply(message = '@original') {
+    assertBotResponseAvailable();
     await this.webhook.deleteMessage(message);
   }
 
@@ -173,6 +182,7 @@ class InteractionResponses {
    * @returns {Promise<Message|APIMessage>}
    */
   async followUp(options) {
+    assertBotResponseAvailable();
     if (!this.deferred && !this.replied) throw new Error('INTERACTION_NOT_REPLIED');
     return this.webhook.send(options);
   }
@@ -188,6 +198,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   async deferUpdate(options = {}) {
+    assertBotResponseAvailable();
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
     await this.client.api.interactions(this.id, this.token).callback.post({
       data: {
@@ -214,6 +225,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   async update(options = {}) {
+    assertBotResponseAvailable();
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
 
     let messagePayload;
@@ -241,6 +253,7 @@ class InteractionResponses {
    * @returns {Promise<void>}
    */
   async showModal(modal) {
+    assertBotResponseAvailable();
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
 
     const _modal = modal instanceof Modal ? modal : new Modal(modal);
@@ -273,6 +286,7 @@ class InteractionResponses {
    *   .catch(console.error);
    */
   awaitModalSubmit(options) {
+    assertBotResponseAvailable();
     if (typeof options.time !== 'number') throw new Error('INVALID_TYPE', 'time', 'number');
     const _options = { ...options, max: 1, interactionType: InteractionTypes.MODAL_SUBMIT };
     return new Promise((resolve, reject) => {

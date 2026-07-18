@@ -9,7 +9,7 @@ const APIRequest = require('./APIRequest');
 const routeBuilder = require('./APIRouter');
 const RequestHandler = require('./RequestHandler');
 const { Error } = require('../errors');
-const { ciphers, Endpoints } = require('../util/Constants');
+const { Endpoints } = require('../util/Constants');
 const Util = require('../util/Util');
 
 class RESTManager {
@@ -50,10 +50,17 @@ class RESTManager {
     if (this.destroyed) throw new Error('CLIENT_DESTROYED');
     if (this.dispatcher) return this.dispatcher;
 
-    const proxyOptions = Util.checkUndiciProxyAgent(this.client.options.http.agent);
+    const { agent, tls } = this.client.options.http;
+    const proxyOptions = Util.checkUndiciProxyAgent(agent);
+    const requestTLS = Util.createTLSOptions({
+      ...(!proxyOptions && typeof agent === 'object' && agent !== null
+        ? Util.createTLSOptions(agent)
+        : proxyOptions?.requestTls),
+      ...(tls && typeof tls === 'object' ? tls : {}),
+    });
     this.dispatcher = proxyOptions
-      ? new ProxyAgent({ ...proxyOptions, ciphers: ciphers.join(':') })
-      : new Agent({ connect: buildConnector({ ciphers: ciphers.join(':') }) });
+      ? new ProxyAgent({ ...proxyOptions, requestTls: requestTLS })
+      : new Agent({ connect: buildConnector(requestTLS) });
     return this.dispatcher;
   }
 

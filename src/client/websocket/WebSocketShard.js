@@ -282,13 +282,15 @@ class WebSocketShard extends EventEmitter {
         wsQuery.compress = 'zlib-stream';
       }
 
+      const connectionOptions = Util.resolveWebSocketTLS(client.options.ws);
+
       this.debug(
         `[CONNECT]
     Gateway    : ${gateway}
     Version    : ${client.options.ws.version}
     Encoding   : ${WebSocket.encoding}
     Compression: ${zlib ? 'zlib-stream' : 'none'}
-    Agent      : ${Util.verifyProxyAgent(client.options.ws.agent)}`,
+    Agent      : ${Boolean(connectionOptions.agent)}`,
       );
 
       this.status = this.status === Status.DISCONNECTED ? Status.RECONNECTING : Status.CONNECTING;
@@ -298,8 +300,8 @@ class WebSocketShard extends EventEmitter {
 
       // Adding a handshake timeout to just make sure no zombie connection appears.
       const ws = (this.connection = WebSocket.create(gateway, wsQuery, {
+        ...connectionOptions,
         handshakeTimeout: 30_000,
-        agent: Util.verifyProxyAgent(client.options.ws.agent) ? client.options.ws.agent : undefined,
       }));
       ws.onopen = this.onOpen.bind(this);
       ws.onmessage = this.onMessage.bind(this);
@@ -738,6 +740,7 @@ class WebSocketShard extends EventEmitter {
 
     delete d.version;
     delete d.agent;
+    delete d.tls;
 
     this.debug(`[IDENTIFY] Shard ${this.id}`);
     this.send({ op: Opcodes.IDENTIFY, d }, true);

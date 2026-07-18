@@ -69,6 +69,7 @@ import {
 } from 'discord-api-types/v10';
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
+import { Agent as HTTPAgent } from 'node:http';
 import { AgentOptions } from 'node:https';
 import { Response, ProxyAgent } from 'undici';
 import { Readable, Writable, Stream } from 'node:stream';
@@ -7201,7 +7202,8 @@ export interface HTTPErrorData {
 }
 
 export interface HTTPOptions {
-  agent?: Omit<ProxyAgent.Options, 'keepAlive'>;
+  agent?: string | URL | TLSOptions | Omit<ProxyAgent.Options, 'keepAlive'>;
+  tls?: TLSOptions;
   api?: string;
   version?: number;
   host?: string;
@@ -8241,11 +8243,14 @@ export interface WebhookMessageOptions extends Omit<
 export type WebhookType = keyof typeof WebhookTypes;
 
 export interface WebSocketOptions {
-  agent?: Omit<AgentOptions, 'keepAlive'>;
+  agent?: HTTPAgent | Omit<AgentOptions, 'keepAlive'> | { httpAgent: HTTPAgent; httpsAgent: HTTPAgent };
+  tls?: TLSOptions;
   compress?: boolean;
   properties?: WebSocketProperties;
   version?: number;
 }
+
+export type TLSOptions = NonNullable<ProxyAgent.Options['requestTls']>;
 
 export interface WebSocketProperties {
   os?: string;

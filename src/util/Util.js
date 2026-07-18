@@ -6,7 +6,7 @@ const process = require('node:process');
 const { setTimeout } = require('node:timers');
 const { Collection } = require('@discordjs/collection');
 const { fetch } = require('undici');
-const { Colors, Events } = require('./Constants');
+const { ciphers, Colors, Events } = require('./Constants');
 const { Error: DiscordError, RangeError, TypeError } = require('../errors');
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 const isObject = d => typeof d === 'object' && d !== null;
@@ -904,7 +904,56 @@ class Util extends null {
    * @returns {boolean}
    */
   static verifyProxyAgent(object) {
-    return typeof object == 'object' && object.httpAgent instanceof Agent && object.httpsAgent instanceof Agent;
+    return object !== null && object?.httpAgent instanceof Agent && object?.httpsAgent instanceof Agent;
+  }
+
+  /**
+   * Creates the TLS options shared by REST and WebSocket connections.
+   * User options intentionally take precedence over the browser-like defaults.
+   * @param {Object|Agent} [options] TLS or HTTPS agent options
+   * @returns {Object}
+   * @private
+   */
+  static createTLSOptions(options = {}) {
+    const configuredOptions = options instanceof Agent ? options.options : options;
+    const tlsOptions = {
+      ciphers: ciphers.join(':'),
+      honorCipherOrder: true,
+      minVersion: 'TLSv1.2',
+      ...(isObject(configuredOptions) ? configuredOptions : {}),
+    };
+    // Node rejects secureProtocol when minVersion is also present. Preserve the
+    // secure TLS default unless the caller explicitly chooses the legacy API.
+    if (configuredOptions?.secureProtocol && configuredOptions.minVersion === undefined) {
+      delete tlsOptions.minVersion;
+    }
+    return tlsOptions;
+  }
+
+  /**
+   * Resolves the TLS and agent options accepted by ws.
+   * @param {WebsocketOptions} [options] Client WebSocket options
+   * @returns {Object}
+   * @private
+   */
+  static resolveWebSocketTLS(options = {}) {
+    const configuredAgent = options.agent;
+    let agent;
+    let legacyTLSOptions = {};
+
+    if (configuredAgent instanceof Agent) {
+      agent = configuredAgent;
+    } else if (Util.verifyProxyAgent(configuredAgent)) {
+      agent = configuredAgent.httpsAgent;
+    } else if (isObject(configuredAgent) && !(configuredAgent instanceof URL)) {
+      // Before `tls` was introduced, ws.agent was documented as HTTPS Agent options.
+      legacyTLSOptions = configuredAgent;
+    }
+
+    return {
+      ...Util.createTLSOptions({ ...legacyTLSOptions, ...(isObject(options.tls) ? options.tls : {}) }),
+      ...(agent ? { agent } : {}),
+    };
   }
 
   static checkUndiciProxyAgent(data) {
@@ -918,7 +967,7 @@ class Util extends null {
         uri: data.toString(),
       };
     }
-    if (typeof data === 'object' && typeof data.uri === 'string') return data;
+    if (isObject(data) && typeof data.uri === 'string') return data;
     return false;
   }
 

@@ -110,6 +110,7 @@ const { UserAgent } = require('./Constants');
  * WebSocket options (these are left as snake_case to match the API)
  * @typedef {Object} WebsocketOptions
  * @property {AgentOptions} [agent={}] HTTPS Agent options (WS Proxy)
+ * @property {TLSOptions} [tls={}] TLS options for Gateway and voice WebSocket connections
  * @property {boolean} [compress=false] Whether to compress data sent on the connection
  * @property {WebSocketProperties} [properties] Properties to identify the client with
  * @property {number} [version=10] Gateway version to use
@@ -123,6 +124,12 @@ const { UserAgent } = require('./Constants');
  */
 
 /**
+ * TLS connection options.
+ * @typedef {Object} TLSOptions
+ * @see {@link https://nodejs.org/api/tls.html#tlsconnectoptions-callback}
+ */
+
+/**
  * ProxyAgent options.
  * @typedef {Object} ProxyAgentOptions
  * @see {@link https://github.com/nodejs/undici/blob/main/docs/docs/api/ProxyAgent.md}
@@ -133,6 +140,7 @@ const { UserAgent } = require('./Constants');
  * @typedef {Object} HTTPOptions
  * @property {number} [version=10] API version to use
  * @property {ProxyAgentOptions} [agent={}] ProxyAgent options
+ * @property {TLSOptions} [tls={}] TLS options for REST connections
  * @property {string} [api='https://discord.com/api'] Base URL of the API
  * @property {string} [cdn='https://cdn.discordapp.com'] Base URL of the CDN
  * @property {string} [invite='https://discord.gg'] Base URL of invites
@@ -203,9 +211,11 @@ class Options extends null {
         },
         version: 10,
         agent: {},
+        tls: {},
       },
       http: {
         agent: {},
+        tls: {},
         headers: {
           'User-Agent': UserAgent,
         },

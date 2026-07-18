@@ -75,6 +75,8 @@ const client = new Client({
 
 The `http.agent` setting covers the library's REST transport. WebSocket proxy behavior is configured separately through `ws.agent`; consult the [ClientOptions API](/api/typedefs/clientoptions) before changing transport defaults.
 
+Custom certificate authorities and TLS verification settings belong under `http.tls` for REST and `ws.tls` for Gateway and voice connections. Keep certificate verification enabled in production; disabling `rejectUnauthorized` allows man-in-the-middle interception.
+
 ## Incident checklist
 
 If a secret may have been exposed:

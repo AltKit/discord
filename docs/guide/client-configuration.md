@@ -103,6 +103,23 @@ const client = new Client({
 
 The library creates the underlying `undici` proxy agent. Keep proxy credentials in the environment and review the [security guide](/guide/security).
 
+## TLS configuration
+
+REST and WebSocket TLS settings are configured separately. Both transports default to TLS 1.2 or newer and retain the library's browser-like cipher ordering. Explicit options override those defaults:
+
+```js
+const client = new Client({
+  http: {
+    tls: { ca: process.env.REST_CA_CERT },
+  },
+  ws: {
+    tls: { ca: process.env.GATEWAY_CA_CERT },
+  },
+});
+```
+
+For a REST proxy, `http.tls` configures the TLS connection to the destination. Use `http.agent.requestTls` for destination-specific proxy options and `http.agent.proxyTls` for an HTTPS proxy itself. When both `http.tls` and `requestTls` set the same field, `http.tls` takes precedence.
+
 ## Rate limits and retries
 
 The REST manager queues requests when Discord applies rate limits. `rejectOnRateLimit` can turn selected routes into immediate `RateLimitError` failures instead of waiting:

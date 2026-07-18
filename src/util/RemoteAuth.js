@@ -8,6 +8,7 @@ const { setTimeout } = require('node:timers');
 const { fetch } = require('undici');
 const WebSocket = require('ws');
 const { UserAgent } = require('./Constants');
+const Util = require('./Util');
 const Options = require('./Options');
 
 const defaultClientOptions = Options.createDefault();
@@ -89,6 +90,7 @@ class DiscordAuthWebsocket extends EventEmitter {
 
   #createWebSocket(url) {
     this.#ws = new WebSocket(url, {
+      ...Util.createTLSOptions(),
       headers: {
         Origin: 'https://discord.com',
         'User-Agent': UserAgent,

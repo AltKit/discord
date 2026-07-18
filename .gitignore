@@ -75,6 +75,7 @@ dist
 test/*
 !test/captcha.test.js
 !test/regressions.test.js
+!test/tls.test.js
 docs/deploy/deploy_key
 docs/deploy/deploy_key.pub
 deploy/deploy_key

@@ -5,6 +5,7 @@ const { setTimeout, setInterval } = require('node:timers');
 const WebSocket = require('../../../WebSocket');
 const { Error } = require('../../../errors');
 const { Opcodes, VoiceOpcodes } = require('../../../util/Constants');
+const Util = require('../../../util/Util');
 
 /**
  * Represents a Voice Connection's WebSocket.
@@ -77,7 +78,11 @@ class VoiceWebSocket extends EventEmitter {
      * The actual WebSocket used to connect to the Voice WebSocket Server.
      * @type {WebSocket}
      */
-    this.ws = WebSocket.create(`wss://${this.connection.authentication.endpoint}/`, { v: 8 });
+    this.ws = WebSocket.create(
+      `wss://${this.connection.authentication.endpoint}/`,
+      { v: 8 },
+      Util.resolveWebSocketTLS(this.client.options.ws),
+    );
     this.emit('debug', `[WS] connecting (attempt ${this.attempts}).`);
     this.ws.onopen = this.onOpen.bind(this);
     this.ws.onmessage = this.onMessage.bind(this);

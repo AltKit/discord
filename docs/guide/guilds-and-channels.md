@@ -90,6 +90,21 @@ const widget = await guild.fetchWidget();
 
 At the client level, `fetchGuildPreview()` can retrieve previews for joined guilds and discoverable guilds without requiring a fully cached `Guild` structure.
 
+## Ephemeral voice channel information
+
+Voice channel status and session start time are not included in ordinary channel payloads. Request them over the v10 Gateway after the client is ready:
+
+```js
+guild.requestChannelInfo(['status', 'voice_start_time']);
+
+client.on('channelUpdate', (oldChannel, channel) => {
+  if (!channel.isVoice()) return;
+  console.log(channel.status, channel.voiceStartAt);
+});
+```
+
+The request uses official Gateway opcode 43. `CHANNEL_INFO`, `VOICE_CHANNEL_STATUS_UPDATE`, and `VOICE_CHANNEL_START_TIME_UPDATE` packets update the cached channel and emit `channelUpdate`.
+
 ## Positions and bulk changes
 
 Channel and role positions are interdependent. Prefer manager bulk-position helpers when reordering multiple entries so the intended final order is sent together.

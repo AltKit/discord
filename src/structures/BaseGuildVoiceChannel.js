@@ -97,7 +97,28 @@ class BaseGuildVoiceChannel extends GuildChannel {
        * @type {?string}
        */
       this.status = data.status;
+    } else {
+      this.status ??= null;
     }
+
+    if ('voice_start_time' in data) {
+      /**
+       * The timestamp when the current voice session started.
+       * @type {?number}
+       */
+      this.voiceStartTimestamp = data.voice_start_time == null ? null : data.voice_start_time * 1_000;
+    } else {
+      this.voiceStartTimestamp ??= null;
+    }
+  }
+
+  /**
+   * The time when the current voice session started.
+   * @type {?Date}
+   * @readonly
+   */
+  get voiceStartAt() {
+    return this.voiceStartTimestamp == null ? null : new Date(this.voiceStartTimestamp);
   }
 
   /**

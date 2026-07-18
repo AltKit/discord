@@ -65,7 +65,7 @@ exports.WSCodes = {
 
 const AllowedImageFormats = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
 
-const AllowedImageSizes = [16, 32, 56, 64, 96, 128, 256, 300, 512, 600, 1024, 2048, 4096];
+const AllowedImageSizes = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
 function makeImageUrl(root, { format = 'webp', size } = {}) {
   if (!['undefined', 'number'].includes(typeof size)) throw new TypeError('INVALID_TYPE', 'size', 'number');
@@ -228,6 +228,7 @@ exports.VoiceStatus = {
  * * SEARCH_RECENT_MEMBERS: 35 => ~ Opcode 8 (Member Safety)
  * * REQUEST_CHANNEL_STATUSES: 36 => Request Voice Channel status.
  * * GUILD_SUBSCRIPTIONS_BULK: 37 => ~ Opcode 14
+ * * REQUEST_CHANNEL_INFO: 43 => Request ephemeral voice channel information.
  * @typedef {Object<string, number>} Opcodes
  */
 exports.Opcodes = {
@@ -268,6 +269,7 @@ exports.Opcodes = {
   SEARCH_RECENT_MEMBERS: 35, // Payload: { guild_id: string, query: string, continuation_token?: Snowflake }
   REQUEST_CHANNEL_STATUSES: 36, // Payload: { guild_id: string } | Response: CHANNEL_STATUSES | { guild_id, channels: { status, id }[] }
   GUILD_SUBSCRIPTIONS_BULK: 37, // Payload: { subscriptions: Object<guild_id, { Payload_op14 - guild_id }> } | Response: Opcode 14
+  REQUEST_CHANNEL_INFO: 43, // Payload: { guild_id: string, fields: ('status' | 'voice_start_time')[] } | Response: CHANNEL_INFO
   // Updated: 23/1/2024
 };
 
@@ -629,6 +631,7 @@ exports.WSEvents = keyMirror([
   'CHANNEL_DELETE',
   'CHANNEL_UPDATE',
   'CHANNEL_PINS_UPDATE',
+  'CHANNEL_INFO',
   'MESSAGE_CREATE',
   'MESSAGE_DELETE',
   'MESSAGE_UPDATE',
@@ -648,6 +651,9 @@ exports.WSEvents = keyMirror([
   'TYPING_START',
   'VOICE_STATE_UPDATE',
   'VOICE_SERVER_UPDATE',
+  'VOICE_CHANNEL_EFFECT_SEND',
+  'VOICE_CHANNEL_STATUS_UPDATE',
+  'VOICE_CHANNEL_START_TIME_UPDATE',
   'WEBHOOKS_UPDATE',
   'STAGE_INSTANCE_CREATE',
   'STAGE_INSTANCE_UPDATE',
@@ -1640,6 +1646,18 @@ exports.InteractionResponseTypes = createEnum([
  * * ROLE_SELECT
  * * MENTIONABLE_SELECT
  * * CHANNEL_SELECT
+ * * SECTION
+ * * TEXT_DISPLAY
+ * * THUMBNAIL
+ * * MEDIA_GALLERY
+ * * FILE
+ * * SEPARATOR
+ * * CONTAINER
+ * * LABEL
+ * * FILE_UPLOAD
+ * * RADIO_GROUP
+ * * CHECKBOX_GROUP
+ * * CHECKBOX
  * @typedef {string} MessageComponentType
  * @see {@link https://discord.com/developers/docs/interactions/message-components#component-object-component-types}
  */

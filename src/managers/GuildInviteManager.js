@@ -1,5 +1,6 @@
 'use strict';
 
+const { Buffer } = require('node:buffer');
 const { Collection } = require('@discordjs/collection');
 const CachedManager = require('./CachedManager');
 const { Error } = require('../errors');
@@ -36,6 +37,23 @@ class GuildInviteManager extends CachedManager {
    * * An invite code
    * * An invite URL
    * @typedef {string} InviteResolvable
+   */
+
+  /**
+   * Data that can be resolved to a targeted-invite CSV file.
+   * An array is serialized with the required `user_id` header.
+   * @typedef {BufferResolvable|UserResolvable[]} TargetUsersFileResolvable
+   */
+
+  /**
+   * Processing status for a targeted-invite user list.
+   * @typedef {Object} InviteTargetUsersJobStatus
+   * @property {number} status Discord's processing status code
+   * @property {number} total_users Number of users in the uploaded file
+   * @property {number} processed_users Number of users processed so far
+   * @property {string} created_at ISO8601 timestamp when processing started
+   * @property {?string} completed_at ISO8601 timestamp when processing completed
+   * @property {?string} error_message Error returned while processing, if any
    */
 
   /**
@@ -177,11 +195,23 @@ class GuildInviteManager extends CachedManager {
    */
   async create(
     channel,
-    { temporary = false, maxAge = 86400, maxUses = 0, unique, targetUser, targetApplication, targetType, reason } = {},
+    {
+      temporary = false,
+      maxAge = 86400,
+      maxUses = 0,
+      unique,
+      targetUser,
+      targetApplication,
+      targetType,
+      targetUsersFile,
+      roleIds,
+      reason,
+    } = {},
   ) {
     const id = this.guild.channels.resolveId(channel);
     if (!id) throw new Error('GUILD_CHANNEL_RESOLVE');
 
+    const files = targetUsersFile ? [await this._resolveTargetUsersFile(targetUsersFile)] : undefined;
     const invite = await this.client.api.channels(id).invites.post({
       data: {
         temporary,
@@ -191,7 +221,9 @@ class GuildInviteManager extends CachedManager {
         target_user_id: this.client.users.resolveId(targetUser),
         target_application_id: targetApplication?.id ?? targetApplication?.applicationId ?? targetApplication,
         target_type: targetType,
+        role_ids: roleIds?.map(role => this.guild.roles.resolveId(role)),
       },
+      files,
       reason,
     });
     return new Invite(this.client, invite);
@@ -207,6 +239,58 @@ class GuildInviteManager extends CachedManager {
     const code = DataResolver.resolveInviteCode(invite);
 
     await this.client.api.invites(code).delete({ reason });
+  }
+
+  /**
+   * Fetches the users allowed to see and accept a targeted invite.
+   * @param {InviteResolvable} invite The invite to fetch target users for
+   * @returns {Promise<Snowflake[]>}
+   */
+  async fetchTargetUsers(invite) {
+    const code = DataResolver.resolveInviteCode(invite);
+    const data = await this.client.api.invites(code)['target-users'].get();
+    const csv = Buffer.from(data).toString('utf8');
+    return csv
+      .split(/\r?\n/)
+      .slice(1)
+      .map(value => value.trim())
+      .filter(Boolean);
+  }
+
+  /**
+   * Replaces the users allowed to see and accept a targeted invite.
+   * @param {InviteResolvable} invite The invite to update
+   * @param {TargetUsersFileResolvable} targetUsersFile Target-user CSV file or users
+   * @returns {Promise<void>}
+   */
+  async updateTargetUsers(invite, targetUsersFile) {
+    const code = DataResolver.resolveInviteCode(invite);
+    await this.client.api.invites(code)['target-users'].put({
+      files: [await this._resolveTargetUsersFile(targetUsersFile)],
+    });
+  }
+
+  /**
+   * Fetches the processing status of a targeted-invite user list.
+   * @param {InviteResolvable} invite The invite to check
+   * @returns {Promise<InviteTargetUsersJobStatus>}
+   */
+  fetchTargetUsersJobStatus(invite) {
+    const code = DataResolver.resolveInviteCode(invite);
+    return this.client.api.invites(code)['target-users']['job-status'].get();
+  }
+
+  async _resolveTargetUsersFile(targetUsersFile) {
+    let attachment = targetUsersFile;
+    if (Array.isArray(targetUsersFile)) {
+      const ids = targetUsersFile.map(user => this.client.users.resolveId(user) ?? String(user));
+      attachment = Buffer.from(`user_id\n${ids.join('\n')}\n`);
+    }
+    return {
+      key: 'target_users_file',
+      name: 'target-users.csv',
+      file: await DataResolver.resolveFile(attachment),
+    };
   }
 }
 

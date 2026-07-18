@@ -139,6 +139,15 @@ class Application extends Base {
       this.flags = new ApplicationFlags(data.flags).freeze();
     }
 
+    if ('flags_new' in data || 'flags' in data) {
+      /**
+       * The complete application flags bitfield, including bits above bit 30.
+       * Discord serializes this response-only field as a string.
+       * @type {bigint}
+       */
+      this.flagsNew = BigInt(data.flags_new ?? data.flags ?? 0);
+    }
+
     if ('approximate_guild_count' in data) {
       /**
        * An approximate amount of guilds this application is in.

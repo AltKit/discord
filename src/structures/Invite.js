@@ -253,6 +253,17 @@ class Invite extends Base {
     } else {
       this.flags ??= new InviteFlags().freeze();
     }
+
+    if ('roles' in data) {
+      const Role = require('./Role');
+      /**
+       * Partial roles assigned when this invite is accepted.
+       * @type {Role[]}
+       */
+      this.roles = data.roles.map(role => new Role(this.client, role, this.guild));
+    } else {
+      this.roles ??= [];
+    }
   }
 
   /**

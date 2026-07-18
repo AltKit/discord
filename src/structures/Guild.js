@@ -31,6 +31,7 @@ const {
   Status,
   MFALevels,
   PremiumTiers,
+  Opcodes,
 } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
 const SystemChannelFlags = require('../util/SystemChannelFlags');
@@ -1585,6 +1586,23 @@ class Guild extends AnonymousGuild {
     this.vanityURLUses = data.uses;
 
     return data;
+  }
+
+  /**
+   * Requests ephemeral voice channel information for this guild.
+   * Discord responds with a CHANNEL_INFO Gateway dispatch.
+   * @param {Array<'status'|'voice_start_time'>} [fields] Fields to request
+   * @returns {Guild}
+   */
+  requestChannelInfo(fields = ['status', 'voice_start_time']) {
+    if (!Array.isArray(fields) || fields.some(field => !['status', 'voice_start_time'].includes(field))) {
+      throw new TypeError('INVALID_TYPE', 'fields', "Array<'status'|'voice_start_time'>");
+    }
+    this.shard.send({
+      op: Opcodes.REQUEST_CHANNEL_INFO,
+      d: { guild_id: this.id, fields: [...new Set(fields)] },
+    });
+    return this;
   }
 
   /**

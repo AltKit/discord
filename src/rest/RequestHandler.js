@@ -10,9 +10,16 @@ const {
   Events: { DEBUG, RATE_LIMIT, INVALID_REQUEST_WARNING, API_RESPONSE, API_REQUEST },
 } = require('../util/Constants');
 
+const RETRYABLE_METHODS = new Set(['get', 'head', 'options', 'put', 'delete']);
+
 function parseResponse(res) {
+  if (res.status === 204 || res.status === 205) return undefined;
   if (res.headers.get('content-type')?.startsWith('application/json')) return res.json();
   return res.arrayBuffer();
+}
+
+function canRetry(request) {
+  return request.options.idempotent === true || RETRYABLE_METHODS.has(request.method.toLowerCase());
 }
 
 function getAPIOffset(serverDate) {
@@ -104,12 +111,13 @@ class RequestHandler {
   }
 
   async execute(request, captchaKey, captchaToken) {
+    const usesGlobalRateLimit = request.options.auth !== false && request.options.webhook !== true;
     /*
      * After calculations have been done, pre-emptively stop further requests
      * Potentially loop until this task can run if e.g. the global rate limit is hit twice
      */
-    while (this.limited) {
-      const isGlobal = this.globalLimited;
+    while ((usesGlobalRateLimit && this.globalLimited) || this.localLimited) {
+      const isGlobal = usesGlobalRateLimit && this.globalLimited;
       let limit, timeout, delayPromise;
 
       if (isGlobal) {
@@ -157,11 +165,13 @@ class RequestHandler {
     }
 
     // As the request goes out, update the global usage information
-    if (!this.manager.globalReset || this.manager.globalReset < Date.now()) {
-      this.manager.globalReset = Date.now() + 1_000;
-      this.manager.globalRemaining = this.manager.globalLimit;
+    if (usesGlobalRateLimit) {
+      if (!this.manager.globalReset || this.manager.globalReset < Date.now()) {
+        this.manager.globalReset = Date.now() + 1_000;
+        this.manager.globalRemaining = this.manager.globalLimit;
+      }
+      this.manager.globalRemaining--;
     }
-    this.manager.globalRemaining--;
 
     /**
      * Represents a request that will or has been made to the Discord API
@@ -205,9 +215,12 @@ class RequestHandler {
         throw httpError;
       }
 
-      // Retry the specified number of times for request abortions
-      if (request.retries === this.manager.client.options.retryLimit) {
-        throw new HTTPError(error.message, error.constructor.name, error.status, request);
+      // Ambiguous failures must not replay non-idempotent operations unless the
+      // caller explicitly marks the request as safe to retry.
+      if (!canRetry(request) || request.retries === this.manager.client.options.retryLimit) {
+        const httpError = new HTTPError(error.message, error.constructor.name, error.status, request);
+        httpError.cause = error;
+        throw httpError;
       }
 
       request.retries++;
@@ -238,12 +251,16 @@ class RequestHandler {
     }
 
     let sublimitTimeout;
+    let rateLimitBody;
+    let rateLimitScope;
     if (res.headers) {
       const serverDate = res.headers.get('date');
       const limit = res.headers.get('x-ratelimit-limit');
       const remaining = res.headers.get('x-ratelimit-remaining');
       const reset = res.headers.get('x-ratelimit-reset');
       const resetAfter = res.headers.get('x-ratelimit-reset-after');
+      const bucketHash = res.headers.get('x-ratelimit-bucket');
+      rateLimitScope = res.headers.get('x-ratelimit-scope');
       this.limit = limit ? Number(limit) : Infinity;
       this.remaining = remaining ? Number(remaining) : 1;
 
@@ -254,12 +271,22 @@ class RequestHandler {
         this.reset = new Date(serverDate).getTime() - getAPIOffset(serverDate) + 250;
       }
 
+      this.manager.updateBucketHash?.(request, bucketHash, this);
+
       // Handle retryAfter, which means we have actually hit a rate limit
       let retryAfter = res.headers.get('retry-after');
-      retryAfter = retryAfter ? Number(retryAfter) * 1_000 : -1;
+      if (res.status === 429) {
+        try {
+          rateLimitBody = await parseResponse(res.clone());
+        } catch {
+          rateLimitBody = null;
+        }
+      }
+      retryAfter = retryAfter ? Number(retryAfter) * 1_000 : Number(rateLimitBody?.retry_after) * 1_000;
+      if (!Number.isFinite(retryAfter)) retryAfter = -1;
       if (retryAfter > 0) {
         // If the global rate limit header is set, that means we hit the global rate limit
-        if (res.headers.get('x-ratelimit-global')) {
+        if (res.headers.get('x-ratelimit-global') || rateLimitScope === 'global' || rateLimitBody?.global === true) {
           this.manager.globalRemaining = 0;
           this.manager.globalReset = Date.now() + retryAfter;
         } else if (!this.localLimited) {
@@ -274,7 +301,7 @@ class RequestHandler {
     }
 
     // Count the invalid requests
-    if (res.status === 401 || res.status === 403 || res.status === 429) {
+    if (res.status === 401 || res.status === 403 || (res.status === 429 && rateLimitScope !== 'shared')) {
       if (!invalidCountResetTime || invalidCountResetTime < Date.now()) {
         invalidCountResetTime = Date.now() + 1_000 * 60 * 10;
         invalidCount = 0;
@@ -315,7 +342,8 @@ class RequestHandler {
     if (res.status >= 400 && res.status < 500) {
       // Handle ratelimited requests
       if (res.status === 429) {
-        const isGlobal = this.globalLimited;
+        const isGlobal =
+          usesGlobalRateLimit && (rateLimitScope === 'global' || rateLimitBody?.global === true || this.globalLimited);
         let limit, timeout;
         if (isGlobal) {
           // Set the variables based on the global rate limit
@@ -463,8 +491,8 @@ class RequestHandler {
         );
       }
 
-      // Retry the specified number of times for possible serverside issues
-      if (request.retries === this.manager.client.options.retryLimit) {
+      // Retry only operations that are idempotent or explicitly opted in.
+      if (!canRetry(request) || request.retries === this.manager.client.options.retryLimit) {
         throw new HTTPError(res.statusText, res.constructor.name, res.status, request);
       }
 

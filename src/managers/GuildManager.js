@@ -163,6 +163,8 @@ class GuildManager extends CachedManager {
 
   /**
    * Creates a guild.
+   * <warn>This endpoint is no longer part of the public application API. It is retained only for undocumented
+   * user-account compatibility and may stop working without notice.</warn>
    * @param {string} name The name of the guild
    * @param {GuildCreateOptions} [options] Options for creating the guild
    * @returns {Promise<Guild>} The guild that was created

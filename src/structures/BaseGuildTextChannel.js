@@ -145,6 +145,8 @@ class BaseGuildTextChannel extends GuildChannel {
    * @property {ApplicationResolvable} [targetApplication] The embedded application to open for this invite,
    * required if `targetType` is 2, the application must have the `EMBEDDED` flag
    * @property {TargetType} [targetType] The type of the target for this voice channel invite
+   * @property {TargetUsersFileResolvable} [targetUsersFile] A CSV file or users allowed to accept the invite
+   * @property {RoleResolvable[]} [roleIds] Roles assigned when the invite is accepted
    * @property {string} [reason] The reason for creating the invite
    */
 

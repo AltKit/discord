@@ -16,6 +16,7 @@ class RESTManager {
   constructor(client) {
     this.client = client;
     this.handlers = new Collection();
+    this.hashes = new Collection();
     this.versioned = true;
     this.globalLimit = client.options.restGlobalRateLimit > 0 ? client.options.restGlobalRateLimit : Infinity;
     this.globalRemaining = this.globalLimit;
@@ -72,6 +73,7 @@ class RESTManager {
       this.sweepInterval = null;
     }
     this.handlers.clear();
+    this.hashes.clear();
     this.cookieJar.removeAllCookiesSync();
     if (this.dispatcher) {
       for (const method of ['destroy', 'close']) {
@@ -89,14 +91,37 @@ class RESTManager {
 
   request(method, url, options = {}) {
     const apiRequest = new APIRequest(this, method, url, options);
-    let handler = this.handlers.get(apiRequest.route);
+    const bucketHash = this.hashes.get(apiRequest.routeId);
+    const handlerId = `${bucketHash ?? apiRequest.routeId}:${apiRequest.majorParameter}`;
+    let handler = this.handlers.get(handlerId);
 
     if (!handler) {
       handler = new RequestHandler(this);
-      this.handlers.set(apiRequest.route, handler);
+      this.handlers.set(handlerId, handler);
     }
 
     return handler.push(apiRequest);
+  }
+
+  updateBucketHash(request, bucketHash, handler) {
+    if (!bucketHash) return;
+
+    this.hashes.set(request.routeId, bucketHash);
+    const handlerId = `${bucketHash}:${request.majorParameter}`;
+    const existing = this.handlers.get(handlerId);
+
+    if (existing && existing !== handler) {
+      existing.limit = Math.max(existing.limit, handler.limit);
+      if (existing.remaining < 0) existing.remaining = handler.remaining;
+      else if (handler.remaining >= 0) existing.remaining = Math.min(existing.remaining, handler.remaining);
+      existing.reset = Math.max(existing.reset, handler.reset);
+      return;
+    }
+
+    for (const [key, value] of this.handlers) {
+      if (value === handler && key !== handlerId) this.handlers.delete(key);
+    }
+    this.handlers.set(handlerId, handler);
   }
 
   get endpoint() {

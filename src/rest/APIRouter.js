@@ -18,13 +18,25 @@ function buildRoute(manager) {
       if (reflectors.includes(name)) return () => route.join('/');
       if (methods.includes(name)) {
         const routeBucket = [];
+        const bucketRoute = [];
+        let majorParameter = 'global';
         for (let i = 0; i < route.length; i++) {
           // Reactions routes and sub-routes all share the same bucket
           if (route[i - 1] === 'reactions') break;
-          // Literal ids should only be taken account if they are the Major id (the Channel/Guild id)
-          if (/\d{16,19}/g.test(route[i]) && !/channels|guilds/.test(route[i - 1])) routeBucket.push(':id');
-          // All other parts of the route should be considered as part of the bucket identifier
-          else routeBucket.push(route[i]);
+
+          const isSnowflake = /^\d{16,20}$/.test(route[i]);
+          const isMajorId = isSnowflake && /^(channels|guilds|webhooks)$/.test(route[i - 1]);
+          const isWebhookToken = i === 3 && route[1] === 'webhooks' && route.length > 3;
+
+          if (isMajorId && majorParameter === 'global') {
+            majorParameter = `${route[i - 1]}:${route[i]}`;
+            if (route[i - 1] === 'webhooks' && route[i + 1]) majorParameter += `:${route[i + 1]}`;
+          }
+
+          // Keep major ids in the public route for backwards-compatible rate-limit events,
+          // but never expose webhook tokens. The bucket route excludes all major values.
+          routeBucket.push(isWebhookToken ? ':token' : isSnowflake && !isMajorId ? ':id' : route[i]);
+          bucketRoute.push(isWebhookToken ? ':token' : isSnowflake ? ':id' : route[i]);
         }
         return options =>
           manager.request(
@@ -34,6 +46,8 @@ function buildRoute(manager) {
               {
                 versioned: manager.versioned,
                 route: routeBucket.join('/'),
+                bucketRoute: bucketRoute.join('/'),
+                majorParameter,
               },
               options,
             ),

@@ -122,7 +122,7 @@ For a REST proxy, `http.tls` configures the TLS connection to the destination. U
 
 ## Rate limits and retries
 
-The REST manager queues requests when Discord applies rate limits. `rejectOnRateLimit` can turn selected routes into immediate `RateLimitError` failures instead of waiting:
+The REST manager discovers Discord's current bucket hashes, separates buckets by HTTP method and major resource, and queues requests until each bucket resets. Webhook IDs and tokens are isolated as major parameters, while webhook tokens are redacted from public route diagnostics. `rejectOnRateLimit` can turn selected routes into immediate `RateLimitError` failures instead of waiting:
 
 ```js
 const client = new Client({
@@ -132,7 +132,15 @@ const client = new Client({
 });
 ```
 
-Use this carefully. Retrying an invalid request does not make it valid, and aggressive retries can worsen rate limits.
+Use this carefully. Retrying an invalid request does not make it valid, and aggressive retries can worsen rate limits. Ambiguous transport failures and server errors are retried automatically only for idempotent methods; message sends and other `POST`/`PATCH` operations are not replayed because Discord may already have applied them.
+
+## API v10 compatibility
+
+REST and Gateway traffic defaults to API v10. The wrapper follows current v10 route, payload, rate-limit, attachment, component, and Gateway event shapes where they apply to user-account workflows.
+
+::: info User-account boundary
+Authentication remains a raw user token with a user-client Gateway session and browser-style HTTP profile. Bot-token prefixes, bot Gateway intents, command registration, interaction callbacks, and other bot-owned lifecycle APIs remain intentionally unsupported.
+:::
 
 ## Authentication challenges
 

@@ -51,6 +51,7 @@ class MessageAttachment {
    */
   setName(name) {
     this.name = name;
+    if (this._spoiler === true && !name.startsWith('SPOILER_')) this.name = `SPOILER_${name}`;
     return this;
   }
 
@@ -90,15 +91,16 @@ class MessageAttachment {
    * @returns {MessageAttachment} This attachment
    */
   setSpoiler(spoiler = true) {
-    if (spoiler === this.spoiler) return this;
+    spoiler = Boolean(spoiler);
+    this._spoiler = spoiler;
 
     if (!spoiler) {
-      while (this.spoiler) {
+      while (typeof this.name === 'string' && this.name.startsWith('SPOILER_')) {
         this.name = this.name.slice('SPOILER_'.length);
       }
       return this;
     }
-    this.name = `SPOILER_${this.name}`;
+    if (typeof this.name === 'string' && !this.name.startsWith('SPOILER_')) this.name = `SPOILER_${this.name}`;
     return this;
   }
 
@@ -230,6 +232,7 @@ class MessageAttachment {
    * @readonly
    */
   get spoiler() {
+    if (typeof this._spoiler === 'boolean') return this._spoiler;
     return (
       this.flags?.has(AttachmentFlags.FLAGS.IS_SPOILER) || Util.basename(this.url ?? this.name).startsWith('SPOILER_')
     );

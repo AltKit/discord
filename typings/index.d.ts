@@ -194,6 +194,9 @@ import {
   APITextDisplayComponent,
   APIMediaGalleryComponent,
   APIMediaGalleryItem,
+  APIModalInputComponent,
+  APIModalInputOption,
+  APILabelComponent,
 } from './rawDataTypes';
 import { Socket } from 'node:dgram';
 
@@ -377,6 +380,7 @@ export abstract class Application extends Base {
   public commands: ApplicationCommandManager;
   public cover: string | null;
   public flags: Readonly<ApplicationFlags>;
+  public flagsNew: bigint;
   public guildId: Snowflake | null;
   public readonly guild: Guild | null;
   public tags: string[];
@@ -725,7 +729,9 @@ export class BaseGuildVoiceChannel extends TextBasedChannelMixin(GuildChannel, [
   public rateLimitPerUser: number | null;
   public userLimit: number;
   public videoQualityMode: VideoQualityMode | null;
-  public status?: string;
+  public status: string | null;
+  public voiceStartTimestamp: number | null;
+  public readonly voiceStartAt: Date | null;
   public createInvite(options?: CreateInviteOptions): Promise<Invite>;
   public setRTCRegion(rtcRegion: string | null, reason?: string): Promise<this>;
   public fetchInvites(cache?: boolean): Promise<Collection<string, Invite>>;
@@ -1685,6 +1691,7 @@ export class Guild extends AnonymousGuild {
   ): Promise<this>;
   public topEmojis(): Promise<Collection<number, GuildEmoji>>;
   public setVanityCode(code?: string): Promise<this>;
+  public requestChannelInfo(fields?: Array<'status' | 'voice_start_time'>): this;
 }
 
 export class GuildAuditLogs<T extends GuildAuditLogsResolvable = 'ALL'> {
@@ -2175,6 +2182,7 @@ export class Invite extends Base {
   public stageInstance: InviteStageInstance | null;
   public guildScheduledEvent: GuildScheduledEvent | null;
   public flags: Readonly<InviteFlags>;
+  public roles: Role[];
 }
 
 export class InviteStageInstance extends Base {
@@ -2499,23 +2507,26 @@ export class ContainerComponent extends BaseMessageComponent {
 }
 
 export class ModalInputComponent extends BaseMessageComponent {
+  public constructor(data?: ModalInputComponent | APIModalInputComponent);
   public customId: string | null;
-  public options: unknown[];
-  public required: boolean;
+  public options: APIModalInputOption[];
+  public required: boolean | null;
   public minValues: number | null;
   public maxValues: number | null;
   public value: string | boolean | null;
+  public default: boolean | null;
   public values: string[] | null;
   public setValue(value: string | boolean): this;
   public setValues(...values: string[] | string[][]): this;
-  public toJSON(): APIMessageComponent;
+  public toJSON(): APIModalInputComponent;
 }
 
 export class LabelComponent extends BaseMessageComponent {
+  public constructor(data?: LabelComponent | APILabelComponent, client?: Client | WebhookClient | null);
   public label: string | null;
   public description: string | null;
-  public component: BaseMessageComponent | null;
-  public toJSON(): APIMessageComponent;
+  public component: ModalInputComponent | TextInputComponent | null;
+  public toJSON(): APILabelComponent;
 }
 
 export class AuthorizingIntegrationOwners extends Base {
@@ -4820,6 +4831,7 @@ export class GuildEmojiRoleManager extends DataManager<Snowflake, Role, RoleReso
 
 export class GuildManager extends CachedManager<Snowflake, Guild, GuildResolvable> {
   private constructor(client: Client, iterable?: Iterable<RawGuildData>);
+  /** @deprecated Retained only for undocumented user-account compatibility. */
   public create(name: string, options?: GuildCreateOptions): Promise<Guild>;
   public fetch(options: Snowflake | FetchGuildOptions): Promise<Guild>;
   public fetch(options?: FetchGuildsOptions): Promise<Collection<Snowflake, OAuth2Guild>>;
@@ -4885,6 +4897,9 @@ export class GuildInviteManager extends DataManager<string, Invite, InviteResolv
   public fetch(options: InviteResolvable | FetchInviteOptions): Promise<Invite>;
   public fetch(options?: FetchInvitesOptions): Promise<Collection<string, Invite>>;
   public delete(invite: InviteResolvable, reason?: string): Promise<Invite>;
+  public fetchTargetUsers(invite: InviteResolvable): Promise<Snowflake[]>;
+  public updateTargetUsers(invite: InviteResolvable, targetUsers: TargetUsersFileResolvable): Promise<void>;
+  public fetchTargetUsersJobStatus(invite: InviteResolvable): Promise<InviteTargetUsersJobStatus>;
 }
 
 export class GuildScheduledEventManager extends CachedManager<
@@ -6462,6 +6477,7 @@ export interface ConstantsOpcodes {
   SEARCH_RECENT_MEMBERS: 35;
   REQUEST_CHANNEL_STATUSES: 36;
   GUILD_SUBSCRIPTIONS_BULK: 37;
+  REQUEST_CHANNEL_INFO: 43;
 }
 
 export interface ConstantsShardEvents {
@@ -6707,6 +6723,7 @@ export interface FileOptions {
   title?: string;
   waveform?: string;
   duration?: number;
+  spoiler?: boolean;
 }
 
 export type GlobalSweepFilter<K, V> = () => ((value: V, key: K, collection: Collection<K, V>) => boolean) | null;
@@ -7193,6 +7210,7 @@ export interface HTTPAttachmentData {
   attachment: string | Buffer | Stream;
   name: string;
   file: Buffer | Stream;
+  spoiler?: boolean;
 }
 
 export interface HTTPErrorData {
@@ -7289,6 +7307,19 @@ export interface CreateInviteOptions {
   targetApplication?: ApplicationResolvable;
   targetUser?: UserResolvable;
   targetType?: InviteTargetTypes;
+  targetUsersFile?: TargetUsersFileResolvable;
+  roleIds?: RoleResolvable[];
+}
+
+export type TargetUsersFileResolvable = BufferResolvable | readonly UserResolvable[];
+
+export interface InviteTargetUsersJobStatus {
+  status: 0 | 1 | 2 | 3;
+  total_users: number;
+  processed_users: number;
+  created_at: string;
+  completed_at: string | null;
+  error_message: string | null;
 }
 
 export type IntegrationExpireBehaviors = 'REMOVE_ROLE' | 'KICK';
@@ -8317,6 +8348,7 @@ export type WSEventType =
   | 'CHANNEL_DELETE'
   | 'CHANNEL_UPDATE'
   | 'CHANNEL_PINS_UPDATE'
+  | 'CHANNEL_INFO'
   | 'MESSAGE_CREATE'
   | 'MESSAGE_DELETE'
   | 'MESSAGE_UPDATE'
@@ -8336,6 +8368,9 @@ export type WSEventType =
   | 'TYPING_START'
   | 'VOICE_STATE_UPDATE'
   | 'VOICE_SERVER_UPDATE'
+  | 'VOICE_CHANNEL_EFFECT_SEND'
+  | 'VOICE_CHANNEL_STATUS_UPDATE'
+  | 'VOICE_CHANNEL_START_TIME_UPDATE'
   | 'WEBHOOKS_UPDATE'
   | 'INTERACTION_CREATE'
   | 'STAGE_INSTANCE_CREATE'

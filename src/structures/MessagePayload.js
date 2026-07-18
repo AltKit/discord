@@ -11,6 +11,13 @@ const MessageFlags = require('../util/MessageFlags');
 const SnowflakeUtil = require('../util/SnowflakeUtil');
 const Util = require('../util/Util');
 
+function resolveSpoiler(file) {
+  if (Object.hasOwn(file, 'is_spoiler')) return file.is_spoiler;
+  if (Object.hasOwn(file, '_spoiler')) return file._spoiler;
+  if (Object.hasOwn(file, 'spoiler')) return file.spoiler;
+  return file.spoiler === true ? true : undefined;
+}
+
 /**
  * Represents a message to be sent to the API.
  */
@@ -207,20 +214,28 @@ class MessagePayload {
       this.options.attachments = [...this.target.attachments.values()];
     }
 
-    const attachments = this.options.files?.map((file, index) => ({
-      id: index.toString(),
-      description: file.description,
-      title: file.title,
-      waveform: file.waveform,
-      duration_secs: file.duration,
-    }));
+    const attachments = this.options.files?.map((file, index) => {
+      const spoiler = resolveSpoiler(file);
+      return {
+        id: index.toString(),
+        description: file.description,
+        title: file.title,
+        waveform: file.waveform,
+        duration_secs: file.duration,
+        ...(typeof spoiler === 'boolean' ? { is_spoiler: spoiler } : {}),
+      };
+    });
     if (Array.isArray(this.options.attachments)) {
       this.options.attachments = [
-        ...this.options.attachments.map(attachment => ({
-          id: attachment.id,
-          filename: attachment.filename ?? attachment.name,
-          description: attachment.description,
-        })),
+        ...this.options.attachments.map(attachment => {
+          const spoiler = resolveSpoiler(attachment);
+          return {
+            id: attachment.id,
+            filename: attachment.filename ?? attachment.name,
+            description: attachment.description,
+            ...(typeof spoiler === 'boolean' ? { is_spoiler: spoiler } : {}),
+          };
+        }),
         ...(attachments ?? []),
       ];
     } else {
@@ -351,6 +366,7 @@ class MessagePayload {
       title: fileLike.title,
       duration_secs: fileLike.duration,
       waveform: fileLike.waveform,
+      spoiler: resolveSpoiler(fileLike),
     };
   }
 

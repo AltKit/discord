@@ -36,6 +36,23 @@ Depending on the invite, the result can represent a guild, direct-message channe
 
 Discord may still require email, phone, rules screening, onboarding choices, captcha, or other account verification. A returned guild does not necessarily mean every membership step succeeded exactly as requested.
 
+## Community invites
+
+Guild invite creation supports role assignment and targeted-user CSV files:
+
+```js
+const invite = await guild.invites.create(process.env.CHANNEL_ID, {
+  roleIds: [process.env.MEMBER_ROLE_ID],
+  targetUsersFile: [process.env.ALLOWED_USER_ID],
+  unique: true,
+});
+
+const allowedUserIds = await guild.invites.fetchTargetUsers(invite.code);
+const job = await guild.invites.fetchTargetUsersJobStatus(invite.code);
+```
+
+`targetUsersFile` accepts a file resolvable or an array of user resolvables. Arrays are serialized with the standard `user_id` CSV header. Use `updateTargetUsers(code, targetUsersFile)` to replace the target list. These operations require Discord's corresponding guild and role permissions.
+
 ## Install a user application
 
 Applications that publish a user-install integration can be installed by ID:

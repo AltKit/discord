@@ -11,6 +11,9 @@ class APIRequest {
     this.client = rest.client;
     this.method = method;
     this.route = options.route;
+    this.bucketRoute = options.bucketRoute ?? options.route;
+    this.majorParameter = options.majorParameter ?? 'global';
+    this.routeId = `${method}:${this.bucketRoute}`;
     this.options = options;
     this.retries = 0;
     this.captchaRetries = 0;

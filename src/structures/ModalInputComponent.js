@@ -18,10 +18,11 @@ class ModalInputComponent extends BaseMessageComponent {
     super.setup(data);
     this.customId = data.custom_id ?? data.customId ?? null;
     this.options = data.options ?? [];
-    this.required = data.required ?? false;
+    this.required = data.required ?? null;
     this.minValues = data.min_values ?? data.minValues ?? null;
     this.maxValues = data.max_values ?? data.maxValues ?? null;
-    this.value = data.value ?? data.default ?? null;
+    this.default = data.default ?? null;
+    this.value = data.value ?? null;
     this.values = data.values ?? null;
   }
 
@@ -36,16 +37,31 @@ class ModalInputComponent extends BaseMessageComponent {
   }
 
   toJSON() {
-    return {
+    const data = {
       type: typeof this.type === 'string' ? MessageComponentTypes[this.type] : this.type,
       custom_id: this.customId,
-      options: this.options,
-      required: this.required,
-      min_values: this.minValues,
-      max_values: this.maxValues,
-      value: this.value,
-      values: this.values,
     };
+
+    if (this.type === 'FILE_UPLOAD') {
+      if (this.minValues !== null) data.min_values = this.minValues;
+      if (this.maxValues !== null) data.max_values = this.maxValues;
+      if (this.required !== null) data.required = this.required;
+    } else if (this.type === 'RADIO_GROUP') {
+      data.options = this.options;
+      if (this.required !== null) data.required = this.required;
+      if (this.value !== null) data.value = this.value;
+    } else if (this.type === 'CHECKBOX_GROUP') {
+      data.options = this.options;
+      if (this.minValues !== null) data.min_values = this.minValues;
+      if (this.maxValues !== null) data.max_values = this.maxValues;
+      if (this.required !== null) data.required = this.required;
+      if (this.values !== null) data.values = this.values;
+    } else if (this.type === 'CHECKBOX') {
+      if (this.default !== null) data.default = this.default;
+      if (this.value !== null) data.value = this.value;
+    }
+
+    return data;
   }
 }
 

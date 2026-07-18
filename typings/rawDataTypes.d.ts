@@ -391,3 +391,48 @@ export interface APIContainerComponent extends APIBaseComponent<MessageComponent
   accent_color: number;
   spoiler: boolean;
 }
+
+export interface APIModalInputOption {
+  value: string;
+  label: string;
+  description?: string;
+  default?: boolean;
+}
+
+export interface APIFileUploadComponent extends APIBaseComponent<MessageComponentTypes.FILE_UPLOAD> {
+  custom_id: string;
+  min_values?: number;
+  max_values?: number;
+  required?: boolean;
+}
+
+export interface APIRadioGroupComponent extends APIBaseComponent<MessageComponentTypes.RADIO_GROUP> {
+  custom_id: string;
+  options: APIModalInputOption[];
+  required?: boolean;
+  value?: string;
+}
+
+export interface APICheckboxGroupComponent extends APIBaseComponent<MessageComponentTypes.CHECKBOX_GROUP> {
+  custom_id: string;
+  options: APIModalInputOption[];
+  min_values?: number;
+  max_values?: number;
+  required?: boolean;
+  values?: string[];
+}
+
+export interface APICheckboxComponent extends APIBaseComponent<MessageComponentTypes.CHECKBOX> {
+  custom_id: string;
+  default?: boolean;
+  value?: boolean;
+}
+
+export type APIModalInputComponent =
+  APIFileUploadComponent | APIRadioGroupComponent | APICheckboxGroupComponent | APICheckboxComponent;
+
+export interface APILabelComponent extends APIBaseComponent<MessageComponentTypes.LABEL> {
+  label: string;
+  description?: string;
+  component: APIModalInputComponent | APITextInputComponent;
+}

@@ -210,6 +210,7 @@ class TextBasedChannel {
         title: files[attachment.id].title,
         duration_secs: files[attachment.id].duration_secs,
         waveform: files[attachment.id].waveform,
+        ...(typeof files[attachment.id].spoiler === 'boolean' ? { is_spoiler: files[attachment.id].spoiler } : {}),
       };
     });
     const attachmentsData = await Promise.all(requestPromises);

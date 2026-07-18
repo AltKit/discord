@@ -8,6 +8,7 @@ Altkit Discord v4 moves the fork from its previous Discord.js 14.21-compatible s
 | ----------------------- | ---------------------------- |
 | Altkit Discord          | `{{ altkitDiscordVersion }}` |
 | Discord.js API target   | `14.27.0`                    |
+| Discord API / Gateway   | `v10`                        |
 | Minimum Node.js version | `20.19.0`                    |
 | Tested Node.js versions | `20`, `22`, `24`             |
 | Package/import name     | `@altkit/discord`            |
@@ -20,6 +21,7 @@ Automating a normal Discord user account violates Discord's Terms of Service and
 
 - [Before upgrading](#before-upgrading)
 - [Discord.js 14.27 parity](#discordjs-1427-parity)
+- [API v10 and transport updates](#api-v10-and-transport-updates)
 - [Compatibility exports](#compatibility-exports)
 - [Poll updates](#poll-updates)
 - [Fixes and behavior changes](#fixes-and-behavior-changes)
@@ -36,6 +38,8 @@ Use this checklist when moving an existing v3 project to v4:
 - [ ] Install dependencies again so the 14.27 companion packages are resolved.
 - [ ] Prefer `Events` and `Partials` for new code.
 - [ ] Add poll partials if uncached poll vote events are required.
+- [ ] Review non-idempotent REST retry behavior if the application relied on automatic `POST` or `PATCH` replay.
+- [ ] Move custom certificate or proxy TLS settings to `http.tls`, `ws.tls`, `requestTls`, or `proxyTls` as appropriate.
 - [ ] Keep tokens and other credentials in the environment, not source files.
 - [ ] Run the application's tests against Altkit Discord v4 before deploying.
 
@@ -77,6 +81,82 @@ await channel.send({
   flags: MessageFlags.FLAGS.IS_VOICE_MESSAGE,
 });
 ```
+
+## API v10 and transport updates
+
+Altkit now follows current Discord API and Gateway v10 behavior in the user-account workflows supported by this fork.
+Authentication remains a raw user token with a user-client Gateway session; this work does not enable bot tokens, bot
+intents, command registration, or bot-owned interaction callbacks.
+
+| Area                      | Updated behavior                                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| REST rate limits          | Discovers `X-RateLimit-Bucket`, separates methods and major resources, and honors user, global, and shared scopes.        |
+| HTTP 429 responses        | Accepts retry timing from either `Retry-After` or the JSON `retry_after` field.                                           |
+| Retries                   | Automatically retries idempotent operations; ambiguous `POST` and `PATCH` failures are returned without replay.           |
+| Empty responses           | Successful `204` and `205` responses resolve to `undefined` instead of an empty `ArrayBuffer`.                            |
+| Attachments               | Sends and edits explicit `is_spoiler` metadata while retaining support for the legacy `SPOILER_` filename prefix.         |
+| Application flags         | Adds `Application#flagsNew` as a `bigint` so response bits above bit 30 retain full precision.                            |
+| Voice channel information | Adds Gateway opcode 43, `Guild#requestChannelInfo()`, channel status, and voice session start-time caching.               |
+| Modal components          | Adds current Label, File Upload, Radio Group, Checkbox Group, and Checkbox runtime and declaration shapes.                |
+| Community invites         | Adds role IDs, target-user CSV uploads, target-user reads and updates, and processing job status.                         |
+| Images                    | Detects JPEG, PNG, and GIF data-URI MIME types and accepts only documented power-of-two CDN sizes from 16 through 4096.   |
+| TLS                       | Uses TLS 1.2 or newer by default for REST, Gateway, voice, and remote-auth connections, with explicit override locations. |
+
+::: warning Guild creation
+`GuildManager#create()` remains available only as an undocumented user-account compatibility helper. Discord removed
+`POST /guilds` from the public application API, so new code should not depend on it.
+:::
+
+### TLS configuration
+
+REST and WebSocket transports now share secure TLS defaults: a minimum of TLS 1.2, the library's browser-like cipher
+ordering, and certificate verification supplied by Node.js. Configure REST and WebSocket destinations independently:
+
+```js
+const client = new Client({
+  http: {
+    tls: {
+      ca: process.env.REST_CA_CERT,
+      minVersion: 'TLSv1.3',
+    },
+  },
+  ws: {
+    tls: {
+      ca: process.env.GATEWAY_CA_CERT,
+      minVersion: 'TLSv1.2',
+    },
+  },
+});
+```
+
+`ws.tls` applies to Gateway and voice WebSocket connections. For REST proxies, the settings have distinct targets:
+
+```js
+const client = new Client({
+  http: {
+    agent: {
+      uri: process.env.HTTP_PROXY,
+      requestTls: { ca: process.env.DISCORD_CA_CERT },
+      proxyTls: { ca: process.env.PROXY_CA_CERT },
+    },
+    tls: {
+      minVersion: 'TLSv1.3',
+    },
+  },
+});
+```
+
+- `http.tls` configures the TLS connection to Discord and overrides matching `requestTls` fields.
+- `http.agent.requestTls` configures the proxy-to-Discord destination connection.
+- `http.agent.proxyTls` configures an HTTPS proxy connection itself.
+- A legacy plain object passed as `ws.agent` is still interpreted as TLS/HTTPS-agent options, but `ws.tls` is clearer.
+- Supplying `secureProtocol` without `minVersion` uses Node's legacy protocol selector and removes the default `minVersion`
+  to avoid an invalid combination.
+
+::: danger Certificate verification
+Do not set `rejectUnauthorized: false` in production. It disables certificate verification and permits man-in-the-middle
+interception of the account token and Discord traffic.
+:::
 
 ## Compatibility exports
 
@@ -135,6 +215,7 @@ const client = new Client({
 - Emits the v14 `clientReady` and `webhooksUpdate` names alongside their legacy equivalents.
 - Emits `voiceServerUpdate` from gateway voice-server updates.
 - Handles gateway `RATE_LIMITED` packets with debug output and a one-time process warning per affected opcode.
+- Handles `CHANNEL_INFO` and voice channel status/start-time updates and refreshes the cached voice channel.
 
 :::
 
@@ -152,6 +233,8 @@ const client = new Client({
 
 - `Message#pinnable` checks `READ_MESSAGE_HISTORY` and `PIN_MESSAGES` and excludes voice channels.
 - Attachment spoiler detection recognizes both the `SPOILER_` filename prefix and Discord's spoiler attachment flag.
+- `AttachmentBuilder#setSpoiler()` now sends `is_spoiler` for new files and message edits instead of relying only on the
+  filename prefix.
 - Attachment flags include clip, thumbnail, remix, spoiler, and animated values.
 - Declaration fixes cover raw message data and direct-message send return types where applicable to this fork.
 
@@ -170,7 +253,7 @@ Runtime packages shared with Discord.js are aligned with the 14.27.0 release:
 | `@discordjs/util`       | `^1.2.0`      | Includes disposal polyfill support           |
 | `@discordjs/ws`         | `^1.2.3`      | Internal dependency; not re-exported         |
 | `discord-api-types`     | `^0.38.49`    | Discord API v10 types and enums              |
-| `undici`                | `^6.27.0`     | HTTP transport and proxy support             |
+| `undici`                | `^7.28.0`     | HTTP transport and proxy support             |
 | `otplib`                | `^13.4.1`     | TOTP generation for eligible MFA flows       |
 | `tslib`                 | `^2.6.3`      | Shared TypeScript runtime helpers            |
 
@@ -188,8 +271,10 @@ Upgrade in small steps instead of renaming every API at once:
 2. Confirm the existing application can connect without changing legacy event names.
 3. Move imports to the v14-compatible aliases.
 4. Migrate events and partials.
-5. Adopt the new poll, attachment, and activity APIs only where needed.
-6. Run type checks and exercise login, messaging, command invocation, and reconnect behavior.
+5. Review REST retry behavior and API v10 payload changes.
+6. Move custom TLS and proxy settings to their explicit transport options.
+7. Adopt the new poll, attachment, activity, voice-channel information, and invite APIs only where needed.
+8. Run type checks and exercise login, messaging, command invocation, reconnect, and proxy behavior.
 
 This order makes package/runtime problems easier to distinguish from API migration problems.
 
@@ -352,6 +437,14 @@ await channel.send({
 });
 ```
 
+Spoilers now use the v10 attachment request field while retaining the filename prefix for older client behavior:
+
+```js
+const attachment = new AttachmentBuilder('./map.png', 'map.png').setSpoiler();
+
+await channel.send({ files: [attachment] });
+```
+
 ### 7. Migrate poll access
 
 Poll answers now expose a voter manager. Existing `fetchVoters()` calls still work, while new code can use the manager and
@@ -398,7 +491,73 @@ const instance = await application.fetchActivityInstance(instanceId);
 console.log(instance.location.channel, instance.users);
 ```
 
-### 9. Move credentials out of source code
+### 9. Adopt current API v10 fields
+
+Application payloads can expose flag bits that do not fit in the legacy numeric field. Continue using `flags` for existing
+named flags and use `flagsNew` when the complete response bitfield matters:
+
+```js
+console.log(application.flags.has('ACTIVE'));
+console.log(application.flagsNew); // bigint
+```
+
+Request ephemeral voice-channel fields after the client is ready. The response and later update dispatches refresh cached
+voice channels and emit `channelUpdate`:
+
+```js
+guild.requestChannelInfo(['status', 'voice_start_time']);
+
+client.on('channelUpdate', (oldChannel, channel) => {
+  if (channel.isVoice()) console.log(channel.status, channel.voiceStartAt);
+});
+```
+
+Community invites can assign roles and restrict acceptance to a CSV or an array of users:
+
+```js
+const invite = await guild.invites.create(channelId, {
+  roleIds: [memberRoleId],
+  targetUsersFile: [allowedUserId],
+  unique: true,
+});
+
+const allowedUsers = await guild.invites.fetchTargetUsers(invite.code);
+const processing = await guild.invites.fetchTargetUsersJobStatus(invite.code);
+```
+
+### 10. Review REST behavior changes
+
+- Successful endpoints documented with no response body now resolve to `undefined`.
+- `POST` and `PATCH` requests are not automatically replayed after an ambiguous network failure or server error.
+- Shared-scope 429 responses are excluded from the invalid-request warning counter.
+- Webhook tokens are redacted from route diagnostics and isolated as internal rate-limit major parameters.
+- Raw image buffers used in image-data fields must contain JPEG, PNG, or GIF signatures; unknown data now throws instead
+  of being incorrectly labeled as JPEG.
+- CDN image sizes such as `56`, `96`, `300`, and `600` are no longer accepted because v10 documents only powers of two.
+
+### 11. Configure TLS and proxies
+
+Most applications need no TLS configuration. If the previous version placed certificate fields directly in a plain
+`http.agent` or `ws.agent` object, move them to the explicit destination option:
+
+```diff
+ const client = new Client({
+   http: {
+-    agent: { ca: process.env.CA_CERT },
++    tls: { ca: process.env.CA_CERT },
+   },
+   ws: {
+-    agent: { ca: process.env.CA_CERT },
++    tls: { ca: process.env.CA_CERT },
+   },
+ });
+```
+
+Keep proxy connection options in `http.agent`, and use `requestTls` versus `proxyTls` according to which side of the proxy
+needs the custom trust configuration. See [client configuration](/guide/client-configuration#tls-configuration) for the
+complete precedence rules.
+
+### 12. Move credentials out of source code
 
 Replace literal tokens with the environment variable supported by `Client`:
 
@@ -416,7 +575,7 @@ node --env-file=.env index.js
 
 See [`.env.example`](https://github.com/altkit/discord/blob/selfbotjs/.env.example) for every example variable and credential-handling guidance.
 
-### 10. Verify the migrated application
+### 13. Verify the migrated application
 
 At minimum, check the installed compatibility target and root exports:
 
@@ -444,7 +603,11 @@ Use this final rollout checklist:
 - [ ] The client reaches `Events.ClientReady` after login.
 - [ ] Message create/update listeners still receive the expected payloads.
 - [ ] Reconnect and resume behavior works without duplicate listeners.
+- [ ] REST limits from different methods, channels, guilds, and webhooks do not block unrelated requests.
+- [ ] Custom REST and WebSocket TLS settings reach the intended destination or proxy connection.
 - [ ] Poll handlers account for partial data.
+- [ ] Attachment create/edit operations preserve the intended spoiler state.
+- [ ] Voice channel information updates `status` and `voiceStartAt` after `requestChannelInfo()`.
 - [ ] Voice message attachments are valid Ogg/Opus files.
 - [ ] TypeScript and declaration tests pass without imports from the old package.
 - [ ] No token, TOTP secret, or proxy credential appears in committed files or logs.
@@ -485,6 +648,10 @@ For runnable feature demonstrations, see the [example gallery](/examples/).
 
 ## Upstream reference
 
+- [Discord API v10 reference](https://docs.discord.com/developers/reference)
+- [Discord rate limits](https://docs.discord.com/developers/topics/rate-limits)
+- [Discord Gateway events](https://docs.discord.com/developers/events/gateway-events)
+- [Node.js TLS options](https://nodejs.org/api/tls.html#tlsconnectoptions-callback)
 - [Discord.js 14.27.0 release notes](https://github.com/discordjs/discord.js/releases/tag/14.27.0)
 - [Altkit Discord README](https://github.com/altkit/discord/blob/selfbotjs/README.md)
 - [Altkit Discord examples](/examples/)

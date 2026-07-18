@@ -24,6 +24,7 @@ const handlers = Object.fromEntries([
   ['CHANNEL_DELETE', require('./CHANNEL_DELETE')],
   ['CHANNEL_UPDATE', require('./CHANNEL_UPDATE')],
   ['CHANNEL_PINS_UPDATE', require('./CHANNEL_PINS_UPDATE')],
+  ['CHANNEL_INFO', require('./CHANNEL_INFO')],
   ['MESSAGE_CREATE', require('./MESSAGE_CREATE')],
   ['MESSAGE_DELETE', require('./MESSAGE_DELETE')],
   ['MESSAGE_UPDATE', require('./MESSAGE_UPDATE')],
@@ -69,6 +70,7 @@ const handlers = Object.fromEntries([
   ['USER_SETTINGS_UPDATE', require('./USER_SETTINGS_UPDATE')],
   ['USER_GUILD_SETTINGS_UPDATE', require('./USER_GUILD_SETTINGS_UPDATE')],
   ['VOICE_CHANNEL_STATUS_UPDATE', require('./VOICE_CHANNEL_STATUS_UPDATE')],
+  ['VOICE_CHANNEL_START_TIME_UPDATE', require('./VOICE_CHANNEL_START_TIME_UPDATE')],
   ['MESSAGE_POLL_VOTE_ADD', require('./MESSAGE_POLL_VOTE_ADD')],
   ['MESSAGE_POLL_VOTE_REMOVE', require('./MESSAGE_POLL_VOTE_REMOVE')],
 ]);

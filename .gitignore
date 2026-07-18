@@ -74,6 +74,7 @@ dist
 .env
 test/*
 !test/captcha.test.js
+!test/api-v10.test.js
 !test/regressions.test.js
 !test/tls.test.js
 docs/deploy/deploy_key

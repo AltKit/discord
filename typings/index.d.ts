@@ -23,6 +23,7 @@ import {
 import { Collection } from '@discordjs/collection';
 import {
   APIActionRowComponent,
+  ApplicationIntegrationType,
   APIApplicationCommandInteractionData,
   APIApplicationCommandOption,
   APIApplicationCommandPermission,
@@ -1803,6 +1804,7 @@ export class GuildMember extends PartialTextBasedChannel(Base) {
   public avatarDecorationData: AvatarDecorationData | null;
   public banner: string | null;
   public readonly bannable: boolean;
+  public collectibles: Collectibles | null;
   /** @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091 */
   public deleted: boolean;
   public readonly displayColor: number;
@@ -2306,7 +2308,7 @@ export class Message<Cached extends boolean = boolean> extends Base {
   public createReactionCollector(options?: ReactionCollectorOptions): ReactionCollector;
   public delete(): Promise<Message>;
   public edit(content: string | MessageEditOptions | MessagePayload): Promise<Message>;
-  public equals(message: Message, rawData: unknown): boolean;
+  public equals(message: Message, rawData?: APIMessage): boolean;
   public fetchReference(): Promise<Message>;
   public fetchWebhook(): Promise<Webhook>;
   public crosspost(): Promise<Message>;
@@ -2385,6 +2387,9 @@ export class MessageAttachment {
   public setDescription(description: string): this;
   public setFile(attachment: BufferResolvable | Stream, name?: string): this;
   public setName(name: string): this;
+  public setTitle(title: string): this;
+  public setWaveform(waveform: string): this;
+  public setDuration(duration: number): this;
   public setSpoiler(spoiler?: boolean): this;
   public toJSON(): unknown;
 }
@@ -2512,6 +2517,8 @@ export class LabelComponent extends BaseMessageComponent {
 
 export class AuthorizingIntegrationOwners extends Base {
   public readonly data: Record<number, Snowflake>;
+  public readonly [ApplicationIntegrationType.GuildInstall]?: Snowflake;
+  public readonly [ApplicationIntegrationType.UserInstall]?: Snowflake;
   public guildId: Snowflake | null;
   public userId: Snowflake | null;
   public readonly guild: Guild | null;
@@ -2568,7 +2575,7 @@ export class MessageComponentInteraction<Cached extends CacheType = CacheType> e
   public reply(options: string | MessagePayload | InteractionReplyOptions): Promise<void>;
   public showModal(modal: Modal | ModalOptions): Promise<void>;
   public update(options: InteractionUpdateOptions & { fetchReply: true }): Promise<GuildCacheMessage<Cached>>;
-  public update(options: string | MessagePayload | InteractionUpdateOptions): Promise<void>;
+  public update(options?: string | MessagePayload | InteractionUpdateOptions): Promise<void>;
 
   public static resolveType(type: MessageComponentTypeResolvable): MessageComponentType;
 }
@@ -4380,6 +4387,7 @@ export const Constants: {
     4_004: 'TOKEN_INVALID';
     4_010: 'SHARDING_INVALID';
     4_011: 'SHARDING_REQUIRED';
+    4_012: 'INVALID_API_VERSION';
     4_013: 'INVALID_INTENTS';
     4_014: 'DISALLOWED_INTENTS';
   };
@@ -5041,7 +5049,7 @@ export class RoleManager extends CachedManager<Snowflake, Role, RoleResolvable> 
   public setPosition(role: RoleResolvable, position: number, options?: SetRolePositionOptions): Promise<Role>;
   public setPositions(rolePositions: readonly RolePosition[]): Promise<Guild>;
   public comparePositions(role1: RoleResolvable, role2: RoleResolvable): number;
-  public fetchMemberCounts(): Promise<Record<Snowflake, number>>;
+  public fetchMemberCounts(): Promise<Collection<Snowflake, number>>;
   public fetchMemberIds(role: RoleResolvable): Promise<Snowflake[]>;
 }
 
@@ -6693,6 +6701,9 @@ export interface FileOptions {
   attachment: BufferResolvable | Stream;
   name?: string;
   description?: string;
+  title?: string;
+  waveform?: string;
+  duration?: number;
 }
 
 export type GlobalSweepFilter<K, V> = () => ((value: V, key: K, collection: Collection<K, V>) => boolean) | null;
@@ -8213,7 +8224,10 @@ export interface WebhookFetchMessageOptions {
   threadId?: Snowflake;
 }
 
-export interface WebhookMessageOptions extends Omit<MessageOptions, 'nonce' | 'reply' | 'stickers' | 'forward'> {
+export interface WebhookMessageOptions extends Omit<
+  MessageOptions,
+  'nonce' | 'reply' | 'stickers' | 'forward' | 'sharedClientTheme'
+> {
   username?: string;
   avatarURL?: string;
   threadId?: Snowflake;

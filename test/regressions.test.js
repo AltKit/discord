@@ -6,10 +6,20 @@ const { readdirSync } = require('node:fs');
 const { dirname, extname, join, resolve } = require('node:path');
 const { test } = require('node:test');
 const { Collection } = require('@discordjs/collection');
-const { Client, RichPresence } = require('../src');
+const { AttachmentBuilder, Client, Constants, Permissions, RichPresence } = require('../src');
 const handleRelationshipUpdate = require('../src/client/websocket/handlers/RELATIONSHIP_UPDATE');
+const WebSocketShard = require('../src/client/websocket/WebSocketShard');
+const MessageManager = require('../src/managers/MessageManager');
+const RoleManager = require('../src/managers/RoleManager');
+const GuildChannel = require('../src/structures/GuildChannel');
+const { GuildMember } = require('../src/structures/GuildMember');
+const MessagePayload = require('../src/structures/MessagePayload');
+const { StageInstance } = require('../src/structures/StageInstance');
+const User = require('../src/structures/User');
+const InteractionResponses = require('../src/structures/interfaces/InteractionResponses');
 const Shard = require('../src/sharding/Shard');
 const VoiceState = require('../src/structures/VoiceState');
+const Util = require('../src/util/Util');
 
 const snowflakes = {
   client: '11111111111111111',
@@ -128,6 +138,324 @@ test('rich presence buttons are validated atomically and limited after flattenin
   assert.deepEqual(presence.buttons, ['one', 'two']);
   assert.throws(() => presence.addButton('three', 'https://example.com/three'), /up to 2 buttons/);
   assert.deepEqual(presence.buttons, ['one', 'two']);
+});
+
+test('gateway v10 close codes include invalid API versions as unrecoverable', () => {
+  assert.equal(Constants.WSCodes[4_012], 'INVALID_API_VERSION');
+});
+
+test('gateway heartbeats use jitter before starting the recurring interval', async t => {
+  const shard = new WebSocketShard({ debug() {} }, 0);
+  let heartbeatCount = 0;
+  let resolveFirstHeartbeat;
+  const firstHeartbeat = new Promise(resolve => {
+    resolveFirstHeartbeat = resolve;
+  });
+  shard.sendHeartbeat = () => {
+    heartbeatCount++;
+    resolveFirstHeartbeat();
+  };
+
+  const originalRandom = Math.random;
+  Math.random = () => 0.5;
+  t.after(() => {
+    Math.random = originalRandom;
+    shard.setHeartbeatTimer(-1);
+  });
+
+  shard.setHeartbeatTimer(40);
+  Math.random = originalRandom;
+  assert.equal(heartbeatCount, 0);
+  assert.notEqual(shard.heartbeatTimeout, null);
+  assert.equal(shard.heartbeatInterval, null);
+
+  await firstHeartbeat;
+  assert.equal(heartbeatCount, 1);
+  assert.equal(shard.heartbeatTimeout, null);
+  assert.notEqual(shard.heartbeatInterval, null);
+});
+
+test('voice channel manageability requires view, manage, and connect permissions', () => {
+  let checkedPermissions;
+  const channel = Object.create(GuildChannel.prototype);
+  channel.client = { user: { id: snowflakes.client } };
+  channel.guild = {
+    ownerId: snowflakes.other,
+    members: { me: { communicationDisabledUntilTimestamp: null } },
+  };
+  channel.type = 'GUILD_VOICE';
+  channel.permissionsFor = () => ({
+    has(bitfield) {
+      if (bitfield === Permissions.FLAGS.ADMINISTRATOR) return false;
+      checkedPermissions = bitfield;
+      return true;
+    },
+  });
+
+  assert.equal(channel.manageable, true);
+  assert.equal(
+    checkedPermissions,
+    Permissions.FLAGS.VIEW_CHANNEL | Permissions.FLAGS.MANAGE_CHANNELS | Permissions.FLAGS.CONNECT,
+  );
+});
+
+test('interaction updates accept omitted options', async () => {
+  let callbackData;
+  const interaction = {
+    id: snowflakes.client,
+    token: 'token',
+    deferred: false,
+    replied: false,
+    client: {
+      options: { allowedMentions: undefined },
+      api: {
+        interactions: () => ({
+          callback: {
+            post: async options => {
+              callbackData = options.data;
+            },
+          },
+        }),
+      },
+    },
+  };
+
+  await InteractionResponses.prototype.update.call(interaction);
+
+  assert.equal(interaction.replied, true);
+  assert.equal(callbackData.type, Constants.InteractionResponseTypes.UPDATE_MESSAGE);
+  assert.equal(callbackData.data.content, undefined);
+});
+
+test('message edits omit attachments unless explicitly changed', async () => {
+  let patchData;
+  const manager = Object.create(MessageManager.prototype);
+  manager.channel = { id: snowflakes.guild };
+  manager.client = {
+    options: { allowedMentions: undefined },
+    api: {
+      channels: {
+        [snowflakes.guild]: {
+          messages: {
+            [snowflakes.other]: {
+              patch: async ({ data }) => {
+                patchData = data;
+                return { id: snowflakes.other };
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  Object.defineProperty(manager, '_cache', { value: new Collection() });
+  manager.resolveId = () => snowflakes.other;
+  manager._add = data => data;
+
+  await manager.edit(snowflakes.other, { content: 'edited' });
+
+  assert.equal(patchData.attachments, undefined);
+});
+
+test('message edits retain existing attachments when adding v10 uploads', async t => {
+  let patchData;
+  const manager = Object.create(MessageManager.prototype);
+  manager.channel = { id: snowflakes.guild };
+  manager.client = {
+    options: { allowedMentions: undefined },
+    api: {
+      channels: {
+        [snowflakes.guild]: {
+          messages: {
+            [snowflakes.other]: {
+              patch: async ({ data }) => {
+                patchData = data;
+                return { id: snowflakes.other };
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  Object.defineProperty(manager, '_cache', { value: new Collection() });
+  manager.resolveId = () => snowflakes.other;
+  manager._add = data => data;
+
+  const originalGetUploadURL = Util.getUploadURL;
+  const originalUploadFile = Util.uploadFile;
+  Util.getUploadURL = async () => [{ id: '0', upload_url: 'https://upload.example', upload_filename: 'remote' }];
+  Util.uploadFile = async () => {};
+  t.after(() => {
+    Util.getUploadURL = originalGetUploadURL;
+    Util.uploadFile = originalUploadFile;
+  });
+
+  await manager.edit(snowflakes.other, {
+    attachments: [{ id: snowflakes.guild, name: 'existing.png', description: 'kept' }],
+    files: [{ attachment: Buffer.from('new'), name: 'new.png' }],
+  });
+
+  assert.deepEqual(patchData.attachments, [
+    { id: snowflakes.guild, filename: 'existing.png', description: 'kept' },
+    {
+      id: '0',
+      filename: 'new.png',
+      uploaded_filename: 'remote',
+      description: undefined,
+      title: undefined,
+      duration_secs: undefined,
+      waveform: undefined,
+    },
+  ]);
+});
+
+test('message payloads retain cached attachments when adding files', () => {
+  const target = Object.create(require('../src/structures/Message').Message.prototype);
+  target.client = { options: { allowedMentions: undefined } };
+  target.attachments = new Collection([
+    [snowflakes.guild, { id: snowflakes.guild, name: 'existing.png', description: 'kept' }],
+  ]);
+  const payload = MessagePayload.create(target, {
+    files: [{ attachment: Buffer.from('new'), name: 'new.png' }],
+  }).resolveData();
+
+  assert.deepEqual(payload.data.attachments, [
+    { id: snowflakes.guild, filename: 'existing.png', description: 'kept' },
+    {
+      id: '0',
+      description: undefined,
+      title: undefined,
+      waveform: undefined,
+      duration_secs: undefined,
+    },
+  ]);
+});
+
+test('v14.27 attachment builders carry voice message metadata', async () => {
+  const attachment = new AttachmentBuilder(Buffer.from('voice'), 'voice.ogg')
+    .setTitle('Voice note')
+    .setWaveform('AAECAw==')
+    .setDuration(1.25);
+  const target = { client: { options: { allowedMentions: undefined } } };
+  const payload = MessagePayload.create(target, { files: [attachment] }).resolveData();
+  await payload.resolveFiles();
+
+  assert.deepEqual(payload.data.attachments, [
+    {
+      id: '0',
+      description: undefined,
+      title: 'Voice note',
+      waveform: 'AAECAw==',
+      duration_secs: 1.25,
+    },
+  ]);
+  assert.equal(payload.files[0].title, 'Voice note');
+  assert.equal(payload.files[0].waveform, 'AAECAw==');
+  assert.equal(payload.files[0].duration_secs, 1.25);
+});
+
+test('v14.27 collectibles are transformed and cleared for users and guild members', () => {
+  const client = { users: { _add: data => new User(client, data) } };
+  const guild = { id: snowflakes.guild };
+  const nameplate = {
+    sku_id: snowflakes.guild,
+    asset: 'asset-path',
+    label: 'Nameplate',
+    palette: 'crimson',
+  };
+  const member = new GuildMember(
+    client,
+    {
+      user: { id: snowflakes.other, username: 'member', discriminator: '0' },
+      roles: [],
+      joined_at: null,
+      collectibles: { nameplate },
+    },
+    guild,
+  );
+
+  assert.deepEqual(member.collectibles, {
+    nameplate: {
+      skuId: snowflakes.guild,
+      asset: 'asset-path',
+      label: 'Nameplate',
+      palette: 'crimson',
+    },
+  });
+
+  const changed = member._clone();
+  changed.collectibles = null;
+  assert.equal(member.equals(changed), false);
+
+  member._patch({ collectibles: null });
+  assert.equal(member.collectibles, null);
+  member.user._patch({ collectibles: { nameplate } });
+  assert.notEqual(member.user.collectibles, null);
+  member.user._patch({ collectibles: null });
+  assert.equal(member.user.collectibles, null);
+});
+
+test('v14.27 role member counts return a collection', async () => {
+  const manager = Object.create(RoleManager.prototype);
+  manager.guild = { id: snowflakes.guild };
+  manager.client = {
+    api: {
+      guilds: () => ({
+        roles: () => ({ get: async () => ({ [snowflakes.other]: 42 }) }),
+      }),
+    },
+  };
+
+  const counts = await manager.fetchMemberCounts();
+
+  assert.equal(counts instanceof Collection, true);
+  assert.equal(counts.get(snowflakes.other), 42);
+});
+
+test('v14.27 role colors accept null gradient components', async () => {
+  let requestData;
+  const manager = Object.create(RoleManager.prototype);
+  manager.guild = { id: snowflakes.guild, emojis: { resolve: () => null } };
+  manager.client = {
+    actions: { GuildRoleCreate: { handle: ({ role }) => ({ role }) } },
+    api: {
+      guilds: () => ({
+        roles: {
+          post: async ({ data }) => {
+            requestData = data;
+            return { id: snowflakes.other };
+          },
+        },
+      }),
+    },
+  };
+
+  await manager.create({
+    colors: { primaryColor: null, secondaryColor: null, tertiaryColor: null },
+  });
+
+  assert.deepEqual(requestData.colors, {
+    primary_color: null,
+    secondary_color: null,
+    tertiary_color: null,
+  });
+});
+
+test('v14.27 stage instances resolve their scheduled event', () => {
+  const scheduledEvent = { id: snowflakes.other };
+  const guild = { scheduledEvents: { resolve: id => (id === scheduledEvent.id ? scheduledEvent : null) } };
+  const stage = new StageInstance(
+    { guilds: { resolve: id => (id === snowflakes.guild ? guild : null) } },
+    {
+      id: snowflakes.client,
+      guild_id: snowflakes.guild,
+      channel_id: snowflakes.client,
+      guild_scheduled_event_id: snowflakes.other,
+    },
+  );
+
+  assert.equal(stage.guildScheduledEvent, scheduledEvent);
 });
 
 test('all relative source imports resolve to files', () => {

@@ -13,6 +13,7 @@ const Options = require('./Options');
 const defaultClientOptions = Options.createDefault();
 
 const baseURL = 'https://discord.com/ra/';
+const apiURL = `${defaultClientOptions.http.api}/v${defaultClientOptions.http.version}`;
 
 const wsURL = 'wss://remote-auth-gateway.discord.gg/?v=2';
 
@@ -325,7 +326,7 @@ class DiscordAuthWebsocket extends EventEmitter {
   }
 
   #findRealToken() {
-    return fetch(`https://discord.com/api/v9/users/@me/remote-auth/login`, {
+    return fetch(`${apiURL}/users/@me/remote-auth/login`, {
       method: 'POST',
       headers: {
         Accept: '*/*',

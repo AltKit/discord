@@ -55,6 +55,36 @@ class MessageAttachment {
   }
 
   /**
+   * Sets the title of this attachment.
+   * @param {string} title The title of the file
+   * @returns {MessageAttachment} This attachment
+   */
+  setTitle(title) {
+    this.title = title;
+    return this;
+  }
+
+  /**
+   * Sets the sampled waveform for a voice message attachment.
+   * @param {string} waveform The base64 encoded sampled waveform
+   * @returns {MessageAttachment} This attachment
+   */
+  setWaveform(waveform) {
+    this.waveform = waveform;
+    return this;
+  }
+
+  /**
+   * Sets the duration of a voice message attachment.
+   * @param {number} duration The duration in seconds
+   * @returns {MessageAttachment} This attachment
+   */
+  setDuration(duration) {
+    this.duration = duration;
+    return this;
+  }
+
+  /**
    * Sets whether this attachment is a spoiler
    * @param {boolean} [spoiler=true] Whether the attachment should be marked as a spoiler
    * @returns {MessageAttachment} This attachment

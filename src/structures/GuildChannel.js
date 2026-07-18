@@ -433,9 +433,8 @@ class GuildChannel extends Channel {
     if (permissions.has(Permissions.FLAGS.ADMINISTRATOR, false)) return true;
     if (this.guild.members.me.communicationDisabledUntilTimestamp > Date.now()) return false;
 
-    const bitfield = VoiceBasedChannelTypes.includes(this.type)
-      ? Permissions.FLAGS.MANAGE_CHANNELS | Permissions.FLAGS.CONNECT
-      : Permissions.FLAGS.VIEW_CHANNEL | Permissions.FLAGS.MANAGE_CHANNELS;
+    let bitfield = Permissions.FLAGS.VIEW_CHANNEL | Permissions.FLAGS.MANAGE_CHANNELS;
+    if (VoiceBasedChannelTypes.includes(this.type)) bitfield |= Permissions.FLAGS.CONNECT;
     return permissions.has(bitfield, false);
   }
 

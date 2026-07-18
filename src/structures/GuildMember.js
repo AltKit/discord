@@ -136,6 +136,27 @@ class GuildMember extends Base {
     } else {
       this.avatarDecorationData = null;
     }
+
+    if ('collectibles' in data) {
+      /**
+       * The member's collectibles
+       * @type {?Collectibles}
+       */
+      this.collectibles = data.collectibles
+        ? {
+            nameplate: data.collectibles.nameplate
+              ? {
+                  skuId: data.collectibles.nameplate.sku_id,
+                  asset: data.collectibles.nameplate.asset,
+                  label: data.collectibles.nameplate.label,
+                  palette: data.collectibles.nameplate.palette,
+                }
+              : null,
+          }
+        : null;
+    } else {
+      this.collectibles ??= null;
+    }
   }
 
   _clone() {
@@ -556,7 +577,11 @@ class GuildMember extends Base {
       (this._roles === member._roles ||
         (this._roles.length === member._roles.length && this._roles.every((role, i) => role === member._roles[i]))) &&
       this.avatarDecorationData?.asset === member.avatarDecorationData?.asset &&
-      this.avatarDecorationData?.skuId === member.avatarDecorationData?.skuId
+      this.avatarDecorationData?.skuId === member.avatarDecorationData?.skuId &&
+      this.collectibles?.nameplate?.skuId === member.collectibles?.nameplate?.skuId &&
+      this.collectibles?.nameplate?.asset === member.collectibles?.nameplate?.asset &&
+      this.collectibles?.nameplate?.label === member.collectibles?.nameplate?.label &&
+      this.collectibles?.nameplate?.palette === member.collectibles?.nameplate?.palette
     );
   }
 

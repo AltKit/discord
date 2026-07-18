@@ -203,12 +203,26 @@ class MessagePayload {
       }
     }
 
+    if (this.isMessage && typeof this.options.attachments === 'undefined' && this.options.files?.length) {
+      this.options.attachments = [...this.target.attachments.values()];
+    }
+
     const attachments = this.options.files?.map((file, index) => ({
       id: index.toString(),
       description: file.description,
+      title: file.title,
+      waveform: file.waveform,
+      duration_secs: file.duration,
     }));
     if (Array.isArray(this.options.attachments)) {
-      this.options.attachments.push(...(attachments ?? []));
+      this.options.attachments = [
+        ...this.options.attachments.map(attachment => ({
+          id: attachment.id,
+          filename: attachment.filename ?? attachment.name,
+          description: attachment.description,
+        })),
+        ...(attachments ?? []),
+      ];
     } else {
       this.options.attachments = attachments;
     }
@@ -334,6 +348,7 @@ class MessagePayload {
       name,
       file: resource,
       description: fileLike.description,
+      title: fileLike.title,
       duration_secs: fileLike.duration,
       waveform: fileLike.waveform,
     };

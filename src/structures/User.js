@@ -199,8 +199,8 @@ class User extends Base {
      * @property {?NameplateData} nameplate The user's nameplate data
      */
 
-    if (data.collectibles) {
-      if (data.collectibles.nameplate) {
+    if ('collectibles' in data) {
+      if (data.collectibles?.nameplate) {
         /**
          * The user's collectibles
          * @type {?Collectibles}
@@ -213,8 +213,10 @@ class User extends Base {
             palette: data.collectibles.nameplate.palette,
           },
         };
-      } else {
+      } else if (data.collectibles) {
         this.collectibles = { nameplate: null };
+      } else {
+        this.collectibles = null;
       }
     } else {
       this.collectibles ??= null;

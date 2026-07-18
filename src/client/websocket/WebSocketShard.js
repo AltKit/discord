@@ -1,7 +1,7 @@
 'use strict';
 
 const EventEmitter = require('node:events');
-const { setTimeout, setInterval, clearTimeout } = require('node:timers');
+const { setTimeout, setInterval, clearTimeout, clearInterval } = require('node:timers');
 const WebSocket = require('../../WebSocket');
 const { Status, Events, ShardEvents, Opcodes, WSEvents, WSCodes } = require('../../util/Constants');
 const Intents = require('../../util/Intents');
@@ -141,6 +141,22 @@ class WebSocketShard extends EventEmitter {
      * @private
      */
     Object.defineProperty(this, 'helloTimeout', { value: null, writable: true });
+
+    /**
+     * The timeout for the initial, jittered heartbeat.
+     * @name WebSocketShard#heartbeatTimeout
+     * @type {?NodeJS.Timeout}
+     * @private
+     */
+    Object.defineProperty(this, 'heartbeatTimeout', { value: null, writable: true });
+
+    /**
+     * The recurring heartbeat interval.
+     * @name WebSocketShard#heartbeatInterval
+     * @type {?NodeJS.Timeout}
+     * @private
+     */
+    Object.defineProperty(this, 'heartbeatInterval', { value: null, writable: true });
 
     /**
      * The WebSocket timeout.
@@ -438,7 +454,6 @@ class WebSocketShard extends EventEmitter {
         this.status = Status.WAITING_FOR_GUILDS;
         this.debug(`[READY] Session ${this.sessionId} | Resume url ${this.resumeURL}.`);
         this.lastHeartbeatAcked = true;
-        this.sendHeartbeat('ReadyHeartbeat');
         break;
       case WSEvents.RESUMED: {
         /**
@@ -451,7 +466,6 @@ class WebSocketShard extends EventEmitter {
         const replayed = packet.s - this.closeSequence;
         this.debug(`[RESUMED] Session ${this.sessionId} | Replayed ${replayed} events.`);
         this.lastHeartbeatAcked = true;
-        this.sendHeartbeat('ResumeHeartbeat');
         break;
       }
     }
@@ -620,22 +634,29 @@ class WebSocketShard extends EventEmitter {
 
   /**
    * Sets the heartbeat timer for this shard.
-   * @param {number} time If -1, clears the interval, any other number sets an interval
+   * @param {number} time If -1, clears the timers; any other number schedules heartbeats
    * @private
    */
   setHeartbeatTimer(time) {
-    if (time === -1) {
-      if (this.heartbeatInterval) {
-        this.debug('Clearing the heartbeat interval.');
-        clearInterval(this.heartbeatInterval);
-        this.heartbeatInterval = null;
-      }
-      return;
+    if (this.heartbeatTimeout) {
+      this.debug('Clearing the initial heartbeat timeout.');
+      clearTimeout(this.heartbeatTimeout);
+      this.heartbeatTimeout = null;
     }
-    this.debug(`Setting a heartbeat interval for ${time}ms.`);
-    // Sanity checks
-    if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-    this.heartbeatInterval = setInterval(() => this.sendHeartbeat(), time).unref();
+    if (this.heartbeatInterval) {
+      this.debug('Clearing the heartbeat interval.');
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+    if (time === -1) return;
+
+    const initialDelay = time * Math.random();
+    this.debug(`Scheduling the first heartbeat in ${initialDelay}ms and every ${time}ms afterwards.`);
+    this.heartbeatTimeout = setTimeout(() => {
+      this.heartbeatTimeout = null;
+      this.sendHeartbeat();
+      this.heartbeatInterval = setInterval(() => this.sendHeartbeat(), time).unref();
+    }, initialDelay).unref();
   }
 
   /**

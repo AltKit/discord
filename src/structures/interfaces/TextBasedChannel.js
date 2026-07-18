@@ -138,7 +138,10 @@ class TextBasedChannel {
    * @typedef {Object} FileOptions
    * @property {BufferResolvable} attachment File to attach
    * @property {string} [name='file.jpg'] Filename of the attachment
-   * @property {string} description The description of the file
+   * @property {string} [description] The description of the file
+   * @property {string} [title] The title of the file
+   * @property {string} [waveform] The base64 encoded sampled waveform for a voice message
+   * @property {number} [duration] The duration of a voice message attachment in seconds
    */
 
   /**
@@ -204,6 +207,7 @@ class TextBasedChannel {
         filename: files[attachment.id].name,
         uploaded_filename: attachment.upload_filename,
         description: files[attachment.id].description,
+        title: files[attachment.id].title,
         duration_secs: files[attachment.id].duration_secs,
         waveform: files[attachment.id].waveform,
       };

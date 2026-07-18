@@ -125,31 +125,32 @@ class MessageManager extends CachedManager {
     const messageId = this.resolveId(message);
     if (!messageId) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    const { data, files } = await (
-      options instanceof MessagePayload
-        ? options
-        : MessagePayload.create(message instanceof Message ? message : this, options)
-    )
+    const target = message instanceof Message ? message : (this.cache.get(messageId) ?? this);
+    const { data, files } = await (options instanceof MessagePayload ? options : MessagePayload.create(target, options))
       .resolveData()
       .resolveFiles();
 
     // New API
-    const attachments = await Util.getUploadURL(this.client, this.channel.id, files);
-    const requestPromises = attachments.map(async attachment => {
-      await Util.uploadFile(files[attachment.id].file, attachment.upload_url);
-      return {
-        id: attachment.id,
-        filename: files[attachment.id].name,
-        uploaded_filename: attachment.upload_filename,
-        description: files[attachment.id].description,
-        duration_secs: files[attachment.id].duration_secs,
-        waveform: files[attachment.id].waveform,
-      };
-    });
-    const attachmentsData = await Promise.all(requestPromises);
-    attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-    data.attachments = attachmentsData;
-    // Empty Files
+    if (files.length) {
+      const attachments = await Util.getUploadURL(this.client, this.channel.id, files);
+      const requestPromises = attachments.map(async attachment => {
+        await Util.uploadFile(files[attachment.id].file, attachment.upload_url);
+        return {
+          id: attachment.id,
+          filename: files[attachment.id].name,
+          uploaded_filename: attachment.upload_filename,
+          description: files[attachment.id].description,
+          title: files[attachment.id].title,
+          duration_secs: files[attachment.id].duration_secs,
+          waveform: files[attachment.id].waveform,
+        };
+      });
+      const attachmentsData = await Promise.all(requestPromises);
+      attachmentsData.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+      const uploadIds = new Set(files.map((_, index) => String(index)));
+      const existingAttachments = data.attachments?.filter(attachment => !uploadIds.has(String(attachment.id))) ?? [];
+      data.attachments = [...existingAttachments, ...attachmentsData];
+    }
 
     const d = await this.client.api.channels[this.channel.id].messages[messageId].patch({ data });
 

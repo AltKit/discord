@@ -315,7 +315,8 @@ class VoiceState extends Base {
    * @returns {Promise<void>}
    */
   postPreview(base64Image) {
-    if (!this.client.user.id === this.id || !this.streaming) throw new Error('USER_NOT_STREAMING');
+    if (this.client.user.id !== this.id) throw new Error('VOICE_STATE_NOT_OWN');
+    if (!this.streaming) throw new Error('USER_NOT_STREAMING');
     // URL: https://discord.com/api/v9/streams/guild:guildid:voicechannelid:userid/preview
     // URL: https://discord.com/api/v9/streams/call:channelId:userId/preview
     const streamKey = this.guild?.id

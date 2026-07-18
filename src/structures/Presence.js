@@ -873,26 +873,27 @@ class RichPresence extends Activity {
    * @returns {RichPresence}
    */
   setButtons(...button) {
-    if (button.length == 0) {
+    const buttons = button.flat(2);
+    if (buttons.length === 0) {
       this.buttons = [];
       delete this.metadata.button_urls;
       return this;
-    } else if (button.length > 2) {
+    } else if (buttons.length > 2) {
       throw new Error('RichPresence can only have up to 2 buttons');
     }
 
-    this.buttons = [];
-    this.metadata.button_urls = [];
+    const names = [];
+    const urls = [];
+    for (const buttonData of buttons) {
+      if (!buttonData?.name || !buttonData.url) throw new Error('Button must have name and url');
+      if (typeof buttonData.name !== 'string') throw new Error('Button name must be a string');
+      if (!URL.canParse(buttonData.url)) throw new Error('Button url must be a valid url');
+      names.push(buttonData.name);
+      urls.push(buttonData.url);
+    }
 
-    button.flat(2).forEach(b => {
-      if (b.name && b.url) {
-        this.buttons.push(b.name);
-        if (!URL.canParse(b.url)) throw new Error('Button url must be a valid url');
-        this.metadata.button_urls.push(b.url);
-      } else {
-        throw new Error('Button must have name and url');
-      }
-    });
+    this.buttons = names;
+    this.metadata.button_urls = urls;
     return this;
   }
 
@@ -928,6 +929,7 @@ class RichPresence extends Activity {
     }
     if (typeof name !== 'string') throw new Error('Button name must be a string');
     if (!URL.canParse(url)) throw new Error('Button url must be a valid url');
+    if (this.buttons.length >= 2) throw new Error('RichPresence can only have up to 2 buttons');
     this.buttons.push(name);
     if (Array.isArray(this.metadata.button_urls)) this.metadata.button_urls.push(url);
     else this.metadata.button_urls = [url];

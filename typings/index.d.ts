@@ -26,6 +26,8 @@ import {
   APIApplicationCommandInteractionData,
   APIApplicationCommandOption,
   APIApplicationCommandPermission,
+  APIComponentInMessageActionRow,
+  APIComponentInModalActionRow,
   APIAuditLogChange,
   APIButtonComponent,
   APIEmbed,
@@ -34,9 +36,7 @@ import {
   APIInteractionDataResolvedGuildMember,
   APIInteractionGuildMember,
   APIMessage,
-  APIMessageActionRowComponent,
   APIMessageComponent,
-  APIModalActionRowComponent,
   APIOverwrite,
   APIPartialChannel,
   APIPartialEmoji,
@@ -396,7 +396,7 @@ export abstract class Application extends Base {
   public overlayMethods: number | null;
   public overlayWarn: boolean | null;
   public overlayCompatibilityHook: boolean | null;
-  public bot: PartialUser | null;
+  public bot: PartialUser | User | null;
   public developers: { id: Snowflake; name: string }[] | null;
   public publishers: { id: Snowflake; name: string }[] | null;
   public redirectUris: string[] | null;
@@ -2348,8 +2348,8 @@ export class MessageActionRow<
   T extends MessageActionRowComponent | ModalActionRowComponent = MessageActionRowComponent,
   U = T extends ModalActionRowComponent ? ModalActionRowComponentResolvable : MessageActionRowComponentResolvable,
   V = T extends ModalActionRowComponent
-    ? APIActionRowComponent<APIModalActionRowComponent>
-    : APIActionRowComponent<APIMessageActionRowComponent>,
+    ? APIActionRowComponent<APIComponentInModalActionRow>
+    : APIActionRowComponent<APIComponentInMessageActionRow>,
 > extends BaseMessageComponent {
   // tslint:disable-next-line:ban-ts-ignore
   // @ts-ignore (TS:2344, Caused by TypeScript 4.8)
@@ -2538,9 +2538,9 @@ export class MessageComponentInteraction<Cached extends CacheType = CacheType> e
   public readonly component: CacheTypeReducer<
     Cached,
     MessageActionRowComponent,
-    Exclude<APIMessageComponent, APIActionRowComponent<APIMessageActionRowComponent>>,
-    MessageActionRowComponent | Exclude<APIMessageComponent, APIActionRowComponent<APIMessageActionRowComponent>>,
-    MessageActionRowComponent | Exclude<APIMessageComponent, APIActionRowComponent<APIMessageActionRowComponent>>
+    Exclude<APIMessageComponent, APIActionRowComponent<APIComponentInMessageActionRow>>,
+    MessageActionRowComponent | Exclude<APIMessageComponent, APIActionRowComponent<APIComponentInMessageActionRow>>,
+    MessageActionRowComponent | Exclude<APIMessageComponent, APIActionRowComponent<APIComponentInMessageActionRow>>
   >;
   public componentType: Exclude<MessageComponentType, 'ACTION_ROW'>;
   public customId: string;
@@ -3286,9 +3286,14 @@ export interface ShardEventTypes {
 /** @deprecated This will be removed in the next major version */
 export class Shard extends EventEmitter {
   private constructor(manager: ShardingManager, id: number);
-  private _evals: Map<string, Promise<unknown>>;
+  private _evals: Map<string, { promise: Promise<unknown>; reject(error: Error): void }>;
   private _exitListener: (...args: any[]) => void;
-  private _fetches: Map<string, Promise<unknown>>;
+  private _fetches: Map<string, { promise: Promise<unknown>; reject(error: Error): void }>;
+  private _createPendingOperation(
+    operations: Map<string, { promise: Promise<unknown>; reject(error: Error): void }>,
+    key: string,
+    messageKey: string,
+  ): Promise<unknown>;
   private _handleExit(respawn?: boolean, timeout?: number): void;
   private _handleMessage(message: unknown): void;
   private incrementMaxListeners(emitter: EventEmitter | ChildProcess): void;
@@ -3851,7 +3856,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly friendNickname: string | null | undefined;
   public primaryGuild: UserPrimaryGuild | null;
   /** @deprecated Use {@link User.primaryGuild} instead */
-  public clan: PrimaryGuild | null;
+  public clan: UserPrimaryGuild | null;
   public avatarURL(options?: ImageURLOptions): string | null;
   public avatarDecorationURL(): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
@@ -4620,9 +4625,9 @@ export class ClientUserSettingManager extends BaseManager {
   public toggleCompactMode(): Promise<this>;
   public setTheme(value: 'dark' | 'light'): Promise<this>;
   public setCustomStatus(value?: CustomStatusOption | CustomStatus): Promise<this>;
-  public restrictedGuilds(status: boolean): Promise<void>;
-  public addRestrictedGuild(guildId: GuildResolvable): Promise<void>;
-  public removeRestrictedGuild(guildId: GuildResolvable): Promise<void>;
+  public restrictedGuilds(status: boolean): Promise<this>;
+  public addRestrictedGuild(guildId: GuildResolvable): Promise<this>;
+  public removeRestrictedGuild(guildId: GuildResolvable): Promise<this>;
 }
 
 export class GuildSettingManager extends BaseManager {
@@ -7313,14 +7318,14 @@ export type MessageActionRowComponentOptions =
   | (Required<BaseMessageComponentOptions> & MessageSelectMenuOptions);
 
 export type MessageActionRowComponentResolvable =
-  MessageActionRowComponent | MessageActionRowComponentOptions | APIMessageActionRowComponent;
+  MessageActionRowComponent | MessageActionRowComponentOptions | APIComponentInMessageActionRow;
 
 export type ModalActionRowComponent = TextInputComponent;
 
 export type ModalActionRowComponentOptions = TextInputComponentOptions;
 
 export type ModalActionRowComponentResolvable =
-  ModalActionRowComponent | ModalActionRowComponentOptions | APIModalActionRowComponent;
+  ModalActionRowComponent | ModalActionRowComponentOptions | APIComponentInModalActionRow;
 
 export interface MessageActionRowOptions<
   T extends MessageActionRowComponentResolvable | ModalActionRowComponentResolvable =

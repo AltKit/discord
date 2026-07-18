@@ -78,15 +78,15 @@ class Shard extends EventEmitter {
     this.worker = null;
 
     /**
-     * Ongoing promises for calls to {@link Shard#eval}, mapped by the `script` they were called with
-     * @type {Map<string, Promise>}
+     * Ongoing operations for calls to {@link Shard#eval}, mapped by the `script` they were called with
+     * @type {Map<string, Object>}
      * @private
      */
     this._evals = new Map();
 
     /**
-     * Ongoing promises for calls to {@link Shard#fetchClientValue}, mapped by the `prop` they were called with
-     * @type {Map<string, Promise>}
+     * Ongoing operations for calls to {@link Shard#fetchClientValue}, mapped by the `prop` they were called with
+     * @type {Map<string, Object>}
      * @private
      */
     this._fetches = new Map();
@@ -242,33 +242,9 @@ class Shard extends EventEmitter {
     if (!this.process && !this.worker) throw new Error('SHARDING_NO_CHILD_EXISTS', this.id);
 
     // Cached promise from previous call
-    if (this._fetches.has(prop)) return this._fetches.get(prop);
+    if (this._fetches.has(prop)) return this._fetches.get(prop).promise;
 
-    const promise = new Promise((resolve, reject) => {
-      const child = this.process ?? this.worker;
-
-      const listener = message => {
-        if (message?._fetchProp !== prop) return;
-        child.removeListener('message', listener);
-        this.decrementMaxListeners(child);
-        this._fetches.delete(prop);
-        if (!message._error) resolve(message._result);
-        else reject(Util.makeError(message._error));
-      };
-
-      this.incrementMaxListeners(child);
-      child.on('message', listener);
-
-      this.send({ _fetchProp: prop }).catch(err => {
-        child.removeListener('message', listener);
-        this.decrementMaxListeners(child);
-        this._fetches.delete(prop);
-        reject(err);
-      });
-    });
-
-    this._fetches.set(prop, promise);
-    return promise;
+    return this._createPendingOperation(this._fetches, prop, '_fetchProp');
   }
 
   /**
@@ -285,32 +261,57 @@ class Shard extends EventEmitter {
     if (!this.process && !this.worker) throw new Error('SHARDING_NO_CHILD_EXISTS', this.id);
 
     // Cached promise from previous call
-    if (this._evals.has(_eval)) return this._evals.get(_eval);
+    if (this._evals.has(_eval)) return this._evals.get(_eval).promise;
+
+    return this._createPendingOperation(this._evals, _eval, '_eval');
+  }
+
+  /**
+   * Creates an IPC operation that can be cleaned up and rejected if the child exits.
+   * @param {Map<string, Object>} operations Collection that owns the operation
+   * @param {string} key Operation identifier
+   * @param {string} messageKey IPC message property used for the identifier
+   * @returns {Promise<*>}
+   * @private
+   */
+  _createPendingOperation(operations, key, messageKey) {
+    const child = this.process ?? this.worker;
+    let active = true;
+    let resolvePromise;
+    let rejectPromise;
 
     const promise = new Promise((resolve, reject) => {
-      const child = this.process ?? this.worker;
-
-      const listener = message => {
-        if (message?._eval !== _eval) return;
-        child.removeListener('message', listener);
-        this.decrementMaxListeners(child);
-        this._evals.delete(_eval);
-        if (!message._error) resolve(message._result);
-        else reject(Util.makeError(message._error));
-      };
-
-      this.incrementMaxListeners(child);
-      child.on('message', listener);
-
-      this.send({ _eval }).catch(err => {
-        child.removeListener('message', listener);
-        this.decrementMaxListeners(child);
-        this._evals.delete(_eval);
-        reject(err);
-      });
+      resolvePromise = resolve;
+      rejectPromise = reject;
     });
 
-    this._evals.set(_eval, promise);
+    const cleanup = () => {
+      if (!active) return;
+      active = false;
+      child.removeListener('message', listener);
+      this.decrementMaxListeners(child);
+      operations.delete(key);
+    };
+
+    const listener = message => {
+      if (message?.[messageKey] !== key) return;
+      cleanup();
+      if (!message._error) resolvePromise(message._result);
+      else rejectPromise(Util.makeError(message._error));
+    };
+
+    const operation = {
+      promise,
+      reject: error => {
+        cleanup();
+        rejectPromise(error);
+      },
+    };
+
+    operations.set(key, operation);
+    this.incrementMaxListeners(child);
+    child.on('message', listener);
+    this.send({ [messageKey]: key }).catch(operation.reject);
     return promise;
   }
 
@@ -406,6 +407,11 @@ class Shard extends EventEmitter {
      * @param {ChildProcess|Worker} process Child process/worker that exited
      */
     this.emit('death', this.process ?? this.worker);
+
+    const pendingOperations = [...this._evals.values(), ...this._fetches.values()];
+    for (const operation of pendingOperations) {
+      operation.reject(new Error('SHARDING_CHILD_DIED', this.id));
+    }
 
     this.ready = false;
     this.process = null;

@@ -890,7 +890,7 @@ class Util extends null {
    * @param {Function} cb The callback to lazily evaluate
    * @returns {Function}
    * @example
-   * const User = lazy(() => require('./User'));
+   * const User = lazy(() => require('../structures/User'));
    * const user = new (User())(client, data);
    */
   static lazy(cb) {

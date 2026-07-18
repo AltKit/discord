@@ -88,7 +88,7 @@ import {
   GuildFeature,
   LocalizationMap,
   APIActionRowComponent,
-  APIActionRowComponentTypes,
+  APIComponentInActionRow,
 } from 'discord-api-types/v10';
 import { GuildChannel, Guild, PermissionOverwrites } from '.';
 import type {
@@ -380,7 +380,7 @@ export interface APISectionComponent extends APIBaseComponent<MessageComponentTy
 }
 
 export type APIContainerComponents =
-  | APIActionRowComponent<APIActionRowComponentTypes>
+  | APIActionRowComponent<APIComponentInActionRow>
   | APITextDisplayComponent
   | APISectionComponent
   | APIMediaGalleryComponent

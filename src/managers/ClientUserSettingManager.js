@@ -15,6 +15,8 @@ class ClientUserSettingManager extends BaseManager {
   #rawSetting = {};
   constructor(client) {
     super(client);
+    this.disableDMfromGuilds = new Collection();
+
     /**
      * WHO CAN ADD YOU AS A FRIEND ?
      * @type {?object}
@@ -324,8 +326,8 @@ class ClientUserSettingManager extends BaseManager {
         }
         data.expires_at = new Date(options.expires).toISOString();
       }
-      if (['online', 'idle', 'dnd', 'invisible'].includes(options.status)) this.edit({ status: options.status });
-      return this.edit({ custom_status: data });
+      const status = ['online', 'idle', 'dnd', 'invisible'].includes(options.status) ? { status: options.status } : {};
+      return this.edit({ ...status, custom_status: data });
     }
   }
 
@@ -349,13 +351,13 @@ class ClientUserSettingManager extends BaseManager {
    * @returns {Promise}
    */
   addRestrictedGuild(guildId) {
-    const temp = Object.assign(
-      [],
-      this.disableDMfromServer.map((v, k) => k),
-    );
-    if (temp.includes(guildId)) throw new Error('Guild is already restricted');
-    temp.push(guildId);
-    return this.edit({ restricted_guilds: temp });
+    const id = this.client.guilds.resolveId(guildId);
+    if (!id) throw new TypeError('INVALID_TYPE', 'guildId', 'GuildResolvable', true);
+
+    const restrictedGuilds = [...this.disableDMfromGuilds.keys()];
+    if (this.disableDMfromGuilds.has(id)) throw new Error('Guild is already restricted');
+    restrictedGuilds.push(id);
+    return this.edit({ restricted_guilds: restrictedGuilds });
   }
 
   /**
@@ -364,8 +366,12 @@ class ClientUserSettingManager extends BaseManager {
    * @returns {Promise}
    */
   removeRestrictedGuild(guildId) {
-    if (!this.disableDMfromServer.delete(guildId)) throw new Error('Guild is already restricted');
-    return this.edit({ restricted_guilds: this.disableDMfromServer.map((v, k) => k) });
+    const id = this.client.guilds.resolveId(guildId);
+    if (!id) throw new TypeError('INVALID_TYPE', 'guildId', 'GuildResolvable', true);
+    if (!this.disableDMfromGuilds.has(id)) throw new Error('Guild is not restricted');
+
+    const restrictedGuilds = [...this.disableDMfromGuilds.keys()].filter(restrictedGuildId => restrictedGuildId !== id);
+    return this.edit({ restricted_guilds: restrictedGuilds });
   }
 }
 

@@ -34,6 +34,7 @@ const Messages = {
   SHARDING_READY_TIMEOUT: id => `Shard ${id}'s Client took too long to become ready.`,
   SHARDING_READY_DISCONNECTED: id => `Shard ${id}'s Client disconnected before becoming ready.`,
   SHARDING_READY_DIED: id => `Shard ${id}'s process exited before its Client became ready.`,
+  SHARDING_CHILD_DIED: id => `Shard ${id}'s process exited before its pending operation completed.`,
   SHARDING_NO_CHILD_EXISTS: id => `Shard ${id} has no active process or worker.`,
   SHARDING_SHARD_MISCALCULATION: (shard, guild, count) =>
     `Calculated invalid shard ${shard} for guild ${guild} with ${count} shards.`,

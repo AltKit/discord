@@ -46,10 +46,7 @@ test('custom status and presence status are updated in one request', async t => 
     return client.settings;
   };
 
-  assert.equal(
-    await client.settings.setCustomStatus({ text: 'Working', status: 'idle' }),
-    client.settings,
-  );
+  assert.equal(await client.settings.setCustomStatus({ text: 'Working', status: 'idle' }), client.settings);
   assert.deepEqual(edits, [
     {
       status: 'idle',

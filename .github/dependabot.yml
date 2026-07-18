@@ -6,7 +6,7 @@ updates:
       interval: weekly
       day: monday
       time: '12:00'
-      timezone: Australia/Perth
+      timezone: Australia/Melbourne
     open-pull-requests-limit: 10
     groups:
       discordjs:

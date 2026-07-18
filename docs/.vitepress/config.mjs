@@ -1,4 +1,7 @@
 import { defineConfig } from 'vitepress';
+import { readFileSync } from 'node:fs';
+
+const packageVersion = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
 
 const githubRepository = process.env.GITHUB_REPOSITORY;
 const repositorySlug = githubRepository || 'altkit/discord';
@@ -16,12 +19,18 @@ export default defineConfig({
   lastUpdated: true,
   head: [
     ['meta', { name: 'theme-color', content: '#8b5cf6' }],
+    ['meta', { name: 'algolia-site-verification', content: 'B349E1021964B216' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Altkit Discord' }],
     ['link', { rel: 'icon', href: `${base}logo.svg`, type: 'image/svg+xml' }],
   ],
   markdown: {
     lineNumbers: true,
+    config(markdown) {
+      markdown.core.ruler.before('normalize', 'package-version', state => {
+        state.src = state.src.replaceAll('{{ altkitDiscordVersion }}', packageVersion);
+      });
+    },
   },
   vite: {
     build: {
@@ -40,9 +49,9 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started', activeMatch: '/guide/' },
       { text: 'Examples', link: '/examples/', activeMatch: '/examples/' },
       { text: 'API', link: '/api/', activeMatch: '/api/' },
-      { text: 'v4 migration', link: '/migrate' },
+      { text: 'AltKit Migration', link: '/migrate' },
       {
-        text: '4.0.0',
+        text: packageVersion,
         items: [
           { text: 'npm package', link: 'https://www.npmjs.com/package/@altkit/discord' },
           { text: 'Changelog & migration', link: '/migrate' },
@@ -88,7 +97,7 @@ export default defineConfig({
           items: [
             { text: 'Troubleshooting', link: '/guide/troubleshooting' },
             { text: 'Contributing & releases', link: '/devguide' },
-            { text: 'v4 migration guide', link: '/migrate' },
+            { text: 'AltKit Migration', link: '/migrate' },
           ],
         },
       ],

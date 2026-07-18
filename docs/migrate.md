@@ -1,16 +1,16 @@
-# Migrate to Altkit Discord v4
+# AltKit Migration
 
 ::: info Compatibility target
 Altkit Discord v4 moves the fork from its previous Discord.js 14.21-compatible surface to **Discord.js 14.27.0** while retaining its user-account transport and selfbot-specific APIs.
 :::
 
-|                         | Version           |
-| ----------------------- | ----------------- |
-| Altkit Discord          | `4.0.0`           |
-| Discord.js API target   | `14.27.0`         |
-| Minimum Node.js version | `20.19.0`         |
-| Tested Node.js versions | `20`, `22`, `24`  |
-| Package/import name     | `@altkit/discord` |
+|                         | Version                      |
+| ----------------------- | ---------------------------- |
+| Altkit Discord          | `{{ altkitDiscordVersion }}` |
+| Discord.js API target   | `14.27.0`                    |
+| Minimum Node.js version | `20.19.0`                    |
+| Tested Node.js versions | `20`, `22`, `24`             |
+| Package/import name     | `@altkit/discord`            |
 
 ::: danger Account safety
 Automating a normal Discord user account violates Discord's Terms of Service and can result in account termination. Never share or commit a user token, TOTP secret, or proxy credential.
@@ -434,7 +434,7 @@ console.log({
 Expected compatibility values for this release:
 
 ```text
-version: 4.0.0
+version: {{ altkitDiscordVersion }}
 discordJsVersion: 14.27.0
 ```
 

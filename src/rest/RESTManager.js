@@ -67,10 +67,14 @@ class RESTManager {
     this.handlers.clear();
     this.cookieJar.removeAllCookiesSync();
     if (this.dispatcher) {
-      try {
-        this.dispatcher.destroy().catch(() => {});
-      } catch {
-        this.dispatcher.close().catch(() => {});
+      for (const method of ['destroy', 'close']) {
+        if (typeof this.dispatcher[method] !== 'function') continue;
+        try {
+          this.dispatcher[method]()?.catch?.(() => {});
+          break;
+        } catch {
+          // Try the next cleanup method when the dispatcher does not support this one.
+        }
       }
       this.dispatcher = null;
     }

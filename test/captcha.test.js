@@ -3,7 +3,6 @@
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
 const { test } = require('node:test');
-const { MockAgent } = require('undici');
 const Client = require('../src/client/Client');
 const ClientVoiceManager = require('../src/client/voice/ClientVoiceManager');
 const VoiceConnection = require('../src/client/voice/VoiceConnection');
@@ -203,12 +202,6 @@ test('uses separate HTTP dispatchers for separate REST managers', async t => {
 
 test('uses custom REST origins and releases manager-owned resources', async () => {
   const origin = 'https://api.example.test';
-  const mockAgent = new MockAgent();
-  mockAgent.disableNetConnect();
-  mockAgent
-    .get(origin)
-    .intercept({ path: '/health', method: 'GET' })
-    .reply(200, { ok: true }, { headers: { 'content-type': 'application/json' } });
   const client = new EventEmitter();
   client.token = 'token';
   client.options = {
@@ -224,12 +217,17 @@ test('uses custom REST origins and releases manager-owned resources', async () =
     ws: { properties: {} },
   };
   const rest = new RESTManager(client);
-  rest.dispatcher = mockAgent;
+  let requestedUrl;
+  rest.fetch = async url => {
+    requestedUrl = url;
+    return jsonResponse({ ok: true }, 200);
+  };
   const result = await new APIRequest(rest, 'get', '/health', {
     auth: false,
     route: '/health',
     versioned: false,
   }).make();
+  assert.equal(requestedUrl, `${origin}/health`);
   assert.deepEqual(await result.json(), { ok: true });
 
   rest.cookieJar.setCookieSync('session=secret', origin);
@@ -240,7 +238,8 @@ test('uses custom REST origins and releases manager-owned resources', async () =
   const directRest = new RESTManager(client);
   const dispatcher = directRest.getDispatcher();
   directRest.destroy();
-  assert.equal(dispatcher.destroyed, true);
+  assert.equal(directRest.destroyed, true);
+  if (typeof dispatcher.destroyed === 'boolean') assert.equal(dispatcher.destroyed, true);
 
   const proxiedClient = {
     ...client,

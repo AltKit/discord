@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-vitepress-
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Install dependencies
         run: npm ci

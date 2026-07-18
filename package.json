@@ -59,11 +59,11 @@
   "homepage": "https://github.com/AltKit/discord#readme",
   "dependencies": {
     "@discordjs/builders": "^1.14.1",
-    "@discordjs/collection": "1.5.3",
+    "@discordjs/collection": "2.1.1",
     "@discordjs/formatters": "^0.6.2",
     "@discordjs/rest": "^2.6.2",
     "@discordjs/util": "^1.2.0",
-    "@discordjs/ws": "^1.2.3",
+    "@discordjs/ws": "^2.0.4",
     "@sapphire/async-queue": "^1.5.5",
     "@sapphire/shapeshift": "^4.0.0",
     "discord-api-types": "^0.38.49",

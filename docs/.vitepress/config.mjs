@@ -146,6 +146,15 @@ export default defineConfig({
         askAi: {
           assistantId: '625d2512-a203-42bc-96fb-4162cccaa09b',
           agentStudio: true,
+          sidePanel: {
+            panel: {
+              variant: 'floating',
+              side: 'right',
+              width: '360px',
+              expandedWidth: '580px',
+              suggestedQuestions: true,
+            },
+          },
         },
       },
     },

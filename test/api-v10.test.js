@@ -226,6 +226,24 @@ test('channel flags include the v10 spoiler channel flag', () => {
   assert.equal(new ChannelFlags(2_097_152).has('IS_SPOILER_CHANNEL'), true);
 });
 
+test('API error constants mirror the v10 JSON error code table', () => {
+  const { APIErrors } = require('../src/util/Constants');
+
+  // Recent additions from discord-api-types 0.38.49+
+  assert.equal(APIErrors.GENERAL_ERROR, 0);
+  assert.equal(APIErrors.THIS_ACTION_REQUIRES_A_PREMIUM_SUBSCRIPTION, 20015);
+  assert.equal(APIErrors.ONLY_ONE_CHANNEL_CAN_HAVE_A_PARENT_ID_MODIFIED_AT_A_TIME, 40009);
+  assert.equal(APIErrors.CLOUDFLARE_IS_BLOCKING_YOUR_REQUEST, 40333);
+  assert.equal(APIErrors.CANNOT_SEND_VOICE_EFFECT_WHEN_USER_IS_SERVER_MUTED_DEAFENED_OR_SUPPRESSED, 50167);
+  assert.equal(APIErrors.ACCESS_TO_JOINING_NEW_SERVERS_HAS_BEEN_LIMITED_FOR_THE_USER, 340015);
+  assert.equal(APIErrors.ACCESS_TO_FILE_UPLOADS_HAS_BEEN_LIMITED_FOR_THIS_GUILD, 400001);
+  assert.equal(APIErrors.CANNOT_FORWARD_MESSAGE_WITH_UNREADABLE_CONTENT, 160014);
+
+  // Every value in the table is unique
+  const values = Object.values(APIErrors);
+  assert.equal(new Set(values).size, values.length);
+});
+
 test('channel creation forwards channel flags in the request body', async () => {
   const calls = [];
   const manager = Object.create(GuildChannelManager.prototype);

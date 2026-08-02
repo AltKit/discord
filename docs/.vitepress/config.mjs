@@ -140,10 +140,13 @@ export default defineConfig({
     search: {
       provider: 'algolia',
       options: {
-        container: '#docsearch',
         appId: 'I01LU7I5RN',
         apiKey: '4570cbfcbf48e5bd7586c7ad2147c0fe',
         indexName: 'AltKit Documentation',
+        askAi: {
+          assistantId: '625d2512-a203-42bc-96fb-4162cccaa09b',
+          agentStudio: true,
+        },
       },
     },
     outline: {

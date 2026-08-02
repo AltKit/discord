@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/rodribus/devcontainer-features/pi-coding-agent:0": {
+      "version": "0.1.0",
+      "resolved": "ghcr.io/rodribus/devcontainer-features/pi-coding-agent@sha256:6254dbe0d98b8156c9c7776b8db17641088c7a72cbd5aa99010c3af958dc6fc0",
+      "integrity": "sha256:6254dbe0d98b8156c9c7776b8db17641088c7a72cbd5aa99010c3af958dc6fc0"
+    }
+  }
+}

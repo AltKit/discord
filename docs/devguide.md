@@ -182,8 +182,9 @@ The workflows live in [`.github/workflows/`](https://github.com/altkit/discord/t
 - when manually started with **Actions → CI → Run workflow**.
 
 The test job runs `npm ci` and `npm test` on Node.js 20.19, 22, and 24. The
-Node.js 22 job also regenerates `docs/main.json` and fails if the committed API
-documentation is stale. A separate package job runs `npm pack --dry-run`.
+Node.js 22 job also runs `npm run docs:verify`, which regenerates the API
+reference and fails if it differs from the committed `docs/main.json`. A
+separate package job runs `npm pack --dry-run`.
 
 To enable CI in a new fork:
 
@@ -191,7 +192,7 @@ To enable CI in a new fork:
 2. Open the repository's **Actions** tab and enable workflows if GitHub prompts
    you to do so.
 3. In **Settings → Actions → General**, allow the actions used by this project.
-   The workflow requires `actions/checkout@v5` and `actions/setup-node@v6`.
+   The workflow requires `actions/checkout@v7` and `actions/setup-node@v7`.
 4. Keep the default `GITHUB_TOKEN` workflow permission at **Read repository
    contents**. CI does not require write access or repository secrets.
 5. Run the workflow manually once, or push a branch and open a pull request.
@@ -223,52 +224,50 @@ the diff rather than committing a timestamp-only update.
 
 1. checks out the tagged commit;
 2. installs Node.js 22 and dependencies;
-3. verifies that the tag and `package.json` version match;
-4. runs the complete test suite; and
-5. publishes `@altkit/discord` publicly with npm provenance.
+3. installs npm 11.5.1 for trusted publishing;
+4. verifies that the tag and `package.json` version match;
+5. runs the complete test suite;
+6. inspects the publish archive with `npm pack --dry-run`; and
+7. publishes `@altkit/discord` publicly with npm provenance.
 
 The job uses a GitHub environment named `npm`, needs `contents: read` and
-`id-token: write`, and currently authenticates with the `NPM_TOKEN` environment
-secret.
+`id-token: write`, and publishes through npm trusted publishing—no npm token is
+stored in GitHub.
 
-#### Configure npm publishing
+#### Configure npm trusted publishing
 
 The npm account or organization must have publish access to
-`@altkit/discord`. Then configure GitHub:
+`@altkit/discord`. Then configure npm's trusted publisher for this repository:
 
-1. On npm, create an automation-capable granular access token with read/write
-   package permission for `@altkit/discord`.
-2. In GitHub, open **Settings → Environments → New environment** and create an
-   environment named `npm`.
-3. Add an environment secret named `NPM_TOKEN` containing the npm token.
-4. Optionally add required reviewers or tag deployment rules to the `npm`
-   environment. Ensure the chosen rules still allow the release tags.
-5. In **Settings → Actions → General**, make sure workflow permissions can issue
-   an OpenID Connect identity token. The workflow's `id-token: write`
-   permission is required for provenance; it does not grant source write access.
+1. On npm, open the package's **Access → Manage publishers** page.
+2. Add a trusted publisher for the GitHub owner, the repository name, and the
+   workflow filename `release.yml`.
+3. Keep the GitHub `npm` environment and the workflow's `id-token: write`
+   permission; provenance and the trusted-publishing handshake both depend on
+   the OpenID Connect identity token.
+4. Add required reviewers or tag deployment rules to the `npm` environment as
+   desired, while still allowing the release tags to deploy.
+5. In **Settings → Actions → General**, make sure workflow permissions can
+   issue an OpenID Connect identity token.
 
-::: tip Limit npm credential scope
-Prefer a granular npm token scoped to the single package. Never store an npm token in `.npmrc`, `.env`, a workflow file, a release artifact, or a repository secret when the job reads it from the protected `npm` environment.
+::: tip No npm token in GitHub
+With trusted publishing, npm never receives a stored credential from GitHub.
+Avoid storing npm tokens in repository or environment secrets; if a legacy
+token exists, remove it after the trusted publisher is verified.
 :::
-
-If the package is configured for npm trusted publishing, the workflow can be
-migrated to tokenless publishing. Configure the GitHub repository and
-`release.yml` filename as a trusted publisher on npm, keep `id-token: write`,
-then remove `NODE_AUTH_TOKEN` only after verifying the trusted-publisher setup.
-Until that migration is complete, the checked-in workflow requires `NPM_TOKEN`.
 
 #### Common workflow failures
 
-| Failure                            | Likely cause                                                                                   | Resolution                                                                                    |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `npm ci` reports lockfile mismatch | `package.json` changed without updating the lockfile                                           | Run `npm install`, review, and commit `package-lock.json`                                     |
-| Lint or formatting fails           | Source does not match project rules                                                            | Run `npm run fix:all`, then `npm test`                                                        |
-| Documentation check has a diff     | `docs/main.json` is stale                                                                      | Run `npm run docs`, review the meaningful changes, and commit them                            |
-| Tag/version verification fails     | Git tag and package version differ                                                             | Recreate the release with matching versions; do not publish mismatched source                 |
-| `ENEEDAUTH` or HTTP 401            | `NPM_TOKEN` is missing, expired, or inaccessible to the environment                            | Replace the `npm` environment secret and verify environment rules                             |
-| HTTP 403 during publish            | Token lacks package access, 2FA policy blocks it, or the version already exists                | Check npm package permissions and choose a new version if already published                   |
-| Provenance generation fails        | `id-token: write` is missing or the publish is not running in supported GitHub Actions         | Restore the permission and publish only from the release workflow                             |
-| Workflow does not start            | Actions are disabled, tag pattern does not match, or workflow is absent from the tagged commit | Enable Actions and inspect the pushed tag with `git show <tag>:.github/workflows/release.yml` |
+| Failure                            | Likely cause                                                                                         | Resolution                                                                                            |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `npm ci` reports lockfile mismatch | `package.json` changed without updating the lockfile                                                 | Run `npm install`, review, and commit `package-lock.json`                                             |
+| Lint or formatting fails           | Source does not match project rules                                                                  | Run `npm run fix:all`, then `npm test`                                                                |
+| Documentation check has a diff     | `docs/main.json` is stale                                                                            | Run `npm run docs`, review the meaningful changes, and commit them                                    |
+| Tag/version verification fails     | Git tag and package version differ                                                                   | Recreate the release with matching versions; do not publish mismatched source                         |
+| `ENEEDAUTH` or HTTP 401            | Trusted publisher not registered, identity token missing, or npm account lacks package access        | Register the repository/workflow as a trusted publisher on npm and verify the `npm` environment rules |
+| HTTP 403 during publish            | Token or trusted publisher lacks package access, 2FA policy blocks it, or the version already exists | Check npm package permissions and choose a new version if already published                           |
+| Provenance generation fails        | `id-token: write` is missing or the publish is not running in supported GitHub Actions               | Restore the permission and publish only from the release workflow                                     |
+| Workflow does not start            | Actions are disabled, tag pattern does not match, or workflow is absent from the tagged commit       | Enable Actions and inspect the pushed tag with `git show <tag>:.github/workflows/release.yml`         |
 
 ## Building the npm package
 

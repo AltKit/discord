@@ -1,4 +1,4 @@
-# AltKit Migration
+# Migration guide
 
 ::: info Compatibility target
 Altkit Discord v4 moves the fork from its previous Discord.js 14.21-compatible surface to **Discord.js 14.27.0** while retaining its user-account transport and selfbot-specific APIs.
@@ -56,15 +56,17 @@ Selected legacy names, string events, and partial identifiers remain available f
 
 ### New API surface
 
-| Feature              | Altkit Discord v4 behavior                                                                        |
-| -------------------- | ------------------------------------------------------------------------------------------------- |
-| Voice messages       | Sends Ogg/Opus attachments with waveform and duration metadata using `IS_VOICE_MESSAGE`.          |
-| Stage bitrate        | Adds `Guild#maximumStageBitrate`.                                                                 |
-| Role member counts   | Adds `RoleManager#fetchMemberCounts()`.                                                           |
-| Voice server events  | Emits `voiceServerUpdate` with raw gateway voice-server update data.                              |
-| Member collectibles  | Exposes collectible nameplate data through `GuildMember#collectibles`.                            |
-| Shared client themes | Reads `Message#sharedClientTheme` and accepts `sharedClientTheme` when creating messages.         |
-| Activity instances   | Adds `Application#fetchActivityInstance(instanceId)`, `ActivityInstance`, and `ActivityLocation`. |
+| Feature              | Altkit Discord v4 behavior                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Voice messages       | Sends Ogg/Opus attachments with waveform and duration metadata using `IS_VOICE_MESSAGE`.                        |
+| Stage bitrate        | Adds `Guild#maximumStageBitrate`.                                                                               |
+| Role member counts   | Adds `RoleManager#fetchMemberCounts()`.                                                                         |
+| Voice server events  | Emits `voiceServerUpdate` with raw gateway voice-server update data.                                            |
+| Member collectibles  | Exposes collectible nameplate data through `GuildMember#collectibles`.                                          |
+| Shared client themes | Reads `Message#sharedClientTheme` and accepts `sharedClientTheme` when creating messages.                       |
+| Activity instances   | Adds `Application#fetchActivityInstance(instanceId)`, `ActivityInstance`, and `ActivityLocation`.               |
+| Spoiler channels     | Adds the full v10 `ChannelFlags` set (including `IS_SPOILER_CHANNEL`) and forwards `flags` on channel creation. |
+| File upload types    | `ModalInputComponent` accepts `file_types` and exposes `setFileTypes()` for file upload components.             |
 
 ### Voice message example
 
@@ -88,19 +90,20 @@ Altkit now follows current Discord API and Gateway v10 behavior in the user-acco
 Authentication remains a raw user token with a user-client Gateway session; this work does not enable bot tokens, bot
 intents, command registration, or bot-owned interaction callbacks.
 
-| Area                      | Updated behavior                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| REST rate limits          | Discovers `X-RateLimit-Bucket`, separates methods and major resources, and honors user, global, and shared scopes.        |
-| HTTP 429 responses        | Accepts retry timing from either `Retry-After` or the JSON `retry_after` field.                                           |
-| Retries                   | Automatically retries idempotent operations; ambiguous `POST` and `PATCH` failures are returned without replay.           |
-| Empty responses           | Successful `204` and `205` responses resolve to `undefined` instead of an empty `ArrayBuffer`.                            |
-| Attachments               | Sends and edits explicit `is_spoiler` metadata while retaining support for the legacy `SPOILER_` filename prefix.         |
-| Application flags         | Adds `Application#flagsNew` as a `bigint` so response bits above bit 30 retain full precision.                            |
-| Voice channel information | Adds Gateway opcode 43, `Guild#requestChannelInfo()`, channel status, and voice session start-time caching.               |
-| Modal components          | Adds current Label, File Upload, Radio Group, Checkbox Group, and Checkbox runtime and declaration shapes.                |
-| Community invites         | Adds role IDs, target-user CSV uploads, target-user reads and updates, and processing job status.                         |
-| Images                    | Detects JPEG, PNG, and GIF data-URI MIME types and accepts only documented power-of-two CDN sizes from 16 through 4096.   |
-| TLS                       | Uses TLS 1.2 or newer by default for REST, Gateway, voice, and remote-auth connections, with explicit override locations. |
+| Area                      | Updated behavior                                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| REST rate limits          | Discovers `X-RateLimit-Bucket`, separates methods and major resources, and honors user, global, and shared scopes.           |
+| HTTP 429 responses        | Accepts retry timing from either `Retry-After` or the JSON `retry_after` field.                                              |
+| Retries                   | Automatically retries idempotent operations; ambiguous `POST` and `PATCH` failures are returned without replay.              |
+| Empty responses           | Successful `204` and `205` responses resolve to `undefined` instead of an empty `ArrayBuffer`.                               |
+| Attachments               | Sends and edits explicit `is_spoiler` metadata while retaining support for the legacy `SPOILER_` filename prefix.            |
+| Application flags         | Adds `Application#flagsNew` as a `bigint` so response bits above bit 30 retain full precision.                               |
+| Voice channel information | Adds Gateway opcode 43, `Guild#requestChannelInfo()`, channel status, and voice session start-time caching.                  |
+| Modal components          | Adds current Label, File Upload, Radio Group, Checkbox Group, and Checkbox runtime and declaration shapes.                   |
+| Community invites         | Adds role IDs, target-user CSV uploads, target-user reads and updates, and processing job status.                            |
+| Error codes               | `Constants.APIErrors` mirrors the full v10 JSON error code table, including codes added through `discord-api-types` 0.38.52. |
+| Images                    | Detects JPEG, PNG, and GIF data-URI MIME types and accepts only documented power-of-two CDN sizes from 16 through 4096.      |
+| TLS                       | Uses TLS 1.2 or newer by default for REST, Gateway, voice, and remote-auth connections, with explicit override locations.    |
 
 ::: warning Guild creation
 `GuildManager#create()` remains available only as an undocumented user-account compatibility helper. Discord removed
@@ -183,8 +186,8 @@ The following Discord.js v14 names resolve to the fork's existing implementation
 | `UserFlagsBitField`    | `UserFlags`                   |
 
 Altkit Discord re-exports formatters, shared utilities, and Discord API v10 types from its package root. Upstream
-`@discordjs/rest` and `@discordjs/ws` transports are intentionally not re-exported because they provide independent
-bot-account authentication and Gateway paths.
+`@discordjs/rest` is intentionally not re-exported because it provides an independent bot-account authentication path.
+The fork implements its own REST and Gateway transports and no longer depends on `@discordjs/ws` at all.
 
 `HolographicStyle` now exposes the v14-style `Primary`, `Secondary`, and `Tertiary` role color values.
 
@@ -249,16 +252,20 @@ Runtime packages shared with Discord.js are aligned with the 14.27.0 release:
 | `@discordjs/builders`   | `^1.14.1`     | v14 builders                                 |
 | `@discordjs/collection` | `1.5.3`       | Pinned to the major used by Discord.js 14.27 |
 | `@discordjs/formatters` | `^0.6.2`      | Root re-exports                              |
-| `@discordjs/rest`       | `^2.6.2`      | Internal dependency; not re-exported         |
+| `@discordjs/rest`       | `^2.6.3`      | Internal dependency; not re-exported         |
 | `@discordjs/util`       | `^1.2.0`      | Includes disposal polyfill support           |
-| `@discordjs/ws`         | `^1.2.3`      | Internal dependency; not re-exported         |
-| `discord-api-types`     | `^0.38.49`    | Discord API v10 types and enums              |
+| `discord-api-types`     | `^0.38.52`    | Discord API v10 types and enums              |
 | `undici`                | `^7.28.0`     | HTTP transport and proxy support             |
 | `otplib`                | `^13.4.1`     | TOTP generation for eligible MFA flows       |
 | `tslib`                 | `^2.6.3`      | Shared TypeScript runtime helpers            |
 
 ::: info Collection compatibility
 `@discordjs/collection` intentionally remains on `1.5.3` instead of silently moving applications to Collection v2.
+:::
+
+::: info Dependency removals
+`@discordjs/ws` was removed in 4.2.0 because the fork ships its own WebSocket transport. Nothing needs to change in an
+application unless it imported `@discordjs/ws` directly for a bot Gateway path it should not have been using.
 :::
 
 ## Migration guide
@@ -291,7 +298,7 @@ npm install @altkit/discord
 After installation, confirm the resolved versions:
 
 ```sh
-npm list @altkit/discord @discordjs/collection @discordjs/rest @discordjs/ws
+npm list @altkit/discord @discordjs/collection @discordjs/rest
 ```
 
 ::: warning Reinstall dependencies

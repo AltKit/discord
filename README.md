@@ -90,8 +90,11 @@ extraction. Rotate the token immediately if it may have been exposed.
 - Discord API v10 REST routes, payloads, rate-limit buckets, scopes, and retry behavior
 - Gateway v10 events, partials, polls, voice-channel status, and voice-session start times
 - Messages, embeds, attachments, explicit spoiler metadata, polls, and prepared Ogg/Opus voice messages
+- Full v10 channel flags, including spoiler-channel creation and inspection through `ChannelFlags`
+- File-type restrictions on file upload modal components via `fileTypes` and `setFileTypes()`
 - Modern aliases such as `AttachmentBuilder`, `BaseChannel`, `Events`, `Partials`, and `PermissionsBitField`
 - Current application flag precision through `Application#flagsNew`
+- A `Constants.APIErrors` table that mirrors the current v10 JSON error code reference
 - Current modal component response shapes used by user-side command invocation
 - Invite acceptance, community invite roles and target-user lists, guild discovery, and user-app installation
 - Relationships, account settings, sessions, custom status, rich presence, and activity instances

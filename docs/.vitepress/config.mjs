@@ -49,7 +49,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started', activeMatch: '/guide/' },
       { text: 'Examples', link: '/examples/', activeMatch: '/examples/' },
       { text: 'API', link: '/api/', activeMatch: '/api/' },
-      { text: 'AltKit Migration', link: '/migrate' },
+      { text: 'Migration guide', link: '/migrate' },
       {
         text: packageVersion,
         items: [
@@ -97,7 +97,7 @@ export default defineConfig({
           items: [
             { text: 'Troubleshooting', link: '/guide/troubleshooting' },
             { text: 'Contributing & releases', link: '/devguide' },
-            { text: 'AltKit Migration', link: '/migrate' },
+            { text: 'Migration guide', link: '/migrate' },
           ],
         },
       ],

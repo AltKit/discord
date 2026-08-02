@@ -12,7 +12,7 @@ client.user.setPresence({
 });
 ```
 
-Presence updates propagate through Discord's gateway and may be rate-limited or normalized by the service. Update only when state actually changes.
+Presence updates propagate through Discord's gateway and may be rate-limited or normalized by the service. Update presence only when state actually changes.
 
 ## Custom status
 
@@ -52,7 +52,7 @@ client.user.setPresence({
 });
 ```
 
-Discord decides how activities are displayed across desktop, web, and mobile clients. Do not assume every field or every activity will be visible on every surface.
+How Discord renders activities varies across desktop, web, and mobile clients. Do not assume every field or activity is visible on every surface.
 
 ## Spotify-shaped presence
 

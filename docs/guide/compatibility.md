@@ -9,6 +9,11 @@ Altkit Discord v4 presents a Discord.js 14.27-compatible API while preserving us
 - Numeric partial identifiers through `Partials`
 - Polls, attachments, and activity structures implemented by the fork
 - TypeScript declarations shipped with the package
+- Discord API v10 payload, enum, and REST types from the current `discord-api-types` release
+
+The fork pins `discord-api-types` to the current v10 generation, so payload shapes and enums follow the Discord API
+reference as it evolves. Newer channel flags (for example `IS_SPOILER_CHANNEL`), attachment fields, application
+`flags_new`, and REST error codes appear on the types without a library major bump.
 
 ## Aliases
 

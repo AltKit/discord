@@ -138,9 +138,12 @@ export default defineConfig({
       text: 'Edit this page on GitHub',
     },
     search: {
-      provider: 'local',
+      provider: 'algolia',
       options: {
-        detailedView: true,
+        container: '#docsearch',
+        appId: 'I01LU7I5RN',
+        apiKey: '4570cbfcbf48e5bd7586c7ad2147c0fe',
+        indexName: 'AltKit Documentation',
       },
     },
     outline: {

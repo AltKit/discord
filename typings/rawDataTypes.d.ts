@@ -89,6 +89,7 @@ import {
   LocalizationMap,
   APIActionRowComponent,
   APIComponentInActionRow,
+  FileUploadType,
 } from 'discord-api-types/v10';
 import { GuildChannel, Guild, PermissionOverwrites } from '.';
 import type {
@@ -404,6 +405,7 @@ export interface APIFileUploadComponent extends APIBaseComponent<MessageComponen
   min_values?: number;
   max_values?: number;
   required?: boolean;
+  file_types?: FileUploadType[];
 }
 
 export interface APIRadioGroupComponent extends APIBaseComponent<MessageComponentTypes.RADIO_GROUP> {

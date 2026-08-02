@@ -29,6 +29,7 @@ exports.AttachmentFlags = require('./util/AttachmentFlags');
 exports.BaseManager = require('./managers/BaseManager');
 exports.BitField = require('./util/BitField');
 exports.Collection = require('@discordjs/collection').Collection;
+exports.ChannelFlags = require('./util/ChannelFlags');
 exports.Constants = require('./util/Constants');
 exports.Events = require('./util/Events');
 exports.DataResolver = require('./util/DataResolver');

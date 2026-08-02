@@ -107,6 +107,7 @@ class GuildChannelManager extends CachedManager {
    * Options used to create a new channel in a guild.
    * @typedef {CategoryCreateChannelOptions} GuildChannelCreateOptions
    * @property {CategoryChannelResolvable} [parent] Parent of the new channel
+   * @property {ChannelFlagsResolvable} [flags] The flags to set on the channel
    */
 
   /**
@@ -150,6 +151,7 @@ class GuildChannelManager extends CachedManager {
       defaultSortOrder,
       defaultForumLayout,
       defaultThreadRateLimitPerUser,
+      flags,
       reason,
     } = {},
   ) {
@@ -192,6 +194,7 @@ class GuildChannelManager extends CachedManager {
         default_sort_order: sortMode,
         default_forum_layout: layoutMode,
         default_thread_rate_limit_per_user: defaultThreadRateLimitPerUser,
+        flags: typeof flags !== 'undefined' ? ChannelFlags.resolve(flags) : undefined,
       },
       reason,
     });

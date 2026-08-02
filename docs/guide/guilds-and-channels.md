@@ -105,6 +105,31 @@ client.on('channelUpdate', (oldChannel, channel) => {
 
 The request uses official Gateway opcode 43. `CHANNEL_INFO`, `VOICE_CHANNEL_STATUS_UPDATE`, and `VOICE_CHANNEL_START_TIME_UPDATE` packets update the cached channel and emit `channelUpdate`.
 
+## Spoiler channels
+
+Spoiler channels hide their contents behind an opt-in prompt. Discord marks them with the `IS_SPOILER_CHANNEL` channel flag, which the `ChannelFlags` bit field exposes. Create one by passing the flag when creating a channel:
+
+```js
+const { ChannelFlags } = require('@altkit/discord');
+
+const spoilers = await guild.channels.create('season-finale', {
+  type: 'GUILD_TEXT',
+  flags: [ChannelFlags.FLAGS.IS_SPOILER_CHANNEL],
+});
+```
+
+Existing channels can be turned into spoiler channels (or back) with `edit()`:
+
+```js
+await guild.channels.edit(spoilers.id, {
+  flags: [ChannelFlags.FLAGS.IS_SPOILER_CHANNEL],
+});
+
+console.log(spoilers.flags.has(ChannelFlags.FLAGS.IS_SPOILER_CHANNEL));
+```
+
+Only flags Discord accepts for a channel type are stored. Read them back from the channel's `flags` bit field; the flag list matches the [channel flags section](https://discord.com/developers/docs/resources/channel#channel-object-channel-flags) of the Discord API documentation.
+
 ## Positions and bulk changes
 
 Channel and role positions are interdependent. Prefer manager bulk-position helpers when reordering multiple entries so the intended final order is sent together.

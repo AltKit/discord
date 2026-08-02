@@ -10,14 +10,30 @@ class ChannelFlags extends BitField {}
 
 /**
  * Numeric guild channel flags. All available properties:
+ * * `GUILD_FEED_REMOVED`
  * * `PINNED`
+ * * `ACTIVE_CHANNELS_REMOVED`
  * * `REQUIRE_TAG`
+ * * `IS_SPAM`
+ * * `IS_GUILD_RESOURCE_CHANNEL`
+ * * `CLYDE_AI`
+ * * `IS_SCHEDULED_FOR_DELETION`
+ * * `HIDE_MEDIA_DOWNLOAD_OPTIONS`
+ * * `IS_SPOILER_CHANNEL`
  * @type {Object}
  * @see {@link https://discord.com/developers/docs/resources/channel#channel-object-channel-flags}
  */
 ChannelFlags.FLAGS = {
+  GUILD_FEED_REMOVED: 1 << 0,
   PINNED: 1 << 1,
+  ACTIVE_CHANNELS_REMOVED: 1 << 2,
   REQUIRE_TAG: 1 << 4,
+  IS_SPAM: 1 << 5,
+  IS_GUILD_RESOURCE_CHANNEL: 1 << 7,
+  CLYDE_AI: 1 << 8,
+  IS_SCHEDULED_FOR_DELETION: 1 << 9,
+  HIDE_MEDIA_DOWNLOAD_OPTIONS: 1 << 15,
+  IS_SPOILER_CHANNEL: 1 << 21,
 };
 
 /**

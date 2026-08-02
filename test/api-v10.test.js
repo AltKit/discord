@@ -10,6 +10,7 @@ const RequestHandler = require('../src/rest/RequestHandler');
 const handleChannelInfo = require('../src/client/websocket/handlers/CHANNEL_INFO');
 const handleVoiceStartTime = require('../src/client/websocket/handlers/VOICE_CHANNEL_START_TIME_UPDATE');
 const GuildInviteManager = require('../src/managers/GuildInviteManager');
+const GuildChannelManager = require('../src/managers/GuildChannelManager');
 const Application = require('../src/structures/interfaces/Application');
 const MessageAttachment = require('../src/structures/MessageAttachment');
 const MessagePayload = require('../src/structures/MessagePayload');
@@ -196,6 +197,67 @@ test('modal input components serialize current v10 request shapes', () => {
     custom_id: 'confirm',
     default: true,
   });
+});
+
+test('file upload components serialize v10 file_types restrictions', () => {
+  const upload = new ModalInputComponent({ type: 'FILE_UPLOAD', custom_id: 'files', file_types: ['image', '.png'] });
+  const restricted = new ModalInputComponent({ type: 'FILE_UPLOAD', custom_id: 'media' }).setFileTypes('video', '.mov');
+
+  assert.deepEqual(upload.fileTypes, ['image', '.png']);
+  assert.deepEqual(upload.toJSON(), {
+    type: MessageComponentTypes.FILE_UPLOAD,
+    custom_id: 'files',
+    file_types: ['image', '.png'],
+  });
+  assert.deepEqual(restricted.toJSON().file_types, ['video', '.mov']);
+  assert.deepEqual(new ModalInputComponent({ type: 'FILE_UPLOAD', custom_id: 'any' }).toJSON(), {
+    type: MessageComponentTypes.FILE_UPLOAD,
+    custom_id: 'any',
+  });
+});
+
+test('channel flags include the v10 spoiler channel flag', () => {
+  const ChannelFlags = require('../src/util/ChannelFlags');
+
+  assert.equal(ChannelFlags.FLAGS.PINNED, 2);
+  assert.equal(ChannelFlags.FLAGS.REQUIRE_TAG, 16);
+  assert.equal(ChannelFlags.FLAGS.HIDE_MEDIA_DOWNLOAD_OPTIONS, 32_768);
+  assert.equal(ChannelFlags.FLAGS.IS_SPOILER_CHANNEL, 2_097_152);
+  assert.equal(new ChannelFlags(2_097_152).has('IS_SPOILER_CHANNEL'), true);
+});
+
+test('channel creation forwards channel flags in the request body', async () => {
+  const calls = [];
+  const manager = Object.create(GuildChannelManager.prototype);
+  manager.client = {
+    channels: { resolveId: channel => channel },
+    api: {
+      guilds: () => ({
+        channels: {
+          post: options => {
+            calls.push(options);
+            return {};
+          },
+        },
+      }),
+    },
+    actions: {
+      ChannelCreate: {
+        handle: data => ({ channel: { id: 'new-channel', ...data } }),
+      },
+    },
+  };
+  manager.guild = {
+    id: '111111111111111111',
+    channels: { resolveId: channel => channel },
+  };
+  const ChannelFlags = require('../src/util/ChannelFlags');
+
+  await manager.create('spoilers', { flags: [ChannelFlags.FLAGS.IS_SPOILER_CHANNEL] });
+  assert.equal(calls[0].data.flags, 2_097_152);
+
+  await manager.create('plain');
+  assert.equal(calls[1].data.flags, undefined);
 });
 
 test('image buffers use a matching data URI MIME type', () => {

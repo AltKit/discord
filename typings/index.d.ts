@@ -66,6 +66,7 @@ import {
   ReactionType,
   VoiceChannelEffectSendAnimationType,
   GatewayVoiceChannelEffectSendDispatchData,
+  FileUploadType,
 } from 'discord-api-types/v10';
 import { ChildProcess, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { EventEmitter } from 'node:events';
@@ -1313,7 +1314,17 @@ export interface CollectorEventTypes<K, V, F extends unknown[] = []> {
   end: [collected: Collection<K, V>, reason: string];
 }
 
-export type ChannelFlagsString = 'PINNED' | 'REQUIRE_TAG';
+export type ChannelFlagsString =
+  | 'GUILD_FEED_REMOVED'
+  | 'PINNED'
+  | 'ACTIVE_CHANNELS_REMOVED'
+  | 'REQUIRE_TAG'
+  | 'IS_SPAM'
+  | 'IS_GUILD_RESOURCE_CHANNEL'
+  | 'CLYDE_AI'
+  | 'IS_SCHEDULED_FOR_DELETION'
+  | 'HIDE_MEDIA_DOWNLOAD_OPTIONS'
+  | 'IS_SPOILER_CHANNEL';
 export class ChannelFlags extends BitField<ChannelFlagsString> {
   public static FLAGS: Record<ChannelFlagsString, number>;
   public static resolve(bit?: BitFieldResolvable<ChannelFlagsString, number>): number;
@@ -2513,11 +2524,13 @@ export class ModalInputComponent extends BaseMessageComponent {
   public required: boolean | null;
   public minValues: number | null;
   public maxValues: number | null;
+  public fileTypes: FileUploadType[] | null;
   public value: string | boolean | null;
   public default: boolean | null;
   public values: string[] | null;
   public setValue(value: string | boolean): this;
   public setValues(...values: string[] | string[][]): this;
+  public setFileTypes(...types: (FileUploadType | FileUploadType[])[]): this;
   public toJSON(): APIModalInputComponent;
 }
 
@@ -5929,6 +5942,7 @@ export interface CategoryCreateChannelOptions {
   defaultSortOrder?: SortOrderTypes;
   defaultForumLayout?: ForumLayoutTypes;
   defaultThreadRateLimitPerUser?: number;
+  flags?: ChannelFlagsResolvable;
   reason?: string;
 }
 

@@ -56,6 +56,21 @@ if (!response.isMessage) {
 This only fills and submits a modal returned by another application's command. It does not create or register a modal owned by
 the logged-in user account.
 
+## File upload components
+
+Modals returned by an application can contain file upload components. You can inspect and restrict the file types Discord accepts for a component before submitting:
+
+```js
+const upload = response.components.flatMap(row => row.components).find(component => component.type === 'FILE_UPLOAD');
+
+if (upload) {
+  upload.setFileTypes('image', '.png', '.jpg');
+  await response.reply();
+}
+```
+
+`setFileTypes()` accepts Discord's `FileUploadType` values — `'audio'`, `'image'`, `'video'`, or a dot-prefixed extension — up to 10 entries. Existing components expose the parsed list on `component.fileTypes`. When only dot-prefixed extensions are specified, Discord still requires `.jpg` for images and both `.mp4` and `.mov` for video due to mobile limitations.
+
 ## Deferred responses
 
 Applications may first return a loading message and edit it later. Listen for the matching message update and impose a timeout so the listener cannot remain forever. The complete pattern is in the [slash command example](/examples/slash-commands).

@@ -64,7 +64,7 @@
     "@discordjs/rest": "^2.6.3",
     "@discordjs/util": "^1.2.0",
     "@sapphire/async-queue": "^1.5.5",
-    "@sapphire/shapeshift": "^4.0.0",
+    "@sapphire/shapeshift": "^5.0.0",
     "discord-api-types": "^0.38.52",
     "fetch-cookie": "^3.2.0",
     "find-process": "^2.1.1",

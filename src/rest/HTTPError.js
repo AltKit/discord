@@ -52,10 +52,25 @@ class HTTPError extends Error {
      * @type {HTTPErrorData}
      */
     this.requestData = {
-      json: request.options.data,
+      json: HTTPError._sanitizeRequestData(request.options.data),
       files: request.options.files ?? [],
       headers: request.options.headers,
     };
+  }
+
+  /**
+   * Sanitizes request data to prevent credential leakage in error logs
+   * @param {*} data Request data object
+   * @returns {*} Sanitized data
+   * @private
+   */
+  static _sanitizeRequestData(data) {
+    if (!data || typeof data !== 'object') return data;
+    const sanitized = { ...data };
+    if (sanitized.password) sanitized.password = '[REDACTED]';
+    if (sanitized.code) sanitized.code = '[REDACTED]';
+    if (sanitized.token) sanitized.token = '[REDACTED]';
+    return sanitized;
   }
 }
 

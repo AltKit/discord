@@ -196,12 +196,13 @@ class VoiceConnection extends EventEmitter {
   }
 
   /**
-   * Sets whether the voice connection should display as "speaking", "soundshare" or "none".
+   * Set the speaking state
    * @param {BitFieldResolvable} value The new speaking state
    */
   setSpeaking(value) {
     if (this.speaking.equals(value)) return;
     if (this.status !== VoiceStatus.CONNECTED) return;
+    if (!this.sockets.ws) return; // Guard against cleanup race
     this.speaking = new Speaking(value).freeze();
     this.sockets.ws
       .sendPacket({
@@ -235,6 +236,7 @@ class VoiceConnection extends EventEmitter {
   setVideoStatus(value) {
     if (value === this.videoStatus) return;
     if (this.status !== VoiceStatus.CONNECTED) return;
+    if (!this.sockets.ws) return; // Guard against cleanup race
     this.videoStatus = value;
     if (!value) {
       this.sockets.ws
@@ -288,7 +290,7 @@ class VoiceConnection extends EventEmitter {
    * @type {?VoiceState}
    */
   get voice() {
-    return this.client.user.voice;
+    return this.client.user?.voice;
   }
 
   /**
@@ -512,7 +514,10 @@ class VoiceConnection extends EventEmitter {
       ws.shutdown();
     }
 
-    if (udp) udp.removeAllListeners('error');
+    if (udp) {
+      udp.removeAllListeners('error');
+      udp.shutdown();
+    }
 
     this.sockets.ws = null;
     this.sockets.udp = null;
@@ -652,7 +657,7 @@ class VoiceConnection extends EventEmitter {
     }
 
     if (guild && user && !speaking.equals(old)) {
-      const member = guild.members.cache.get(user);
+      const member = guild.members.cache.get(user.id);
       if (member) {
         /**
          * Emitted once a guild member changes speaking state.

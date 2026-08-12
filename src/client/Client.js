@@ -388,12 +388,29 @@ class Client extends BaseClient {
   destroy() {
     super.destroy();
 
-    for (const fn of this._cleanups) fn();
+    // Wrap cleanup functions in try-catch to prevent one failure from blocking others
+    for (const fn of this._cleanups) {
+      try {
+        fn();
+      } catch (err) {
+        this.emit('debug', `Cleanup function failed: ${err.message}`);
+      }
+    }
     this._cleanups.clear();
 
     if (this.sweepMessageInterval) clearInterval(this.sweepMessageInterval);
 
     this.sweepers.destroy();
+
+    // Disconnect active voice connections before destroying websocket
+    if (this.voice?.connection) {
+      try {
+        this.voice.connection.disconnect();
+      } catch (err) {
+        this.emit('debug', `Voice disconnect failed: ${err.message}`);
+      }
+    }
+
     this.ws.destroy();
     this.token = null;
   }
@@ -626,9 +643,14 @@ class Client extends BaseClient {
   }
 
   toJSON() {
-    return super.toJSON({
+    const json = super.toJSON({
       readyAt: false,
     });
+    // Redact sensitive data from serialization
+    if (json.options && json.options.TOTPKey) {
+      json.options = { ...json.options, TOTPKey: '[REDACTED]' };
+    }
+    return json;
   }
 
   /**
@@ -719,7 +741,7 @@ class Client extends BaseClient {
         }
         const getForm = await this.api
           .guilds(i.guild?.id)
-          ['member-verification'].get({ query: { with_guild: false, invite_code: this.code } })
+          ['member-verification'].get({ query: { with_guild: false, invite_code: code } })
           .catch(() => {});
         if (getForm && getForm.form_fields[0]) {
           const form = Object.assign(getForm.form_fields[0], { response: true });
@@ -731,7 +753,7 @@ class Client extends BaseClient {
       }
       return guild;
     } else {
-      return this.channels.cache.has(i.channelId || data.channel?.id);
+      return this.channels.cache.get(i.channelId || data.channel?.id);
     }
   }
 
@@ -848,7 +870,10 @@ class Client extends BaseClient {
       return this.api.oauth2.tokens
         .get()
         .then(data => data.find(o => o.application.id == id))
-        .then(o => this.api.oauth2.tokens(o.id).delete());
+        .then(o => {
+          if (!o) throw new Error(`Application with ID ${id} not found in authorized applications`);
+          return this.api.oauth2.tokens(o.id).delete();
+        });
     } else {
       return this.api.oauth2.tokens(id).delete();
     }
@@ -886,12 +911,16 @@ class Client extends BaseClient {
   /**
    * Calls {@link https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/eval} on a script
    * with the client as `this`.
-   * @param {string} script Script to eval
+   * @param {string} _script Script to eval
    * @returns {*}
    * @private
+   * @deprecated This method is disabled for security reasons. Use of eval() with untrusted input is a critical security risk.
    */
-  _eval(script) {
-    return eval(script);
+  // eslint-disable-next-line no-unused-vars
+  _eval(_script) {
+    throw new Error(
+      'CLIENT_EVAL_DISABLED: _eval() is disabled for security reasons. Arbitrary code execution is a critical vulnerability.',
+    );
   }
 
   /**

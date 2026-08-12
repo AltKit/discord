@@ -95,30 +95,34 @@ class PacketHandler extends EventEmitter {
     );
 
     let packet;
-    switch (mode) {
-      case 'aead_aes256_gcm_rtpsize': {
-        const decipheriv = crypto.createDecipheriv('aes-256-gcm', secret_key, nonce);
-        decipheriv.setAAD(header);
-        decipheriv.setAuthTag(authTag);
+    try {
+      switch (mode) {
+        case 'aead_aes256_gcm_rtpsize': {
+          const decipheriv = crypto.createDecipheriv('aes-256-gcm', secret_key, nonce);
+          decipheriv.setAAD(header);
+          decipheriv.setAuthTag(authTag);
 
-        packet = Buffer.concat([decipheriv.update(encrypted), decipheriv.final()]);
-        break;
-      }
-      case 'aead_xchacha20_poly1305_rtpsize': {
-        // Combined mode expects authtag in the encrypted message
-        packet = secretbox.methods.crypto_aead_xchacha20poly1305_ietf_decrypt(
-          Buffer.concat([encrypted, authTag]),
-          header,
-          nonce,
-          secret_key,
-        );
+          packet = Buffer.concat([decipheriv.update(encrypted), decipheriv.final()]);
+          break;
+        }
+        case 'aead_xchacha20_poly1305_rtpsize': {
+          // Combined mode expects authtag in the encrypted message
+          packet = secretbox.methods.crypto_aead_xchacha20poly1305_ietf_decrypt(
+            Buffer.concat([encrypted, authTag]),
+            header,
+            nonce,
+            secret_key,
+          );
 
-        packet = Buffer.from(packet);
-        break;
+          packet = Buffer.from(packet);
+          break;
+        }
+        default: {
+          return new RangeError(`Unsupported decryption method: ${mode}`);
+        }
       }
-      default: {
-        return new RangeError(`Unsupported decryption method: ${mode}`);
-      }
+    } catch (err) {
+      return new Error(`Decryption failed: ${err.message}`);
     }
 
     /*
@@ -129,7 +133,11 @@ class PacketHandler extends EventEmitter {
     }
     */
 
-    return RtpPacket.deSerialize(Buffer.concat([header, packet]));
+    try {
+      return RtpPacket.deSerialize(Buffer.concat([header, packet]));
+    } catch (err) {
+      return new Error(`RTP deserialization failed: ${err.message}`);
+    }
   }
 
   audioReceiver(ssrc, userStat, opusPacket) {
@@ -229,19 +237,28 @@ class PacketHandler extends EventEmitter {
   }
 
   push(buffer) {
-    const ssrc = buffer.readUInt32BE(8);
-    let userStat, packet;
-    if (this.connection.ssrcMap.has(ssrc)) {
-      userStat = this.connection.ssrcMap.get(ssrc); // Audio_ssrc
-      packet = this.parseBuffer(buffer);
-      this.audioReceiver(ssrc, userStat, packet);
-      this.audioReceiverForStream(ssrc, userStat, packet);
-    } else if (this.connection.ssrcMap.has(ssrc - 1)) {
-      userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
-      packet = this.parseBuffer(buffer);
-      this.videoReceiver(ssrc, userStat, packet);
+    try {
+      // Minimum RTP header is 12 bytes
+      if (buffer.length < 12) {
+        return;
+      }
+
+      const ssrc = buffer.readUInt32BE(8);
+      let userStat, packet;
+      if (this.connection.ssrcMap.has(ssrc)) {
+        userStat = this.connection.ssrcMap.get(ssrc); // Audio_ssrc
+        packet = this.parseBuffer(buffer);
+        this.audioReceiver(ssrc, userStat, packet);
+        this.audioReceiverForStream(ssrc, userStat, packet);
+      } else if (this.connection.ssrcMap.has(ssrc - 1)) {
+        userStat = this.connection.ssrcMap.get(ssrc - 1); // Video_ssrc
+        packet = this.parseBuffer(buffer);
+        this.videoReceiver(ssrc, userStat, packet);
+      }
+      if (userStat && !(packet instanceof Error)) this.receiver.emit('receiverData', userStat, packet);
+    } catch (err) {
+      this.receiver.emit('debug', `Failed to parse voice packet: ${err.message}`);
     }
-    if (userStat && !(packet instanceof Error)) this.receiver.emit('receiverData', userStat, packet);
   }
 
   // When udp connection is closed (STREAM_DELETE), destroy all streams (Memory leak)

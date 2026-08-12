@@ -796,7 +796,11 @@ class WebSocketShard extends EventEmitter {
       return;
     }
 
-    this.debug(`[WebSocketShard] send packet '${JSON.stringify(data)}'`);
+    // Redact sensitive data from debug logs (token in IDENTIFY/RESUME)
+    const debugData = [Opcodes.IDENTIFY, Opcodes.RESUME].includes(data.op)
+      ? { ...data, d: { ...data.d, token: '[REDACTED]' } }
+      : data;
+    this.debug(`[WebSocketShard] send packet '${JSON.stringify(debugData)}'`);
     this.connection.send(WebSocket.pack(data), err => {
       if (err) this.manager.client.emit(Events.SHARD_ERROR, err, this.id);
     });

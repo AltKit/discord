@@ -105,7 +105,8 @@ class VoiceConnectionUDPClient extends EventEmitter {
     socket.once('message', message => {
       this.emit('debug', `[UDP] message: [${[...message]}] (${message})`);
       if (message.readUInt16BE(0) !== 2) {
-        throw new Error('UDP_WRONG_HANDSHAKE');
+        this.emit('error', new Error('UDP_WRONG_HANDSHAKE'));
+        return;
       }
       // Stop if the sockets have been deleted because the connection has been closed already
       if (!this.voiceConnection.sockets.ws) return;

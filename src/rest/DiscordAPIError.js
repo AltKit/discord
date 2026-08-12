@@ -40,7 +40,7 @@ class DiscordAPIError extends Error {
      * @type {HTTPErrorData}
      */
     this.requestData = {
-      json: request.options.data,
+      json: this.constructor._sanitizeRequestData(request.options.data),
       files: request.options.files ?? [],
       headers: request.options.headers,
     };
@@ -56,12 +56,13 @@ class DiscordAPIError extends Error {
      * @property {Array<string>} captcha_key ['message']
      * @property {string} captcha_sitekey Captcha sitekey (hcaptcha)
      * @property {string} captcha_service hcaptcha
-     * @property {string} [captcha_rqdata]
-     * @property {string} [captcha_rqtoken]
+     * @property {string} [captcha_rqdata] Data passed through to the solver and sent back to Discord with the solved token
+     * @property {string} [captcha_rqtoken] Token forwarded to Discord as the `X-Captcha-Rqtoken` header on replay
      */
 
     /**
-     * Captcha response data if the request requires a captcha
+     * Captcha response data if the request requires a captcha.
+     * This object is passed to {@link ClientOptions.captchaSolver} when one is configured.
      * @type {Captcha | null}
      */
     this.captcha = error?.captcha_service ? error : null;
@@ -108,6 +109,21 @@ class DiscordAPIError extends Error {
     }
 
     return messages;
+  }
+
+  /**
+   * Sanitizes request data to prevent credential leakage in error logs
+   * @param {*} data Request data object
+   * @returns {*} Sanitized data
+   * @private
+   */
+  static _sanitizeRequestData(data) {
+    if (!data || typeof data !== 'object') return data;
+    const sanitized = { ...data };
+    if (sanitized.password) sanitized.password = '[REDACTED]';
+    if (sanitized.code) sanitized.code = '[REDACTED]';
+    if (sanitized.token) sanitized.token = '[REDACTED]';
+    return sanitized;
   }
 }
 

@@ -61,12 +61,13 @@ Repository file: [`examples/Proxy.js`](https://github.com/altkit/discord/blob/se
 
 ## Messages
 
-| Example                | What it demonstrates                             | Environment                   |
-| ---------------------- | ------------------------------------------------ | ----------------------------- |
-| `ActivityMessage.js`   | Send a message activity payload                  | `DISCORD_TOKEN`, `CHANNEL_ID` |
-| `CreateAndVotePoll.js` | Create, vote on, and observe a poll              | `DISCORD_TOKEN`, `CHANNEL_ID` |
-| `VoiceMessage.js`      | Send prepared Ogg/Opus as a voice message        | `DISCORD_TOKEN`, `CHANNEL_ID` |
-| `Embed.js`             | Build the fork-specific hidden `WebEmbed` format | `DISCORD_TOKEN`               |
+| Example                               | What it demonstrates                             | Environment                          |
+| ------------------------------------- | ------------------------------------------------ | ------------------------------------ |
+| `ActivityMessage.js`                  | Send a message activity payload                  | `DISCORD_TOKEN`, `CHANNEL_ID`        |
+| `CreateAndVotePoll.js`                | Create, vote on, and observe a poll              | `DISCORD_TOKEN`, `CHANNEL_ID`        |
+| `VoiceMessage.js`                     | Send prepared Ogg/Opus as a voice message        | `DISCORD_TOKEN`, `CHANNEL_ID`        |
+| `Embed.js`                            | Build the fork-specific hidden `WebEmbed` format | `DISCORD_TOKEN`                      |
+| [CaptchaSolver.js](#hcaptcha-solving) | Solve hCaptcha challenges through a service      | `DISCORD_TOKEN`, `CAPSOLVER_API_KEY` |
 
 ### Poll
 
@@ -107,6 +108,19 @@ client.once(Events.ClientReady, async readyClient => {
 
 Treat invite, authorization, and verification flows as sensitive account operations. Use explicit IDs and inspect results instead of retrying failures indefinitely.
 
+## hCaptcha solving
+
+When Discord requires an hCaptcha challenge, the REST handler calls `ClientOptions.captchaSolver` with the challenge payload and user agent, then replays the request with the solved token. `examples/CaptchaSolver.js` is a complete adapter that delegates solving to CapSolver:
+
+```js
+const client = new Client({
+  captchaRetryLimit: 2,
+  captchaSolver: solveCaptcha, // see examples/CaptchaSolver.js
+});
+```
+
+The callback must resolve to a non-empty token string. See [client configuration → hCaptcha challenges](/guide/client-configuration#hcaptcha-challenges) for the full contract and trust-boundary notes.
+
 ## Presence
 
 `RichPresence.js` combines `RichPresence`, `CustomStatus`, and `SpotifyRPC`. `SamsungRPC.js` demonstrates a mobile-platform activity shape.
@@ -130,6 +144,7 @@ Read [voice and media](/guide/voice-and-media) before installing optional depend
 | Example                                                         | Required values                                                               |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `Basic.js`, `Embed.js`, `RichPresence.js`, `SamsungRPC.js`      | `DISCORD_TOKEN`                                                               |
+| `CaptchaSolver.js`                                              | `DISCORD_TOKEN`, `CAPSOLVER_API_KEY`                                          |
 | `ActivityMessage.js`, `CreateAndVotePoll.js`, `VoiceMessage.js` | `DISCORD_TOKEN`, `CHANNEL_ID`                                                 |
 | `JoinGuild.js`                                                  | `DISCORD_TOKEN`, `INVITE_CODE`                                                |
 | `AuthorizeUserApps.js`                                          | `DISCORD_TOKEN`, `APPLICATION_ID`                                             |

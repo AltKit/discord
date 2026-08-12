@@ -465,7 +465,7 @@ class GuildMember extends Base {
    * @returns {Promise<GuildMember>}
    */
   setFlags(flags, reason) {
-    return this.edit({ flags, reason });
+    return this.edit({ flags }, reason);
   }
 
   /**

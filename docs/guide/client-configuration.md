@@ -145,3 +145,56 @@ Authentication remains a raw user token with a user-client Gateway session and b
 ## Authentication challenges
 
 `captchaSolver`, `captchaRetryLimit`, and `TOTPKey` support flows where Discord requests additional verification. They are optional and security-sensitive. Use bounded retries, keep secrets outside source code, and understand any external solver's privacy and billing model.
+
+## hCaptcha challenges
+
+Discord can require an hCaptcha challenge before a request succeeds. When that happens, the REST handler calls `captchaSolver` with the challenge payload and the user agent Discord observed, then replays the request with the solved token:
+
+```js
+const client = new Client({
+  captchaRetryLimit: 2,
+  async captchaSolver(captcha, userAgent) {
+    // captcha.captcha_sitekey  – the hCaptcha site key Discord returned
+    // captcha.captcha_rqdata   – data to pass through to the solving service
+    // captcha.captcha_service  – 'hcaptcha'
+    return solveWithYourService(captcha, userAgent);
+  },
+});
+```
+
+The callback must resolve to a non-empty token string. The handler sends it as the `X-Captcha-Key` header on the retried request and forwards `captcha.captcha_rqtoken` as `X-Captcha-Rqtoken`. If the callback returns anything else, the request rejects with `CAPTCHA_SOLVER_INVALID_RESPONSE`.
+
+Typical implementations delegate to a commercial solving service rather than solving in-process. A minimal CapSolver adapter looks like this (verify the provider's current API before relying on it):
+
+```js
+async function solveWithCapSolver(captcha, userAgent) {
+  const key = process.env.CAPSOLVER_API_KEY;
+  const task = {
+    type: 'HCaptchaTaskProxyLess',
+    websiteURL: 'https://discord.com',
+    websiteKey: captcha.captcha_sitekey,
+    ...(captcha.captcha_rqdata ? { enterprisePayload: { rqdata: captcha.captcha_rqdata } } : {}),
+    userAgent,
+  };
+
+  const created = await fetch('https://api.capsolver.com/createTask', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ clientKey: key, task }),
+  }).then(response => response.json());
+
+  for (;;) {
+    const result = await fetch('https://api.capsolver.com/getTaskResult', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ clientKey: key, taskId: created.taskId }),
+    }).then(response => response.json());
+
+    if (result.status === 'ready') return result.solution.gRecaptchaResponse;
+    if (result.status === 'failed') throw new Error('Captcha task failed');
+    await new Promise(resolve => setTimeout(resolve, 3_000));
+  }
+}
+```
+
+See `examples/CaptchaSolver.js` for a complete runnable version. Solving services are a trust boundary: they receive challenge data and your API key, and each solve usually costs money. `captchaRetryLimit` bounds how many times a single request is re-solved, so failed solves do not loop forever.

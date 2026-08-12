@@ -123,7 +123,14 @@ class DiscordAuthWebsocket extends EventEmitter {
   }
 
   #handleMessage(message) {
-    message = JSON.parse(message);
+    try {
+      message = JSON.parse(message);
+    } catch (err) {
+      this.emit(Event.ERROR, new Error(`Failed to parse RemoteAuth message: ${err.message}`));
+      this.emit(Event.DEBUG, `Invalid JSON received: ${message}`);
+      return;
+    }
+
     switch (message.op) {
       case receiveEvent.HELLO: {
         this.#ready(message);
@@ -303,8 +310,13 @@ class DiscordAuthWebsocket extends EventEmitter {
    * @returns {void}
    */
   destroy() {
-    if (!this.ws) return;
-    this.ws.close();
+    if (!this.#ws) return;
+    if (this.#heartbeatInterval) {
+      clearInterval(this.#heartbeatInterval);
+      this.#heartbeatInterval = null;
+    }
+    this.#ws.close();
+    this.#ws = null;
     this.emit(Event.DEBUG, 'WebSocket closed.');
     /**
      * Emitted whenever a connection is closed.

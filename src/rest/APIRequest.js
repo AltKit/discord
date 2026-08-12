@@ -51,10 +51,14 @@ class APIRequest {
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
       'x-discord-locale': 'en-US',
-      'x-discord-timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
-      'x-super-properties': `${Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString(
-        'base64',
-      )}`,
+      'x-discord-timezone':
+        typeof this.rest._getTimezone === 'function'
+          ? this.rest._getTimezone()
+          : Intl.DateTimeFormat().resolvedOptions().timeZone,
+      'x-super-properties':
+        typeof this.rest._getSuperProperties === 'function'
+          ? this.rest._getSuperProperties()
+          : Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString('base64'),
       origin: 'https://discord.com',
       'x-debug-options': 'bugReporterEnabled',
       ...this.client.options.http.headers,

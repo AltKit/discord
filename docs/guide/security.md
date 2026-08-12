@@ -61,6 +61,8 @@ Review debug listeners before enabling them in production because low-level gate
 
 Store these secrets separately, set bounded retry limits, and understand the privacy and billing terms of any provider before integration.
 
+When Discord requires an hCaptcha challenge, `captchaSolver` receives the challenge payload and the user agent Discord observed, and must resolve to a solved token. The REST handler then replays the original request with that token and Discord's `captcha_rqtoken`. See [client configuration → hCaptcha challenges](/guide/client-configuration#hcaptcha-challenges) and `examples/CaptchaSolver.js` for a complete adapter. A solver that returns a non-token value rejects the request with `CAPTCHA_SOLVER_INVALID_RESPONSE`.
+
 ## Proxies
 
 An HTTP proxy can observe destination metadata and, depending on the protocol and setup, may handle credentials. Use a provider you trust, put credentials in the environment, and URL-encode special characters in proxy usernames and passwords.

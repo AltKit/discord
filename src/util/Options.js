@@ -29,10 +29,22 @@ const { UserAgent } = require('./Constants');
  */
 
 /**
+ * Solves an hCaptcha challenge returned by Discord and returns a verified token.
+ *
+ * When a request hits a captcha challenge, the REST handler calls this function with the
+ * challenge payload and the user agent that Discord observed, then replays the original
+ * request with the returned token as the `X-Captcha-Key` header (and Discord's
+ * `captcha_rqtoken` as `X-Captcha-Rqtoken`).
+ *
+ * Common implementations delegate to a commercial solving service (for example CapSolver
+ * or 2captcha). The function must resolve to a non-empty string token; any other value
+ * rejects the request with `CAPTCHA_SOLVER_INVALID_RESPONSE`.
+ *
+ * Solver failures propagate unchanged so callers can distinguish them from HTTP failures.
  * @typedef {Function} CaptchaSolver
- * @param {Captcha} captcha Discord Captcha
- * @param {string} UserAgent Current UserAgent
- * @returns {Promise<string>} HCaptcha Token
+ * @param {Captcha} captcha The challenge payload, including `captcha_sitekey`, `captcha_rqdata`, and `captcha_service`
+ * @param {string} UserAgent The user agent Discord observed for the request
+ * @returns {Promise<string>} The solved hCaptcha token
  */
 
 /**

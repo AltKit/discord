@@ -23,6 +23,7 @@ should remain strings.
 - `Embed.js`: send the fork-specific hidden web embed format.
 - `RichPresence.js` and `SamsungRPC.js`: publish account activities.
 - `AuthorizeUserApps.js`, `AddBot.js`, and `JoinGuild.js`: user-account application and invite helpers.
+- `CaptchaSolver.js`: solve hCaptcha challenges through a commercial solving service.
 - `Proxy.js`: configure the built-in HTTP proxy support.
 - `SlashCommand.md`: invoke application commands and handle messages or modals.
 - `VoiceChannel/`: join voice and use the optional audio/video stack.

@@ -131,12 +131,20 @@ class ClientVoiceManager {
         reject(reason);
       });
 
-      connection.on('error', reject);
+      // Keep a persistent internal error handler to prevent unhandled error events
+      const internalErrorHandler = err => {
+        this.client.emit('debug', `[Voice] Connection error: ${err.message}`);
+      };
+      connection.on('error', internalErrorHandler);
+
+      // Temporary error handler for the promise
+      const promiseRejectHandler = reject;
+      connection.once('error', promiseRejectHandler);
 
       connection.once('authenticated', () => {
         connection.once('ready', () => {
           resolve(connection);
-          connection.removeListener('error', reject);
+          connection.removeListener('error', promiseRejectHandler);
         });
         connection.once('disconnect', () => {
           this.connection = null;

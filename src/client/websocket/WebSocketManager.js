@@ -107,6 +107,7 @@ class WebSocketManager extends EventEmitter {
    * @readonly
    */
   get ping() {
+    if (this.shards.size === 0) return 0;
     const sum = this.shards.reduce((a, b) => a + b.ping, 0);
     return sum / this.shards.size;
   }

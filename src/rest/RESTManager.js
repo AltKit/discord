@@ -26,11 +26,50 @@ class RESTManager {
     this.fetch = makeFetchCookie.default(fetchOriginal, this.cookieJar);
     this.dispatcher = null;
     this.destroyed = false;
+
+    // Cache expensive computations for performance (Perf #2.1)
+    this._cachedTimezone = null;
+    this._cachedSuperProperties = null;
+
     if (Number.isFinite(client.options.restSweepInterval) && client.options.restSweepInterval > 0) {
       this.sweepInterval = setInterval(() => {
         this.handlers.sweep(handler => handler._inactive);
       }, client.options.restSweepInterval * 1_000).unref();
     }
+  }
+
+  /**
+   * Get cached timezone or compute and cache it
+   * @returns {string}
+   * @private
+   */
+  _getTimezone() {
+    if (!this._cachedTimezone) {
+      this._cachedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+    return this._cachedTimezone;
+  }
+
+  /**
+   * Get cached super-properties or compute and cache them
+   * @returns {string}
+   * @private
+   */
+  _getSuperProperties() {
+    if (!this._cachedSuperProperties) {
+      this._cachedSuperProperties = Buffer.from(JSON.stringify(this.client.options.ws.properties), 'ascii').toString(
+        'base64',
+      );
+    }
+    return this._cachedSuperProperties;
+  }
+
+  /**
+   * Invalidate cached super-properties (call when ws.properties changes)
+   * @private
+   */
+  _invalidateSuperPropertiesCache() {
+    this._cachedSuperProperties = null;
   }
 
   get api() {
